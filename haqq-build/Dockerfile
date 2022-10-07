@@ -20,24 +20,24 @@ LABEL image_tag=$IMAGE_TAG
 LABEL build-date=$BUILD_DATE
 
 #Required variables set by default
-ENV KEY="celestia_impulse"
-ENV CHAINID="mamaki"
-ENV MONIKER="CelestiaImpulse"
+ENV KEY="haqq_impulse"
+ENV CHAINID="haqq_54211-2"
+ENV MONIKER="HaqqImpulse"
 ENV KEYRING="test"
 ENV KEYALGO="eth_secp256k1"
 ENV LOGLEVEL="info"
-ENV CONFIG_PATH="/root/.celestia-app"
+ENV CONFIG_PATH="/root/.haqqd"
 
 RUN apt-get update && apt-get upgrade -y \
     && apt-get install -y tzdata ca-certificates curl wget jq \
     && apt-get -y purge && apt-get -y clean \
     && apt-get -y autoremove && rm -rf /var/lib/apt/lists/*
 
-COPY --from=builder /app/build/celestia-appd /usr/bin/celestia-appd
+COPY --from=builder /app/build/haqqd /usr/bin/haqqd
 COPY ./run_node.sh . 
 
 RUN chmod +x ./run_node.sh
 
-EXPOSE 26656 26657 1317 9090
+EXPOSE 8545 8546 9090 9091 26656 26657
 
 ENTRYPOINT [ "/bin/bash", "/run_node.sh" ]

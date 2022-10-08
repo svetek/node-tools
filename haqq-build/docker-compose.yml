@@ -13,6 +13,7 @@ services:
     - LOGLEVEL=info    
     - CONFIG_PATH=/root/.haqqd
     ports:
+    - '1317:1317'
     - '8545:8545'
     - '8546:8546'
     - '9090:9090'
@@ -20,7 +21,7 @@ services:
     - '26656:26656'
     - '26657:26657'
     volumes:
-    - ./data:/root/.haqqd
+    - /opt/haqq/data:/root/.haqqd
     deploy:
       resources:
         limits:

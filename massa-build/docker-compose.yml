@@ -1,0 +1,21 @@
+---
+version: "3.9"
+services:
+  massa-node:
+    container_name: massa-node
+    image: massa-node:${TAG}
+    environment:
+      - PASSWORD=<insert password>
+      - LOGGING=false
+    ports:     
+    - "31244:31244"
+    - "31245:31245"
+    - "33035:33035"
+    volumes:
+    - /opt/massa/data:/app
+    deploy:
+      resources:
+        limits:
+          cpus: 6
+          memory: 12gb
+    restart: unless-stopped

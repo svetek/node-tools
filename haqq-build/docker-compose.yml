@@ -6,7 +6,7 @@ services:
     image: haqq-node:${TAG}
     environment:
     - KEY=haqq_impulse
-    - CHAINID=haqq_54211-2
+    - CHAINID=haqq_54211-3
     - MONIKER=HaqqImpulse
     - KEYRING=test
     - KEYALGO=eth_secp256k1

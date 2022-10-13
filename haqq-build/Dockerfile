@@ -21,7 +21,7 @@ LABEL build-date=$BUILD_DATE
 
 #Required variables set by default
 ENV KEY="haqq_impulse"
-ENV CHAINID="haqq_54211-2"
+ENV CHAINID="haqq_54211-3"
 ENV MONIKER="HaqqImpulse"
 ENV KEYRING="test"
 ENV KEYALGO="eth_secp256k1"

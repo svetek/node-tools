@@ -1,6 +1,14 @@
 ---
 version: "3.9"
 services:
+  massa-ui:
+    container_name: masa-ui
+    image: masafinance/node-ui
+    ports:
+      - 3000:3000
+    networks:
+      - masa-testnet
+
   masa-node:
     container_name: masa-node
     image: masa-node:${TAG}
@@ -11,7 +19,7 @@ services:
     ports:
     - '8545:8545'
     - '21000:21000'
-    - '30303:30303'
+    - '30300:30300'
     - '30303:30303/udp'
     volumes:
     - /opt/masa/data:/app
@@ -20,4 +28,11 @@ services:
         limits:
           cpus: '4'
           memory: '8gb'
+    networks:
+      - masa-testnet
     restart: unless-stopped
+
+networks:
+  masa-testnet:
+    name: masa-testnet
+    driver: bridge

@@ -4,7 +4,7 @@ BASEDIR="/app"
 CONFIGDIR="/tmp/conf"
 GENESIS_FILE="$BASEDIR/genesis.json"
 NODE_ID=${NODE_NAME:="Masa$(uname)"}
-BOOTNODES="enode:/d004b779ae3728bf83f8e22453404cc3cef16a3d9b96608bc67c4b30db88e0a5a6c6390213f7acbe1153ff6d23ce57380104288ae19373ef@54.146.254.245:21000"
+BOOTNODES="enode://7612454dd41a6d13138b565a9e14a35bef4804204d92e751cfe2625648666b703525d821f34ffc198fac0d669a12d5f47e7cf15de4ebe65f39822a2523a576c4@81.29.137.40:30300"
 
 if [[ ! -f $GENESIS_FILE ]]
 then
@@ -15,7 +15,7 @@ fi
 
 init_node() {
     mkdir -p $BASEDIR/{keystore,geth}
-    cp -r $CONFIGDIR/* $BASEDIR 
+    cp -rf $CONFIGDIR/* $BASEDIR 
     geth --datadir $BASEDIR init $GENESIS_FILE
     echo "Created $(date)" > $BASEDIR/control_file
     rm -rf $CONFIGDIR
@@ -54,7 +54,7 @@ fi
 
 if [[ -d $CONFIGDIR && $(ls $CONFIGDIR | wc -l) -gt 0 ]]
 then
-    cp -r $CONFIGDIR/* $BASEDIR 
+    cp -rf $CONFIGDIR/* $BASEDIR 
     rm -rf $CONFIGDIR
 fi
 

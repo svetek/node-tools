@@ -17,7 +17,7 @@ DOCKERFILE="$DIR/Dockerfile"
 BUILD_DATE="$(date -u +'%Y-%m-%d')"
 
 echo
-echo "Building celestia-node docker image"
+echo "Building haqq-node docker image"
 echo "Dockerfile: \t$DOCKERFILE"
 echo "docker context: $DIR"
 echo "build date: \t$BUILD_DATE"
@@ -30,4 +30,4 @@ docker build -f "$DOCKERFILE" "$DIR" \
      --build-arg IMAGE_TAG="$IMAGE_TAG" \
      --build-arg GIT_REPOSITORY="$GIT_REPOSITORY" \
      --build-arg BUILD_DATE="$BUILD_DATE" \
-     --tag celestia-node:$IMAGE_TAG  
+     --tag haqq-node:$IMAGE_TAG  

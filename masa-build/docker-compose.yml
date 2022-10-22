@@ -15,12 +15,10 @@ services:
     environment:
       - NODE_NAME=MasaImpulse
       - PRIVATE_CONFIG=ignore
-      - LOGGING=true
+      - LOGGING=3                #0=silent, 1=error, 2=warn, 3=info, 4=debug, 5=detail
     ports:
-    - '8545:8545'
     - '21000:21000'
-    - '30300:30300'
-    - '30303:30303/udp'
+    - '22001:8545'
     volumes:
     - /opt/masa/data:/app
     deploy:

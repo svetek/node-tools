@@ -1,0 +1,23 @@
+---
+version: "3.9"
+services:
+  masa-node:
+    container_name: masa-node
+    image: masa-node:${TAG}
+    environment:
+      - NODE_NAME=MasaImpulse
+      - PRIVATE_CONFIG=ignore
+      - LOGGING=true
+    ports:
+    - '8545:8545'
+    - '21000:21000'
+    - '30303:30303'
+    - '30303:30303/udp'
+    volumes:
+    - /opt/masa/data:/app
+    deploy:
+      resources:
+        limits:
+          cpus: '4'
+          memory: '8gb'
+    restart: unless-stopped

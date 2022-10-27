@@ -1,15 +1,9 @@
 #!/bin/bash
 
-#TIMEOUT_COMMIT=25s
-#PEER_GOSSIP_SLEEP_DURATION=2ms
-#MAX_CONNECTIONS=50
-#MAX_NUM_INBOUND_PEERS=40
-#MAX_NUM_OUTBOUND_PEERS=10
 INDEXER="null"
 SNAPSHOT_INTERVAL=0
 PRUNING_MODE=custom
 PRUNING_INTERVAL=10
-PRUNING_KEEP_EVERY=0
 PRUNING_KEEP_RECENT=100
 MINIMUM_GAS_PRICES=0.002uknow
 EXTERNAL_ADDRESS=$(wget -qO- eth0.me)
@@ -28,27 +22,16 @@ init_node() {
     okp4d init $MONIKER --chain-id $CHAINID --home $CONFIG_PATH
 
     # Set seeds/bpeers/peers
-    sed -i -e "s/^external-address *=.*/external-address = \"$EXTERNAL_ADDRESS:26656\"/" $CONFIG_PATH/config/config.toml
+    sed -i -e "s/^external_address *=.*/external_address = \"$EXTERNAL_ADDRESS:26656\"/" $CONFIG_PATH/config/config.toml
     sed -i -e "s/^filter_peers *=.*/filter_peers = \"true\"/" $CONFIG_PATH/config/config.toml
-#   sed -i -e "s/^bootstrap-peers *=.*/bootstrap-peers = \"$BOOTSTRAP_PEERS\"/" $CONFIG_PATH/config/config.toml
-    sed -i -e "s/^persistent-peers *=.*/persistent-peers = \"$PERSISTENT_PEERS\"/" $CONFIG_PATH/config/config.toml
-    
-    # Set Consensus Configuration Options
-#    sed -i -e "s/^timeout-commit *=.*/timeout-commit = \"$TIMEOUT_COMMIT\"/" $CONFIG_PATH/config/config.toml
-#    sed -i -e "s/^peer-gossip-sleep-duration *=.*/peer-gossip-sleep-duration = \"$PEER_GOSSIP_SLEEP_DURATION\"/" $CONFIG_PATH/config/config.toml
-    
-    # Set P2P Configuration Options
-#    sed -i -e "s/^use-legacy *=.*/use-legacy = false/" $CONFIG_PATH/config/config.toml
-#    sed -i -e "s/^max-connections *=.*/max-connections = $MAX_CONNECTIONS/" $CONFIG_PATH/config/config.toml
-#    sed -i -e "s/^max-num-inbound-peers *=.*/max-num-inbound-peers = $MAX_NUM_INBOUND_PEERS/" $CONFIG_PATH/config/config.toml
-#    sed -i -e "s/^max-num-outbound-peers *=.*/max-num-outbound-peers = $MAX_NUM_OUTBOUND_PEERS/" $CONFIG_PATH/config/config.toml
+#   sed -i -e "s/^bootstrap_peers *=.*/bootstrap_peers = \"$BOOTSTRAP_PEERS\"/" $CONFIG_PATH/config/config.toml
+    sed -i -e "s/^persistent_peers *=.*/persistent_peers = \"$PERSISTENT_PEERS\"/" $CONFIG_PATH/config/config.toml
 
     # Config pruning and snapshots
     sed -i -e "s/^indexer *=.*/indexer = \"$INDEXER\"/" $CONFIG_PATH/config/config.toml
     sed -i -e "s/^snapshot-interval *=.*/snapshot-interval = $SNAPSHOT_INTERVAL/" $CONFIG_PATH/config/app.toml
     sed -i -e "s/^pruning *=.*/pruning = \"$PRUNING_MODE\"/" $CONFIG_PATH/config/app.toml
     sed -i -e "s/^pruning-keep-recent *=.*/pruning-keep-recent = \"$PRUNING_KEEP_RECENT\"/" $CONFIG_PATH/config/app.toml
-    sed -i -e "s/^pruning-keep-every *=.*/pruning-keep-every = \"$PRUNING_KEEP_EVERY\"/" $CONFIG_PATH/config/app.toml
     sed -i -e "s/^pruning-interval *=.*/pruning-interval = \"$PRUNING_INTERVAL\"/" $CONFIG_PATH/config/app.toml
 
     # настраиваем минимальную цену за газ в app.toml
@@ -81,8 +64,6 @@ set_variable() {
     echo 'export VAL_ADDRESS='$(okp4d keys show $KEY --bech val -a) >> $HOME/.bashrc
   fi
 }
-
-set -x
 
 if [[ $LOGLEVEL && $LOGLEVEL == "debug" ]]
 then

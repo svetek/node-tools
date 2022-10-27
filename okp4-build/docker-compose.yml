@@ -1,0 +1,35 @@
+---
+version: '3.9'
+services:
+  okp4-node:
+    container_name: okp4-node
+    image: okp4-node:${TAG}
+    environment:
+    - KEY=okp4_impulse
+    - CHAINID=okp4-nemeton
+    - MONIKER=Okp4Impulse
+    - KEYRING=test
+    - KEYALGO=eth_secp256k1
+    - LOGLEVEL=info
+    - CONFIG_PATH=/root/.okp4d
+    ports:
+    - '1317:1317'
+    - '9090:9090'
+    - '9091:9091'
+    - '26656:26656'
+    - '26657:26657'
+    volumes:
+    - /opt/okp4/data:/root/.okp4d
+    deploy:
+      resources:
+        limits:
+          cpus: '4'
+          memory: '8gb'
+    networks:
+      - okp4-testnet
+    restart: unless-stopped
+
+networks:
+  okp4-testnet:
+    name: okp4-testnet
+    driver: bridge

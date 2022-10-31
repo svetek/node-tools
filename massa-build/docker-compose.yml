@@ -7,7 +7,7 @@ services:
     environment:
       - PASSWORD=<insert password>
       - LOGGING=false
-    ports:     
+    ports:
     - "31244:31244"
     - "31245:31245"
     - "33035:33035"

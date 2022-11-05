@@ -29,6 +29,21 @@ services:
       - okp4-testnet
     restart: unless-stopped
 
+  node_exporter:
+    image: prom/node-exporter:v1.4.0
+    container_name: node_exporter
+    volumes:
+      - type: 'bind'
+        source: '/'
+        target: '/rootfs'
+        read_only: true
+    command:
+      - '--path.rootfs=/rootfs'
+      - '--collector.filesystem.ignored-mount-points=^/(sys|proc|dev|host|run|mnt)($$|/)'
+    pid: 'host'
+    network_mode: host
+    restart: unless-stopped
+
 networks:
   okp4-testnet:
     name: okp4-testnet

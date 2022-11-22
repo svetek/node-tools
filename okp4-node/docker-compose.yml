@@ -3,7 +3,7 @@ version: '3.9'
 services:
   okp4-node:
     container_name: okp4-node
-    image: okp4-node:${TAG}
+    image: okp4-node:${NodeTAG}
     environment:
     - KEY=okp4_impulse
     - CHAINID=okp4-nemeton
@@ -12,25 +12,36 @@ services:
     - KEYALGO=eth_secp256k1
     - LOGLEVEL=info
     - CONFIG_PATH=/root/.okp4d
-    ports:
-    - '1317:1317'
-    - '9090:9090'
-    - '9091:9091'
-    - '26656:26656'
-    - '26657:26657'
+    # ports:
+    # - '1317:1317'
+    # - '9090:9090'
+    # - '9091:9091'
+    # - '26656:26656'
+    # - '26657:26657'
     volumes:
-    - /opt/okp4/data:/root/.okp4d
+      - /opt/okp4/data:/root/.okp4d
     deploy:
       resources:
         limits:
-          cpus: '4'
-          memory: '8gb'
-    networks:
-      - okp4-testnet
+          cpus: '2'
+          memory: '7gb'
+    network_mode: host
+    restart: unless-stopped
+
+  cosmos_exporter:
+    image: svetekllc/cosmos-exporter:${CosmosExporterTAG}
+    container_name: cosmos_exporter
+    command:
+      - '--log-level=info'
+      - '--bech-prefix=okp4'
+    # ports:
+    # - '9300:9300'
+    pid: 'host'
+    network_mode: host
     restart: unless-stopped
 
   node_exporter:
-    image: prom/node-exporter:v1.4.0
+    image: prom/node-exporter:${NodeExporterTAG}
     container_name: node_exporter
     volumes:
       - type: 'bind'
@@ -43,8 +54,3 @@ services:
     pid: 'host'
     network_mode: host
     restart: unless-stopped
-
-networks:
-  okp4-testnet:
-    name: okp4-testnet
-    driver: bridge

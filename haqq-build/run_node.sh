@@ -78,7 +78,7 @@ init_node() {
 
     echo -e "\n### Priv key for Metamask ####"
     haqqd keys unsafe-export-eth-key $KEY --home=$CONFIG_PATH --keyring-backend $KEYRING
-    echo -e "\n"  
+    echo -e "\n"
 }
 
 start_node() { 
@@ -90,7 +90,7 @@ start_node() {
 
 set_variable() {
   echo 'export WALLET_ADDRESS='$(haqqd keys show $KEY -a) >> $HOME/.bashrc
-  echo 'export VAL_ADDRESS='$(haqqd keys show $KEY --bech val -a) >> $HOME/.bashrc 
+  echo 'export VAL_ADDRESS='$(haqqd keys show $KEY --bech val -a) >> $HOME/.bashrc
 }
 
 if [[ $LOGLEVEL && $LOGLEVEL == "debug" ]]
@@ -101,11 +101,11 @@ fi
 if [[ -d "$CONFIG_PATH" ]] && [[ -d "$CONFIG_PATH/config" && $(ls -la $CONFIG_PATH/config | grep -cie .*key.json) -gt 0 ]]
 then
   echo "### Run node ###"
-  set_variable  
+  set_variable
   start_node
 else
   echo "### Initialization node ###"
-  init_node 
+  init_node
   echo "### Run node ###"
   set_variable
   start_node

@@ -16,7 +16,7 @@ FROM debian:bullseye-slim
 
 ARG IMAGE_TAG
 ARG BUILD_DATE
-LABEL image_tag=$IMAGE_TAG
+LABEL image-tag=$IMAGE_TAG
 LABEL build-date=$BUILD_DATE
 
 #Required variables set by default

@@ -27,7 +27,7 @@ else
     IMAGE_NAME=$IMAGE_NAME:$IMAGE_TAG
 fi
 
-echo -e "\nBuilding massa-node docker image"
+echo -e "\nBuilding node"
 echo -e "Build date: \t$BUILD_DATE"
 echo -e "Dockerfile: \t$DOCKERFILE"
 echo -e "Docker context: $DIR"

@@ -3,7 +3,7 @@ version: '3.9'
 services:
   haqq-node:
     container_name: haqq-node
-    image: haqq-node:${TAG}
+    image: svetekllc/haqq-node:${TAG}
     environment:
     - KEY=haqq_impulse
     - CHAINID=haqq_54211-3

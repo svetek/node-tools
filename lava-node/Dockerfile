@@ -21,7 +21,7 @@ LABEL build-date=$BUILD_DATE
 
 #Required variables set by default
 ENV KEY="lava_impulse"
-ENV CHAINID="testnet-1"
+ENV CHAINID="lava-testnet-1"
 ENV MONIKER="LavaImpulse"
 ENV KEYRING="test"
 ENV KEYALGO="eth_secp256k1"

@@ -6,7 +6,7 @@ services:
     image: svetekllc/lava-node:${TAG}
     environment:
     - KEY=lava_impulse
-    - CHAINID=testnet-1
+    - CHAINID=lava-testnet-1
     - MONIKER=LavaImpulse
     - KEYRING=test
     - KEYALGO=eth_secp256k1

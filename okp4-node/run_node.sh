@@ -18,7 +18,7 @@ init_node() {
     # if $KEY exists it should be deleted
     okp4d keys add $KEY --keyring-backend $KEYRING --home $CONFIG_PATH
 
-    # Set moniker and chain-id for Evmos (Moniker can be anything, chain-id must be an integer)
+    # Set moniker and chain-id for OKP4 (Moniker can be anything, chain-id must be an integer)
     okp4d init $MONIKER --chain-id $CHAINID --home $CONFIG_PATH
 
     # Set seeds/bpeers/peers

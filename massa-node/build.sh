@@ -8,8 +8,8 @@ DIR="$( cd "$( dirname "$0" )" && pwd )"
 DOCKERFILE="$DIR/Dockerfile"
 BUILD_DATE="$(date -u +'%Y-%m-%d')"
 
-read -p "Enter release tag: " -r IMAGE_TAG
 read -p "Enter image name: " -r IMAGE_NAME
+read -p "Enter release tag: " -r IMAGE_TAG
 read -p "Do you want to send the image to DockerHub [yes/no]: " -r PUSH_FLAG
 
 while [[ "$PUSH_FLAG" != "yes" && "$PUSH_FLAG" != "no" ]]
@@ -19,39 +19,34 @@ done
 
 if [[ "$PUSH_FLAG" == "yes" ]]
 then
-    read -r -p "Enter DockerHub username: " DOCKERHUB_USERNAME
-    read -r -p "Enter DockerHub password: " DOCKERHUB_PASSWORD
     read -r -p "Enter DockerHub repository: " DOCKERHUB_REPO
-    IMAGE_NAME=$DOCKERHUB_REPO/$IMAGE_NAME:$IMAGE_TAG
+    IMAGE=$DOCKERHUB_REPO/$IMAGE_NAME:$IMAGE_TAG
+    read -r -p "Enter username: " DOCKERHUB_USERNAME
+    read -r -p "Enter password: " DOCKERHUB_PASSWORD
 else
-    IMAGE_NAME=$IMAGE_NAME:$IMAGE_TAG
+    IMAGE=$IMAGE_NAME:$IMAGE_TAG
 fi
 
 echo -e "\nBuilding node"
 echo -e "Build date: \t$BUILD_DATE"
 echo -e "Dockerfile: \t$DOCKERFILE"
 echo -e "Docker context: $DIR"
-echo -e "Docker Image: \t$IMAGE_NAME"
+echo -e "Docker Image: \t$IMAGE"
 echo -e "Version: \t$IMAGE_TAG\n"
 
-if [[ "$(uname)" == "Darwin" ]]
-then
-    sed -i "" "s/^TAG=.*$/TAG=${IMAGE_TAG}/" "$DIR/.env"
-else
-    sed -i "s/^TAG=.*$/TAG=${IMAGE_TAG}/" "$DIR/.env"
-fi
+echo -e "IMAGE=${IMAGE}\nCOMPOSE_PROJECT_NAME=massa" > .env
 
 docker build -f "$DOCKERFILE" "$DIR" \
      --build-arg IMAGE_TAG="$IMAGE_TAG" \
      --build-arg GIT_REPOSITORY="$GIT_REPOSITORY" \
      --build-arg BUILD_DATE="$BUILD_DATE" \
-     --tag $IMAGE_NAME
+     --tag $IMAGE
 
 if [[ "$PUSH_FLAG" == "yes" ]]
 then
-    echo -e "\nSending docker image \"$IMAGE_NAME\" to DockerHub\n"
+    echo -e "\nSending docker image \"$IMAGE\" to DockerHub\n"
     docker login -u $DOCKERHUB_USERNAME -p $DOCKERHUB_PASSWORD 2>/dev/null
-    docker push $IMAGE_NAME
+    docker push $IMAGE
 fi
 
 echo -e "\nThe build is complete\n"

@@ -3,7 +3,7 @@ version: '3.9'
 services:
   lava-node:
     container_name: lava-node
-    image: svetekllc/lava-node:${TAG}
+    image: ${IMAGE}
     environment:
     - KEY=lava_impulse
     - CHAINID=lava-testnet-1

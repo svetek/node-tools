@@ -21,6 +21,9 @@ init_node() {
     # if $KEY exists it should be deleted
     lavad keys add $KEY --keyring-backend $KEYRING --home $CONFIG_PATH
 
+    # Download genesis file
+    wget -O $CONFIG_PATH/config/genesis.json https://raw.githubusercontent.com/K433QLtr6RA9ExEq/GHFkqmTzpdNLDd6T/main/testnet-1/genesis_json/genesis.json
+
     # Set seeds/bpeers/peers
     sed -i -e "s/^external_address *=.*/external_address = \"$EXTERNAL_ADDRESS:26656\"/" $CONFIG_PATH/config/config.toml
     sed -i -e "s/^filter_peers *=.*/filter_peers = \"true\"/" $CONFIG_PATH/config/config.toml
@@ -36,15 +39,6 @@ init_node() {
 
     # Set min price for GAZ in app.toml
     sed -i -e "s/^minimum-gas-prices *=.*/minimum-gas-prices = \"$MINIMUM_GAS_PRICES\"/" $CONFIG_PATH/config/app.toml
-
-    # Sign genesis transaction
-    lavad gentx $KEY 1200000ulava --keyring-backend $KEYRING --chain-id $CHAINID --home $CONFIG_PATH &> /dev/null
-
-    # Download genesis file
-    wget -O $CONFIG_PATH/config/genesis.json https://raw.githubusercontent.com/K433QLtr6RA9ExEq/GHFkqmTzpdNLDd6T/main/testnet-1/genesis_json/genesis.json
-
-    #Allocate genesis accounts (cosmos formatted addresses)
-    lavad add-genesis-account $KEY 1200000ulava --keyring-backend $KEYRING --home $CONFIG_PATH &> /dev/null
 
     # Run this to ensure everything worked and that the genesis file is setup correctly
     lavad validate-genesis --home $CONFIG_PATH

@@ -40,6 +40,12 @@ init_node() {
     # Set min price for GAZ in app.toml
     sed -i -e "s/^minimum-gas-prices *=.*/minimum-gas-prices = \"$MINIMUM_GAS_PRICES\"/" $CONFIG_PATH/config/app.toml
 
+    sed -i -e "s/^create_empty_blocks *=.*/create_empty_blocks = true/" $CONFIG_PATH/config/config.toml
+    sed -i -e "s/^create_empty_blocks_interval *=.*/create_empty_blocks_interval = \"60s\"/" $CONFIG_PATH/config/config.toml
+    sed -i -e "s/^timeout_propose *=.*/timeout_propose = \"60s\"/" $CONFIG_PATH/config/config.toml
+    sed -i -e "s/^timeout_commit *=.*/timeout_commit = \"60s\"/" $CONFIG_PATH/config/config.toml
+    sed -i -e "s/^timeout_broadcast_tx_commit *=.*/timeout_broadcast_tx_commit = \"601s\"/" $CONFIG_PATH/config/config.toml
+
     # Run this to ensure everything worked and that the genesis file is setup correctly
     lavad validate-genesis --home $CONFIG_PATH
 }

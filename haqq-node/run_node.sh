@@ -1,18 +1,15 @@
 #!/bin/bash
 
-init_node() { 
+init_node() {
+    # Set moniker and chain-id for Haqq (Moniker can be anything, chain-id must be an integer)
+    haqqd init $MONIKER --chain-id $CHAINID --home $CONFIG_PATH
 
-    # validate dependencies are installed
-    command -v jq > /dev/null 2>&1 || { echo >&2 "jq not installed. More info: https://stedolan.github.io/jq/download/"; exit 1; }
-
-    haqqd config keyring-backend $KEYRING --home $CONFIG_PATH
+    # Set keyring-backend and chain-id configuration
     haqqd config chain-id $CHAINID --home $CONFIG_PATH
+    haqqd config keyring-backend $KEYRING --home $CONFIG_PATH
 
     # if $KEY exists it should be deleted
     haqqd keys add $KEY --keyring-backend $KEYRING --home $CONFIG_PATH
-
-    # Set moniker and chain-id for Evmos (Moniker can be anything, chain-id must be an integer)
-    haqqd init $MONIKER --chain-id $CHAINID --home $CONFIG_PATH
 
     # Change parameter token denominations to aISLM
     cat $CONFIG_PATH/config/genesis.json | jq '.app_state["staking"]["params"]["bond_denom"]="aISLM"' > $CONFIG_PATH/config/tmp_genesis.json && mv $CONFIG_PATH/config/tmp_genesis.json $CONFIG_PATH/config/genesis.json
@@ -81,16 +78,22 @@ init_node() {
     echo -e "\n"
 }
 
-start_node() { 
+start_node() {
   haqqd start --home $CONFIG_PATH --pruning=nothing $TRACE --log_level $LOGLEVEL \
---minimum-gas-prices=0.0001aISLM \
---json-rpc.api eth,txpool,personal,net,debug,web3 \
---json-rpc.enable true --keyring-backend $KEYRING
+  --minimum-gas-prices=0.0001aISLM \
+  --json-rpc.api eth,txpool,personal,net,debug,web3 \
+  --json-rpc.enable true --keyring-backend $KEYRING
 }
 
 set_variable() {
-  echo 'export WALLET_ADDRESS='$(haqqd keys show $KEY -a) >> $HOME/.bashrc
-  echo 'export VAL_ADDRESS='$(haqqd keys show $KEY --bech val -a) >> $HOME/.bashrc
+  if [[ ! $ACC_ADDRESS ]]
+  then
+    echo 'export ACC_ADDRESS='$(haqqd keys show $KEY -a) >> $HOME/.bashrc
+  fi
+  if [[ ! $VAL_ADDRESS ]]
+  then
+    echo 'export VAL_ADDRESS='$(haqqd keys show $KEY --bech val -a) >> $HOME/.bashrc
+  fi
 }
 
 if [[ $LOGLEVEL && $LOGLEVEL == "debug" ]]
@@ -98,15 +101,12 @@ then
   set -x
 fi
 
-if [[ -d "$CONFIG_PATH" ]] && [[ -d "$CONFIG_PATH/config" && $(ls -la $CONFIG_PATH/config | grep -cie .*key.json) -gt 0 ]]
+if [[ ! -d "$CONFIG_PATH" ]] || [[ ! -d "$CONFIG_PATH/config" || $(ls -la $CONFIG_PATH/config | grep -cie .*key.json) -eq 0 ]]
 then
-  echo "### Run node ###"
-  set_variable
-  start_node
-else
   echo "### Initialization node ###"
   init_node
-  echo "### Run node ###"
-  set_variable
-  start_node
 fi
+
+echo "### Run node ###"
+set_variable
+start_node

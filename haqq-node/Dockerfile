@@ -21,11 +21,11 @@ LABEL build-date=$BUILD_DATE
 
 # Required variables set by default
 # KEY_PASS env must be at least 8 characters
-ENV KEY="<key name>""
+ENV KEY="<key name>"
 ENV KEY_PASS="<insert password>"
 ENV CHAINID="haqq_54211-3"
 ENV MONIKER="<moniker name>"
-ENV KEYRING="test"
+ENV KEYRING="file"
 ENV KEYALGO="eth_secp256k1"
 ENV LOGLEVEL="info"
 ENV CONFIG_PATH="/root/.haqqd"

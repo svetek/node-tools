@@ -1,4 +1,4 @@
-#Download base image Debian 11 and Golang 1.19 
+#Download base image Debian 11 and Golang 1.19
 FROM golang:1.19-bullseye AS builder
 
 ARG IMAGE_TAG
@@ -19,10 +19,12 @@ ARG BUILD_DATE
 LABEL image-tag=$IMAGE_TAG
 LABEL build-date=$BUILD_DATE
 
-#Required variables set by default
-ENV KEY="haqq_impulse"
+# Required variables set by default
+# KEY_PASS env must be at least 8 characters
+ENV KEY="<key name>""
+ENV KEY_PASS="<insert password>"
 ENV CHAINID="haqq_54211-3"
-ENV MONIKER="HaqqImpulse"
+ENV MONIKER="<moniker name>"
 ENV KEYRING="test"
 ENV KEYALGO="eth_secp256k1"
 ENV LOGLEVEL="info"
@@ -34,10 +36,10 @@ RUN apt-get update && apt-get upgrade -y \
     && apt-get -y autoremove && rm -rf /var/lib/apt/lists/*
 
 COPY --from=builder /app/build/haqqd /usr/bin/haqqd
-COPY ./run_node.sh . 
+COPY ./run_node.sh .
 
 RUN chmod +x ./run_node.sh
 
-EXPOSE 8545 8546 9090 9091 26656 26657
+EXPOSE 26656 26657
 
 ENTRYPOINT [ "/bin/bash", "/run_node.sh" ]

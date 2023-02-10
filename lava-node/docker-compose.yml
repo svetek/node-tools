@@ -13,7 +13,6 @@ services:
     - LOGLEVEL=info
     - CONFIG_PATH=/root/.lava
     ports:
-    - '1317:1317'
     - '26656:26656'
     - '26657:26657'
     - '26660:26660'

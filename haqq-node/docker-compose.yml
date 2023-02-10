@@ -3,24 +3,20 @@ version: '3.9'
 services:
   haqq-node:
     container_name: haqq-node
-    image: svetekllc/haqq-node:${TAG}
+    image: ${IMAGE}
     environment:
-    - KEY=haqq_impulse
+    - KEY=<key name>
+    - KEY_PASS=<insert password>
     - CHAINID=haqq_54211-3
-    - MONIKER=HaqqImpulse
-    - KEYRING=test
+    - MONIKER=<moniker name>
+    - KEYRING=file
     - KEYALGO=eth_secp256k1
     - LOGLEVEL=info
     - CONFIG_PATH=/root/.haqqd
     ports:
-    - '1317:1317'
-    - '8545:8545'
-    - '8546:8546'
-    - '9090:9090'
-    - '9091:9091'
-    - '26660:26660'
     - '26656:26656'
     - '26657:26657'
+    - '26660:26660'
     volumes:
     - /opt/haqq/data:/root/.haqqd
     deploy:

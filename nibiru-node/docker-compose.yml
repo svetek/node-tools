@@ -1,8 +1,8 @@
 ---
 version: '3.9'
 services:
-  haqq-node:
-    container_name: haqq-node
+  nibiru-node:
+    container_name: nibiru-node
     image: ${IMAGE}
     environment:
     - KEY=<key name>

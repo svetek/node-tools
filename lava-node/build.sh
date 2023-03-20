@@ -19,10 +19,9 @@ done
 
 if [[ "$PUSH_FLAG" == "yes" ]]
 then
-    read -r -p "Enter DockerHub repository: " DOCKERHUB_REPO
-    IMAGE=$DOCKERHUB_REPO/$IMAGE_NAME:$IMAGE_TAG
     read -r -p "Enter username: " DOCKERHUB_USERNAME
     read -r -p "Enter password: " DOCKERHUB_PASSWORD
+    IMAGE=$DOCKERHUB_USERNAME/$IMAGE_NAME:$IMAGE_TAG
 else
     IMAGE=$IMAGE_NAME:$IMAGE_TAG
 fi

@@ -14,7 +14,6 @@ services:
     - CONFIG_PATH=/root/.lava
     ports:
     - '26656:26656'
-    - '26657:26657'
     - '26660:26660'
     volumes:
     - /opt/lava:/root/.lava

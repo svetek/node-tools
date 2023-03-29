@@ -15,7 +15,6 @@ services:
     - CONFIG_PATH=/root/.nibid
     ports:
     - '26656:26656'
-    - '26657:26657'
     - '26660:26660'
     volumes:
     - /opt/nibiru:/root/.nibid
@@ -24,19 +23,4 @@ services:
         limits:
           cpus: '6'
           memory: '14gb'
-    restart: unless-stopped
-
-  node_exporter:
-    image: prom/node-exporter:v1.4.0
-    container_name: node_exporter
-    volumes:
-      - type: 'bind'
-        source: '/'
-        target: '/rootfs'
-        read_only: true
-    command:
-      - '--path.rootfs=/rootfs'
-      - '--collector.filesystem.ignored-mount-points=^/(sys|proc|dev|host|run|mnt)($$|/)'
-    pid: 'host'
-    network_mode: host
     restart: unless-stopped

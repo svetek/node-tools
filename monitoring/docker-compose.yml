@@ -1,0 +1,29 @@
+---
+version: '3.9'
+services:
+  node_exporter:
+    image: prom/node-exporter:v1.4.0
+    container_name: node_exporter
+    volumes:
+      - type: 'bind'
+        source: '/'
+        target: '/rootfs'
+        read_only: true
+    command:
+      - '--path.rootfs=/rootfs'
+      - '--collector.filesystem.ignored-mount-points=^/(sys|proc|dev|host|run|mnt)($$|/)'
+    pid: 'host'
+    network_mode: host
+    restart: unless-stopped
+
+  cadvisor:
+    image: gcr.io/cadvisor/cadvisor:latest
+    container_name: cadvisor
+    ports:
+    - 8080:8080
+    volumes:
+    - /:/rootfs:ro
+    - /var/run:/var/run:rw
+    - /sys:/sys:ro
+    - /var/lib/docker/:/var/lib/docker:ro 
+    restart: unless-stopped

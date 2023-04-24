@@ -26,6 +26,6 @@ RUN apt-get update && apt-get upgrade -y \
 
 COPY --from=builder /app/cosmos-exporter /usr/bin/cosmos-exporter
 
-EXPOSE 9560
+EXPOSE 9300
 
 ENTRYPOINT [ "cosmos-exporter" ]

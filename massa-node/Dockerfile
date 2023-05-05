@@ -9,7 +9,7 @@ WORKDIR /app
 
 # Node project build
 RUN git clone --depth 1 --branch $IMAGE_TAG $GIT_REPOSITORY .
-RUN apt-get update && apt-get install -y build-essential libssl-dev libclang-dev
+RUN apt-get update && apt-get install -y pkg-config build-essential libssl-dev libclang-dev cmake
 RUN rustup toolchain install nightly-2023-02-27 && rustup default nightly-2023-02-27
 RUN cargo build --release --bin massa-node --bin massa-client
 

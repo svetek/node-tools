@@ -21,7 +21,19 @@ init_node() {
 
     # if $KEY exists it should be deleted
     echo -e "\n\e[32m### Wallet info ###\e[0m"
-    (echo $KEY_PASS; echo $KEY_PASS) | haqqd keys add $KEY --keyring-backend $KEYRING --home $CONFIG_PATH
+
+    expect -c "
+        #!/usr/bin/expect -f
+        set timeout -1
+
+        spawn haqqd keys add $KEY --keyring-backend $KEYRING --home $CONFIG_PATH
+        exp_internal 0
+        expect \"Enter keyring passphrase:\"
+        send   \"$KEYPASS\n\"
+        expect \"Re-enter keyring passphrase:\"
+        send   \"$KEYPASS\n\"
+        expect eof
+    "
 
     # Change parameter token denominations to aISLM
     cat $CONFIG_PATH/config/genesis.json | jq '.app_state["staking"]["params"]["bond_denom"]="aISLM"' > $CONFIG_PATH/config/tmp_genesis.json && mv $CONFIG_PATH/config/tmp_genesis.json $CONFIG_PATH/config/genesis.json

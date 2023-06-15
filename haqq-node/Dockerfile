@@ -1,5 +1,5 @@
 #Download base image Debian 11 and Golang 1.19
-FROM golang:1.19-bullseye AS builder
+FROM golang:1.20-bullseye AS builder
 
 ARG IMAGE_TAG
 ARG GIT_REPOSITORY
@@ -8,7 +8,7 @@ ARG GIT_REPOSITORY
 WORKDIR /app
 
 # Node project build
-RUN apt update && apt install clang pkg-config libssl-dev build-essential ncdu -y
+RUN apt update && apt install clang pkg-config libssl-dev liblz4-tool build-essential ncdu -y
 RUN git clone --depth 1 --branch $IMAGE_TAG $GIT_REPOSITORY . && make build
 
 # Node Image create
@@ -21,10 +21,10 @@ LABEL build-date=$BUILD_DATE
 
 # Required variables set by default
 # KEY_PASS env must be at least 8 characters
-ENV KEY="<key name>"
+ENV KEY="<insert keyname>"
 ENV KEY_PASS="<insert password>"
 ENV CHAINID="haqq_54211-3"
-ENV MONIKER="<moniker name>"
+ENV MONIKER="<insert moniker>"
 ENV KEYRING="file"
 ENV KEYALGO="eth_secp256k1"
 ENV LOGLEVEL="info"

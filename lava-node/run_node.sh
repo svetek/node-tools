@@ -51,7 +51,7 @@ init_node() {
 }
 
 create_endpoins_conf() {
-  cat > "$CONFIG_PATH/rpcprovider.yml" <<_EOF_
+  cat > "$CONFIG_PATH/config/rpcprovider.yml" <<_EOF_
 endpoints:
   - api-interface: tendermintrpc
     chain-id: LAV1
@@ -80,7 +80,7 @@ start_node() {
       ;;
     provider)
       echo "### Run RPC Node ###"
-      [[ ! -f "$CONFIG_PATH/rpcprovider.yml" ]] && create_endpoins_conf
+      [[ ! -f "$CONFIG_PATH/config/rpcprovider.yml" ]] && create_endpoins_conf
       lavad rpcprovider --home $CONFIG_PATH --geolocation $GEOLOCATION --from $KEY --log_level $LOGLEVEL
       ;;
     *)

@@ -6,12 +6,13 @@ services:
     image: ${IMAGE}
     environment:
     - KEY=<key name>
-    - CHAINID=lava-testnet-1
-    - MONIKER=<moniker name>
     - KEYRING=test
     - KEYALGO=eth_secp256k1
-    - LOGLEVEL=info
+    - MONIKER=<moniker name>
+    - NODETYPE=validator
+    - CHAINID=lava-testnet-1
     - CONFIG_PATH=/root/.lava
+    - LOGLEVEL=info
     ports:
     - '36656:36656'
     - '36660:36660'

@@ -4,7 +4,7 @@ INDEXER="null"
 SNAPSHOT_INTERVAL=0
 PRUNING_MODE=custom
 PRUNING_INTERVAL=10
-PRUNING_KEEP_RECENT=1000
+PRUNING_KEEP_RECENT=100
 MINIMUM_GAS_PRICES=0.0025ulava
 EXTERNAL_ADDRESS=$(wget -qO- eth0.me)
 SEEDS="3a445bfdbe2d0c8ee82461633aa3af31bc2b4dc0@prod-pnet-seed-node.lavanet.xyz:26656,e593c7a9ca61f5616119d6beb5bd8ef5dd28d62d@prod-pnet-seed-node2.lavanet.xyz:26656"
@@ -50,8 +50,43 @@ init_node() {
     lavad validate-genesis --home $CONFIG_PATH
 }
 
+create_endpoins_conf() {
+  cat > "$CONFIG_PATH/rpcprovider.yml" <<_EOF_
+endpoints:
+  - api-interface: tendermintrpc
+    chain-id: LAV1
+    network-address: 0.0.0.0:2221
+    node-urls:
+      - url: ws://lava-node:26657/websocket
+      - url: http://lava-node:26657
+  - api-interface: grpc
+    chain-id: LAV1
+    network-address: 0.0.0.0:2221
+    node-urls:
+      - url: lava-node:9090
+  - api-interface: rest
+    chain-id: LAV1
+    network-address: 0.0.0.0:2221
+    node-urls:
+      - url: http://lava-node:1317
+_EOF_
+}
+
 start_node() {
-  lavad start --home $CONFIG_PATH --pruning=nothing --log_level $LOGLEVEL
+  case ${NODETYPE,,} in
+    validator)
+      echo "### Run Validator Node ###"
+      lavad start --home $CONFIG_PATH --pruning=nothing --log_level $LOGLEVEL
+      ;;
+    provider)
+      echo "### Run RPC Node ###"
+      [[ ! -f "$CONFIG_PATH/rpcprovider.yml" ]] && create_endpoins_conf
+      lavad rpcprovider --home $CONFIG_PATH --geolocation $GEOLOCATION --from $KEY --log_level $LOGLEVEL
+      ;;
+    *)
+    echo "The NODETYPE variable must be set and have a value: validator or provider"
+    ;;
+  esac
 }
 
 set_variable() {
@@ -63,6 +98,7 @@ set_variable() {
   then
     echo 'export VAL_ADDRESS='$(lavad keys show $KEY --bech val -a) >> $HOME/.bashrc
   fi
+  source ~/.bashrc
 }
 
 if [[ $LOGLEVEL && $LOGLEVEL == "debug" ]]
@@ -74,8 +110,7 @@ if [[ ! -d "$CONFIG_PATH" ]] || [[ ! -d "$CONFIG_PATH/config" || $(ls -la $CONFI
 then
   echo "### Initialization node ###"
   init_node
+  set_variable
 fi
 
-echo "### Run node ###"
-set_variable
 start_node

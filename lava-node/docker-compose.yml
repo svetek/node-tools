@@ -5,16 +5,41 @@ services:
     container_name: lava-node
     image: ${IMAGE}
     environment:
-    - KEY=lava_impulse
+    - KEY=<key name>
     - CHAINID=lava-testnet-1
-    - MONIKER=LavaImpulse
+    - MONIKER=<moniker name>
     - KEYRING=test
     - KEYALGO=eth_secp256k1
     - LOGLEVEL=info
     - CONFIG_PATH=/root/.lava
     ports:
-    - '26656:26656'
-    - '26660:26660'
+    - '36656:36656'
+    - '36660:36660'
+    volumes:
+    - /opt/lava:/root/.lava
+    deploy:
+      resources:
+        limits:
+          cpus: '4'
+          memory: '8gb'
+    restart: unless-stopped
+
+  lava-provider:
+    container_name: lava-provider
+    image: ${IMAGE}
+    environment:
+    - KEY=<key name>
+    - KEYRING=test
+    - KEYALGO=eth_secp256k1
+    - MONIKER=<moniker name>
+    - NODETYPE=provider
+    - CHAINID=lava-testnet-1
+    - CONFIG_PATH=/root/.lava
+    - GEOLOCATION=2
+    - LOGLEVEL=info
+    ports:
+     - '2221:2221'
+     - '2231:2231'
     volumes:
     - /opt/lava:/root/.lava
     deploy:

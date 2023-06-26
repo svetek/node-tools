@@ -89,7 +89,8 @@ start_node() {
   esac
 }
 
-set_variable() {
+set_variable() {  
+  source ~/.bashrc
   if [[ ! $ACC_ADDRESS ]]
   then
     echo 'export ACC_ADDRESS='$(lavad keys show $KEY -a) >> $HOME/.bashrc
@@ -97,8 +98,7 @@ set_variable() {
   if [[ ! $VAL_ADDRESS ]]
   then
     echo 'export VAL_ADDRESS='$(lavad keys show $KEY --bech val -a) >> $HOME/.bashrc
-  fi
-  source ~/.bashrc
+  fi  
 }
 
 if [[ $LOGLEVEL && $LOGLEVEL == "debug" ]]
@@ -110,7 +110,7 @@ if [[ ! -d "$CONFIG_PATH" ]] || [[ ! -d "$CONFIG_PATH/config" || $(ls -la $CONFI
 then
   echo "### Initialization node ###"
   init_node
-  set_variable
 fi
 
+set_variable
 start_node

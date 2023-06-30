@@ -19,6 +19,8 @@ init_node() {
     lavad config keyring-backend $KEYRING --home $CONFIG_PATH
 
     # if $KEY exists it should be deleted
+    echo -e "\n\e[32m### Wallet info ###\e[0m"
+
     lavad keys add $KEY --keyring-backend $KEYRING --home $CONFIG_PATH
 
     # Download genesis file
@@ -98,7 +100,7 @@ set_variable() {
   if [[ ! $VAL_ADDRESS ]]
   then
     echo 'export VAL_ADDRESS='$(lavad keys show $KEY --bech val -a) >> $HOME/.bashrc
-  fi  
+  fi
 }
 
 if [[ $LOGLEVEL && $LOGLEVEL == "debug" ]]
@@ -108,9 +110,10 @@ fi
 
 if [[ ! -d "$CONFIG_PATH" ]] || [[ ! -d "$CONFIG_PATH/config" || $(ls -la $CONFIG_PATH/config | grep -cie .*key.json) -eq 0 ]]
 then
-  echo "### Initialization node ###"
+  echo -e "\n\e[32m### Initialization node ###\e[0m\n"
   init_node
 fi
 
+echo -e "\n\e[32m### Run node ###\e[0m\n"
 set_variable
 start_node

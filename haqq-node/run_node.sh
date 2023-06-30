@@ -85,6 +85,7 @@ start_node() {
 }
 
 set_variable() {
+  source ~/.bashrc
   if [[ ! $ACC_ADDRESS ]]
   then
     echo 'export ACC_ADDRESS='$(echo $KEY_PASS | haqqd keys show $KEY -a) >> $HOME/.bashrc

@@ -81,7 +81,7 @@ start_node() {
     provider)
       echo "### Run RPC Node ###"
       [[ ! -f "$CONFIG_PATH/config/rpcprovider.yml" ]] && create_endpoins_conf
-      lavad rpcprovider --home $CONFIG_PATH --geolocation $GEOLOCATION --from $KEY --log_level $LOGLEVEL
+      lavad rpcprovider --home $CONFIG_PATH --geolocation $GEOLOCATION --from $KEY --log_level $LOGLEVEL --metrics-listen-address ":23001"
       ;;
     *)
     echo "The NODETYPE variable must be set and have a value: validator or provider"
@@ -89,7 +89,7 @@ start_node() {
   esac
 }
 
-set_variable() {  
+set_variable() {
   source ~/.bashrc
   if [[ ! $ACC_ADDRESS ]]
   then

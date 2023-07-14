@@ -1,24 +1,51 @@
 ---
 version: '3.9'
 services:
-  haqq-node:
-    container_name: haqq-node
+  haqq-node-testnet:
+    container_name: haqq-node-testnet
     image: ${IMAGE}
+    labels:
+      network: testnet
     environment:
-    - KEY=<key name>
-    - KEY_PASS=<insert password>
-    - CHAINID=haqq_54211-3
-    - MONIKER=<moniker name>
-    - KEYRING=file
-    - KEYALGO=eth_secp256k1
-    - LOGLEVEL=info
-    - CONFIG_PATH=/root/.haqqd
+      KEY: <key name>
+      KEYRING: file
+      KEYALGO: eth_secp256k1
+      KEYPASS: <insert password>
+      CHAINID: haqq_54211-3
+      MONIKER: <moniker name>
+      CONFIG_PATH: /root/.haqqd
+      LOGLEVEL: info
+    ports:
+    - '36656:36656'
+    - '36660:36660'
+    volumes:
+    - /opt/haqq-testnet:/root/.haqqd
+    deploy:
+      resources:
+        limits:
+          cpus: '6'
+          memory: '14gb'
+    restart: unless-stopped
+
+  haqq-node-mainnet:
+    container_name: haqq-node-mainnet
+    image: ${IMAGE}
+    labels:
+      network: mainnet
+    environment:
+      KEY: <key name>
+      KEYRING: file
+      KEYALGO: eth_secp256k1
+      KEYPASS: <insert password>
+      CHAINID: haqq_11235-1
+      MONIKER: <moniker name>
+      CONFIG_PATH: /root/.haqqd
+      LOGLEVEL: info
     ports:
     - '26656:26656'
-    - '26657:26657'
     - '26660:26660'
     volumes:
-    - /opt/haqq:/root/.haqqd
+    - /opt/haqq-mainnet:/root/.haqqd
     deploy:
       resources:
         limits:

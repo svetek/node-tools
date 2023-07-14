@@ -49,16 +49,16 @@ init_node() {
     cat $CONFIG_PATH/config/genesis.json | jq '.consensus_params["block"]["max_gas"]="10000000"' > $CONFIG_PATH/config/tmp_genesis.json && mv $CONFIG_PATH/config/tmp_genesis.json $CONFIG_PATH/config/genesis.json
 
     # Allocate genesis accounts (cosmos formatted addresses)
-    (echo $KEY_PASS) | haqqd add-genesis-account $KEY 10000000000000000000aISLM --keyring-backend $KEYRING --home $CONFIG_PATH &> /dev/null
+    (echo $KEYPASS) | haqqd add-genesis-account $KEY 10000000000000000000aISLM --keyring-backend $KEYRING --home $CONFIG_PATH &> /dev/null
 
     # Sign genesis transaction
-    (echo $KEY_PASS) | haqqd gentx $KEY 10000000000000000000aISLM --chain-id=$CHAINID --moniker=$MONIKER --commission-max-change-rate 0.05 --commission-max-rate 0.20 --commission-rate 0.05 &> /dev/null
+    (echo $KEYPASS) | haqqd gentx $KEY 10000000000000000000aISLM --chain-id=$CHAINID --moniker=$MONIKER --commission-max-change-rate 0.05 --commission-max-rate 0.20 --commission-rate 0.05 &> /dev/null
 
     # Collect genesis tx
-    (echo $KEY_PASS) | haqqd collect-gentxs --home $CONFIG_PATH &> /dev/null
+    (echo $KEYPASS) | haqqd collect-gentxs --home $CONFIG_PATH &> /dev/null
 
     # Run this to ensure everything worked and that the genesis file is setup correctly
-    (echo $KEY_PASS) | haqqd validate-genesis --home $CONFIG_PATH
+    (echo $KEYPASS) | haqqd validate-genesis --home $CONFIG_PATH
 
     # Set seeds/bpeers/peers
     sed -i.bak -e "s/^external_address *=.*/external_address = \"$EXTERNAL_ADDRESS:26656\"/" $CONFIG_PATH/config/config.toml
@@ -81,18 +81,18 @@ init_node() {
 }
 
 start_node() {
-  (echo $KEY_PASS) | haqqd start --home $CONFIG_PATH --log_level $LOGLEVEL
+  (echo $KEYPASS) | haqqd start --home $CONFIG_PATH --log_level $LOGLEVEL
 }
 
 set_variable() {
   source ~/.bashrc
   if [[ ! $ACC_ADDRESS ]]
   then
-    echo 'export ACC_ADDRESS='$(echo $KEY_PASS | haqqd keys show $KEY -a) >> $HOME/.bashrc
+    echo 'export ACC_ADDRESS='$(echo $KEYPASS | haqqd keys show $KEY -a) >> $HOME/.bashrc
   fi
   if [[ ! $VAL_ADDRESS ]]
   then
-    echo 'export VAL_ADDRESS='$(echo $KEY_PASS | haqqd keys show $KEY --bech val -a) >> $HOME/.bashrc
+    echo 'export VAL_ADDRESS='$(echo $KEYPASS | haqqd keys show $KEY --bech val -a) >> $HOME/.bashrc
   fi
 }
 

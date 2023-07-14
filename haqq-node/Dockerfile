@@ -22,7 +22,7 @@ LABEL build-date=$BUILD_DATE
 # Required variables set by default
 # KEY_PASS env must be at least 8 characters
 ENV KEY="<insert keyname>"
-ENV KEY_PASS="<insert password>"
+ENV KEYPASS="<insert password>"
 ENV CHAINID="haqq_54211-3"
 ENV MONIKER="<insert moniker>"
 ENV KEYRING="file"

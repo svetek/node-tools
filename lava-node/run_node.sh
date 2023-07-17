@@ -77,13 +77,13 @@ _EOF_
 start_node() {
   case ${NODETYPE,,} in
     validator)
-      echo "### Run Validator Node ###"
+      echo -e "\n\e[32m### Run Validator Node ###\e[0m\n"
       lavad start --home $CONFIG_PATH --pruning=nothing --log_level $LOGLEVEL
       ;;
     provider)
-      echo "### Run RPC Node ###"
+      echo -e "\n\e[32m### Run RPC Node ###\e[0m\n"
       [[ ! -f "$CONFIG_PATH/config/rpcprovider.yml" ]] && create_endpoins_conf
-      lavad rpcprovider --home $CONFIG_PATH --geolocation $GEOLOCATION --from $KEY --log_level $LOGLEVEL --metrics-listen-address ":23001"
+      lavad rpcprovider --home $CONFIG_PATH --from $KEY --parallel-connections $TOTAL_CONNECTIONS --geolocation $GEOLOCATION --log_level $LOGLEVEL --metrics-listen-address ":$PROMETHEUS_PORT"
       ;;
     *)
     echo "The NODETYPE variable must be set and have a value: validator or provider"
@@ -114,6 +114,5 @@ then
   init_node
 fi
 
-echo -e "\n\e[32m### Run node ###\e[0m\n"
 set_variable
 start_node

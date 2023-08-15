@@ -1,5 +1,5 @@
 #Download base image Debian 11 and Golang 1.19
-FROM golang:1.19-bullseye AS builder
+FROM golang:1.20-bullseye AS builder
 
 ARG IMAGE_TAG
 ARG GIT_REPOSITORY
@@ -20,9 +20,9 @@ LABEL image-tag=$IMAGE_TAG
 LABEL build-date=$BUILD_DATE
 
 #Required variables set by default
-ENV KEY="lava_impulse"
-ENV CHAINID="lava-testnet-1"
-ENV MONIKER="LavaImpulse"
+ENV KEY="<key name>"
+ENV CHAINID="lava-testnet-2"
+ENV MONIKER="<moniker name>"
 ENV KEYRING="test"
 ENV KEYALGO="eth_secp256k1"
 ENV LOGLEVEL="info"

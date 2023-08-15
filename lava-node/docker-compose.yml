@@ -10,7 +10,7 @@ services:
     - KEYALGO=eth_secp256k1
     - MONIKER=<moniker name>
     - NODETYPE=validator
-    - CHAINID=lava-testnet-1
+    - CHAINID=lava-testnet-2
     - CONFIG_PATH=/root/.lava
     - LOGLEVEL=info
     ports:
@@ -18,6 +18,11 @@ services:
     - '36660:36660'
     volumes:
     - /opt/lava:/root/.lava
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "100m"
+        max-file: "1"
     deploy:
       resources:
         limits:
@@ -29,23 +34,33 @@ services:
     container_name: lava-provider
     image: ${IMAGE}
     environment:
+    - CHAINID=lava-testnet-2
+    - CONFIG_PATH=/root/.lava
+    - GEOLOCATION=2
     - KEY=<key name>
     - KEYRING=test
     - KEYALGO=eth_secp256k1
+    - LOGLEVEL=info
     - MONIKER=<moniker name>
     - NODETYPE=provider
-    - CHAINID=lava-testnet-1
-    - CONFIG_PATH=/root/.lava
-    - GEOLOCATION=2
-    - LOGLEVEL=info
+    - PROMETHEUS_PORT=23001
+    - TOTAL_CONNECTIONS=100
     ports:
-     - '2221:2221'
-     - '2231:2231'
+     - '22001:22001'
+     - '23001:23001'
     volumes:
     - /opt/lava:/root/.lava
+    depends_on:
+      - lava-node
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "100m"
+        max-file: "1"
     deploy:
       resources:
         limits:
           cpus: '4'
           memory: '8gb'
     restart: unless-stopped
+

@@ -7,7 +7,7 @@ PRUNING_INTERVAL=10
 PRUNING_KEEP_RECENT=100
 MINIMUM_GAS_PRICES=0.0025ulava
 EXTERNAL_ADDRESS=$(wget -qO- eth0.me)
-SEEDS="3a445bfdbe2d0c8ee82461633aa3af31bc2b4dc0@prod-pnet-seed-node.lavanet.xyz:26656,e593c7a9ca61f5616119d6beb5bd8ef5dd28d62d@prod-pnet-seed-node2.lavanet.xyz:26656"
+SEEDS="3a445bfdbe2d0c8ee82461633aa3af31bc2b4dc0@testnet2-seed-node.lavanet.xyz:26656,e593c7a9ca61f5616119d6beb5bd8ef5dd28d62d@testnet2-seed-node2.lavanet.xyz:26656"
 PEERS=""
 
 init_node() {
@@ -24,7 +24,7 @@ init_node() {
     lavad keys add $KEY --keyring-backend $KEYRING --home $CONFIG_PATH
 
     # Download genesis file
-    wget -O $CONFIG_PATH/config/genesis.json https://raw.githubusercontent.com/K433QLtr6RA9ExEq/GHFkqmTzpdNLDd6T/main/testnet-1/genesis_json/genesis.json
+    wget -O $CONFIG_PATH/config/genesis.json https://raw.githubusercontent.com/lavanet/lava-config/main/testnet-2/genesis_json/genesis.json
 
     # Set seeds/bpeers/peers
     sed -i -e "s/^external_address *=.*/external_address = \"$EXTERNAL_ADDRESS:26656\"/" $CONFIG_PATH/config/config.toml
@@ -83,7 +83,7 @@ start_node() {
     provider)
       echo -e "\n\e[32m### Run RPC Node ###\e[0m\n"
       [[ ! -f "$CONFIG_PATH/config/rpcprovider.yml" ]] && create_endpoins_conf
-      lavad rpcprovider --home $CONFIG_PATH --from $KEY --parallel-connections $TOTAL_CONNECTIONS --geolocation $GEOLOCATION --log_level $LOGLEVEL --metrics-listen-address ":$PROMETHEUS_PORT"
+      lavad rpcprovider --home $CONFIG_PATH --from $KEY --chain-id $CHAINID --geolocation $GEOLOCATION --parallel-connections $TOTAL_CONNECTIONS --log_level $LOGLEVEL --metrics-listen-address ":$PROMETHEUS_PORT"
       ;;
     *)
     echo "The NODETYPE variable must be set and have a value: validator or provider"

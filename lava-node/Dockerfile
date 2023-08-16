@@ -19,15 +19,6 @@ ARG BUILD_DATE
 LABEL image-tag=$IMAGE_TAG
 LABEL build-date=$BUILD_DATE
 
-#Required variables set by default
-ENV KEY="<key name>"
-ENV CHAINID="lava-testnet-2"
-ENV MONIKER="<moniker name>"
-ENV KEYRING="test"
-ENV KEYALGO="eth_secp256k1"
-ENV LOGLEVEL="info"
-ENV CONFIG_PATH="/root/.lava"
-
 RUN apt-get update && apt-get upgrade -y \
     && apt-get install -y tzdata ca-certificates curl wget jq \
     && apt-get -y purge && apt-get -y clean \

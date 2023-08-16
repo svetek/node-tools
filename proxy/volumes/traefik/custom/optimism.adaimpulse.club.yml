@@ -1,0 +1,17 @@
+http:
+  routers:
+    optimism_adaimpulse_club:
+      entryPoints: 
+        - web
+        - websecure
+      service: optimism_adaimpulse_club
+      rule: Host(`optimism.adaimpulse.club`)
+      tls:
+        certResolver: letsencrypt
+  services:
+    optimism_adaimpulse_club:
+      loadBalancer:
+        servers:
+          - url: "h2c://lava-provider:22001"
+        passHostHeader: true
+

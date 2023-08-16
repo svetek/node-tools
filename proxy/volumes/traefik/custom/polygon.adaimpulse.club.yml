@@ -1,0 +1,17 @@
+http:
+  routers:
+    polygon_adaimpulse_club:
+      entryPoints: 
+        - web
+        - websecure
+      service: polygon_adaimpulse_club
+      rule: Host(`polygon.adaimpulse.club`)
+      tls:
+        certResolver: letsencrypt
+  services:
+    polygon_adaimpulse_club:
+      loadBalancer:
+        servers:
+          - url: "h2c://lava-provider:22001"
+        passHostHeader: true
+

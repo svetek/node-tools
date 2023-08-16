@@ -1,0 +1,42 @@
+global:
+  checkNewVersion: false
+  sendAnonymousUsage: false
+
+api:
+  dashboard: true
+  insecure: true
+
+providers:
+  docker:
+    endpoint: "unix:///var/run/docker.sock"
+    exposedByDefault: false
+
+  file:
+    directory: /etc/traefik/custom
+    watch: true
+
+#experimental:
+#  http3: true
+
+entryPoints:
+  web:
+    address: ":80"
+    http:
+      redirections:
+        entryPoint:
+          to: websecure
+          scheme: https
+
+  websecure:
+    address: ":443"
+    #http2:
+    #  maxConcurrentStreams: 250
+
+certificatesResolvers:
+  letsencrypt:
+    acme:
+      email: crypto@svetek.com
+      storage: /etc/traefik/acme.json
+      #caServer: "https://acme-staging-v02.api.letsencrypt.org/directory"
+      httpChallenge:
+        entryPoint: web

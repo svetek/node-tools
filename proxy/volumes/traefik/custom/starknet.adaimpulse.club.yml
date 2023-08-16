@@ -1,0 +1,17 @@
+http:
+  routers:
+    starknet_adaimpulse_club:
+      entryPoints: 
+        - web
+        - websecure
+      service: starknet_adaimpulse_club
+      rule: Host(`starknet.adaimpulse.club`)
+      tls:
+        certResolver: letsencrypt
+  services:
+    starknet_adaimpulse_club:
+      loadBalancer:
+        servers:
+          - url: "h2c://lava-provider:22001"
+        passHostHeader: true
+

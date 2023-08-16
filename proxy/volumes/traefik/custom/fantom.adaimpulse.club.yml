@@ -1,0 +1,17 @@
+http:
+  routers:
+    fantom_adaimpulse_club:
+      entryPoints: 
+        - web
+        - websecure
+      service: fantom_adaimpulse_club
+      rule: Host(`fantom.adaimpulse.club`)
+      tls:
+        certResolver: letsencrypt
+  services:
+    fantom_adaimpulse_club:
+      loadBalancer:
+        servers:
+          - url: "h2c://lava-provider:22001"
+        passHostHeader: true
+

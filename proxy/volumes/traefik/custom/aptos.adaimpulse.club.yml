@@ -1,0 +1,17 @@
+http:
+  routers:
+    aptos_adaimpulse_club:
+      entryPoints: 
+        - web
+        - websecure
+      service: aptos_adaimpulse_club
+      rule: Host(`aptos.adaimpulse.club`)
+      tls:
+        certResolver: letsencrypt
+  services:
+    aptos_adaimpulse_club:
+      loadBalancer:
+        servers:
+          - url: "h2c://lava-provider:22001"
+        passHostHeader: true
+

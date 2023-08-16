@@ -1,0 +1,17 @@
+http:
+  routers:
+    celo_adaimpulse_club:
+      entryPoints: 
+        - web
+        - websecure
+      service: celo_adaimpulse_club
+      rule: Host(`celo.adaimpulse.club`)
+      tls:
+        certResolver: letsencrypt
+  services:
+    celo_adaimpulse_club:
+      loadBalancer:
+        servers:
+          - url: "h2c://lava-provider:22001"
+        passHostHeader: true
+

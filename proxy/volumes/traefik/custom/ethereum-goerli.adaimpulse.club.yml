@@ -1,0 +1,17 @@
+http:
+  routers:
+    ethereum-goerli_adaimpulse_club:
+      entryPoints: 
+        - web
+        - websecure
+      service: ethereum-goerli_adaimpulse_club
+      rule: Host(`ethereum-goerli.adaimpulse.club`)
+      tls:
+        certResolver: letsencrypt
+  services:
+    ethereum-goerli_adaimpulse_club:
+      loadBalancer:
+        servers:
+          - url: "h2c://lava-provider:22001"
+        passHostHeader: true
+

@@ -1,0 +1,17 @@
+http:
+  routers:
+    osmosis_adaimpulse_club:
+      entryPoints: 
+        - web
+        - websecure
+      service: osmosis_adaimpulse_club
+      rule: Host(`osmosis.adaimpulse.club`)
+      tls:
+        certResolver: letsencrypt
+  services:
+    osmosis_adaimpulse_club:
+      loadBalancer:
+        servers:
+          - url: "h2c://lava-provider:22001"
+        passHostHeader: true
+

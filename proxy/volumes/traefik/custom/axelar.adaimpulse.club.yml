@@ -1,0 +1,17 @@
+http:
+  routers:
+    axelar_adaimpulse_club:
+      entryPoints: 
+        - web
+        - websecure
+      service: axelar_adaimpulse_club
+      rule: Host(`axelar.adaimpulse.club`)
+      tls:
+        certResolver: letsencrypt
+  services:
+    axelar_adaimpulse_club:
+      loadBalancer:
+        servers:
+          - url: "h2c://lava-provider:22001"
+        passHostHeader: true
+

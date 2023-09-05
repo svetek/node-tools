@@ -3,13 +3,14 @@ FROM golang:1.20-bullseye AS builder
 
 ARG IMAGE_TAG
 ARG GIT_REPOSITORY
+ARG LAVA_BINARY
 
 # Set Working Directory is /app
 WORKDIR /app
 
 # Node project build
 RUN apt update && apt install clang pkg-config libssl-dev build-essential ncdu -y
-RUN git clone --depth 1 --branch $IMAGE_TAG $GIT_REPOSITORY . && make build
+RUN git clone --depth 1 --branch $IMAGE_TAG $GIT_REPOSITORY . && make build-$LAVA_BINARY
 
 # Node Image create
 FROM debian:bullseye-slim

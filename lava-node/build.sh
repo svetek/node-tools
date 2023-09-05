@@ -3,10 +3,25 @@ export DOCKER_BUILDKIT=1
 
 set -e
 
-GIT_REPOSITORY=https://github.com/lavanet/lava.git
 DIR="$( cd "$( dirname "$0" )" && pwd )"
 DOCKERFILE="$DIR/Dockerfile"
 BUILD_DATE="$(date -u +'%Y-%m-%d')"
+GIT_REPOSITORY=https://github.com/lavanet/lava.git
+
+NODE_TYPES=("RPC Node" "Validator Node")
+
+PS3="Select node type: "
+select node_type in "${NODE_TYPES[@]}"
+do
+    case $node_type in
+        "RPC Node")
+            LAVA_BINARY="lava-protocol"; break
+            ;;
+        "Validator Node")
+            LAVA_BINARY="lavad"; break
+            ;;
+    esac
+done
 
 read -p "Enter image name: " -r IMAGE_NAME
 read -p "Enter release tag: " -r IMAGE_TAG
@@ -31,15 +46,17 @@ echo -e "Build date: \t$BUILD_DATE"
 echo -e "Dockerfile: \t$DOCKERFILE"
 echo -e "Docker context: $DIR"
 echo -e "Docker Image: \t$IMAGE"
+echo -e "Node type: \t$node_type"
 echo -e "Version: \t$IMAGE_TAG\n"
 
-echo -e "IMAGE=${IMAGE}\nCOMPOSE_PROJECT_NAME=lava" > .env
+echo -e "IMAGE=${IMAGE}\nCOMPOSE_PROJECT_NAME=lava" > .env m
 
 docker build -f "$DOCKERFILE" "$DIR" \
-     --build-arg IMAGE_TAG="$IMAGE_TAG" \
-     --build-arg GIT_REPOSITORY="$GIT_REPOSITORY" \
-     --build-arg BUILD_DATE="$BUILD_DATE" \
-     --tag $IMAGE
+    --build-arg IMAGE_TAG="$IMAGE_TAG" \
+    --build-arg GIT_REPOSITORY="$GIT_REPOSITORY" \
+    --build-arg LAVA_BINARY="$LAVA_BINARY" \
+    --build-arg BUILD_DATE="$BUILD_DATE" \
+    --tag $IMAGE
 
 if [[ "$PUSH_FLAG" == "yes" ]]
 then

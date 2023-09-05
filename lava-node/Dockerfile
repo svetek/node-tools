@@ -34,6 +34,10 @@ ENV MONIKER=test
 ENV CHAINID=lava-testnet-2
 ENV CONFIG_PATH=/root/.lava
 ENV LOGLEVEL=info
+ENV GEOLOCATION=2
+ENV PROMETHEUS_PORT=23001
+ENV TOTAL_CONNECTIONS=100
+ENV LAVA_RPC=https://public-rpc-testnet2.lavanet.xyz:443/rpc/
 
 RUN apt-get update && apt-get upgrade -y \
     && apt-get install -y tzdata ca-certificates curl wget jq \
@@ -44,7 +48,5 @@ COPY --from=builder /app/build/$LAVA_BINARY /usr/bin/$LAVA_BINARY
 COPY ./run_node.sh .
 
 RUN chmod +x ./run_node.sh
-
-EXPOSE 1317 26656 26657
 
 # ENTRYPOINT [ "/bin/bash", "/run_node.sh" ]

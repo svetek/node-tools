@@ -10,7 +10,7 @@ GIT_REPOSITORY=https://github.com/lavanet/lava.git
 
 NODE_TYPES=("RPC Node" "Validator Node")
 
-echo "What node type is required to build: "
+echo "What node type is required for build?"
 PS3="Node type selected: "
 select node_type in "${NODE_TYPES[@]}"
 do
@@ -26,11 +26,19 @@ done
 
 read -p "Enter image name: " -r IMAGE_NAME
 read -p "Enter release tag: " -r IMAGE_TAG
-read -p "Do you want to send the image to DockerHub [yes/no]: " -r PUSH_FLAG
 
-while [[ "$PUSH_FLAG" != "yes" && "$PUSH_FLAG" != "no" ]]
+echo "Do you want to send the image to DockerHub?"
+PS3="Send the image to DockerHub: "
+select answer in "yes" "no"
 do
-    read -r -p "Please answer yes/no: " PUSH_FLAG
+    case $answer in
+        "yes")
+            PUSH_FLAG="yes"; break
+            ;;
+        "no")
+            PUSH_FLAG="no"; break
+            ;;
+    esac
 done
 
 if [[ "$PUSH_FLAG" == "yes" ]]
@@ -50,7 +58,7 @@ echo -e "Docker Image: \t$IMAGE"
 echo -e "Node type: \t$node_type"
 echo -e "Version: \t$IMAGE_TAG\n"
 
-echo -e "IMAGE=${IMAGE}\nCOMPOSE_PROJECT_NAME=lava" > .env m
+echo -e "IMAGE=${IMAGE}\nCOMPOSE_PROJECT_NAME=lava" > .env
 
 docker build -f "$DOCKERFILE" "$DIR" \
     --build-arg IMAGE_TAG="$IMAGE_TAG" \

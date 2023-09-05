@@ -10,7 +10,8 @@ GIT_REPOSITORY=https://github.com/lavanet/lava.git
 
 NODE_TYPES=("RPC Node" "Validator Node")
 
-PS3="Select node type: "
+echo "What node type is required to build: "
+PS3="Node type selected: "
 select node_type in "${NODE_TYPES[@]}"
 do
     case $node_type in
@@ -41,10 +42,10 @@ else
     IMAGE=$IMAGE_NAME:$IMAGE_TAG
 fi
 
-echo -e "\nBuilding node"
+echo -e "\n\e[32m### The build information ###\e[0m"
 echo -e "Build date: \t$BUILD_DATE"
-echo -e "Dockerfile: \t$DOCKERFILE"
 echo -e "Docker context: $DIR"
+echo -e "Dockerfile: \t$DOCKERFILE"
 echo -e "Docker Image: \t$IMAGE"
 echo -e "Node type: \t$node_type"
 echo -e "Version: \t$IMAGE_TAG\n"
@@ -55,6 +56,7 @@ docker build -f "$DOCKERFILE" "$DIR" \
     --build-arg IMAGE_TAG="$IMAGE_TAG" \
     --build-arg GIT_REPOSITORY="$GIT_REPOSITORY" \
     --build-arg LAVA_BINARY="$LAVA_BINARY" \
+    --build-arg NODE_TYPE="$node_type" \
     --build-arg BUILD_DATE="$BUILD_DATE" \
     --tag $IMAGE
 
@@ -65,4 +67,4 @@ then
     docker push $IMAGE
 fi
 
-echo -e "\nThe build is complete\n"
+echo -e "\n\e[32mThe build is complete! \n\e[0m"

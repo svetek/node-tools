@@ -17,19 +17,34 @@ FROM debian:bullseye-slim
 
 ARG IMAGE_TAG
 ARG BUILD_DATE
+ARG LAVA_BINARY
+ARG NODE_TYPE
+
+LABEL node-type=$NODE_TYPE
 LABEL image-tag=$IMAGE_TAG
 LABEL build-date=$BUILD_DATE
+
+ENV LAVA_BINARY=$LAVA_BINARY
+ENV NODE_TYPE=$NODE_TYPE
+
+ENV KEY=test
+ENV KEYRING=test
+ENV KEYALGO=eth_secp256k1
+ENV MONIKER=test
+ENV CHAINID=lava-testnet-2
+ENV CONFIG_PATH=/root/.lava
+ENV LOGLEVEL=info
 
 RUN apt-get update && apt-get upgrade -y \
     && apt-get install -y tzdata ca-certificates curl wget jq \
     && apt-get -y purge && apt-get -y clean \
     && apt-get -y autoremove && rm -rf /var/lib/apt/lists/*
 
-COPY --from=builder /app/build/lavad /usr/bin/lavad
+COPY --from=builder /app/build/$LAVA_BINARY /usr/bin/$LAVA_BINARY
 COPY ./run_node.sh .
 
 RUN chmod +x ./run_node.sh
 
 EXPOSE 1317 26656 26657
 
-ENTRYPOINT [ "/bin/bash", "/run_node.sh" ]
+# ENTRYPOINT [ "/bin/bash", "/run_node.sh" ]

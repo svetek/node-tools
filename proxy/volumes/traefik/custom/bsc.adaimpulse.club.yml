@@ -1,0 +1,17 @@
+http:
+  routers:
+    bsc_adaimpulse_club:
+      entryPoints: 
+        - web
+        - websecure
+      service: bsc_adaimpulse_club
+      rule: Host(`bsc.adaimpulse.club`)
+      tls:
+        certResolver: letsencrypt
+  services:
+    bsc_adaimpulse_club:
+      loadBalancer:
+        servers:
+          - url: "h2c://lava-provider:22001"
+        passHostHeader: true
+

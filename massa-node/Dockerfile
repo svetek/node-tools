@@ -10,7 +10,7 @@ WORKDIR /app
 # Node project build
 RUN git clone --depth 1 --branch $IMAGE_TAG $GIT_REPOSITORY .
 RUN apt-get update && apt-get install -y pkg-config build-essential libssl-dev libclang-dev cmake
-RUN rustup toolchain install nightly-2023-02-27 && rustup default nightly-2023-02-27
+RUN rustup toolchain install 1.72.0 && rustup default 1.72.0
 RUN cargo build --release --bin massa-node --bin massa-client
 
 # Production Image
@@ -37,7 +37,7 @@ COPY --from=builder /app/massa-node/base_config /source/massa-node/base_config
 COPY --from=builder /app/massa-node/storage /source/massa-node/storage
 COPY --from=builder /app/target/release/massa-node /source/massa-node
 
-RUN echo "{\n\t\"version\":\"$IMAGE_TAG\"\n}" > /source/version
+RUN echo "{\n\t\"version\":\"$IMAGE_TAG\"\n}" > /source/version.json
 
 COPY run_node.sh /
 

@@ -4,28 +4,6 @@ BASEDIR="/app"
 SOURCE_DIR="/source"
 MN_WORKDIR="$BASEDIR/massa-node"
 MC_WORKDIR="$BASEDIR/massa-client"
-# PRIVKEY="$MN_WORKDIR/config/node_privkey.key"
-# WALLET="$MN_WORKDIR/config/staking_wallet.dat" - not use
-
-# init_node() {
-#     cd $MN_WORKDIR
-#     expect -c "
-#         #!/usr/bin/expect -f
-#         set timeout -1
-
-#         spawn ./massa-node
-#         exp_internal 0
-#         expect \"Enter new password for staking keys file:\"
-#         send   \"$PASSWORD\n\"
-#         expect \"Confirm password:\"
-#         send   \"$PASSWORD\n\"
-#         expect eof
-#     "
-# }
-
-# start_node() {
-#     cd $MN_WORKDIR && ./massa-node -p $PASSWORD
-# }
 
 if [[ $LOGGING == "true" ]]
 then
@@ -42,7 +20,7 @@ then
         cp -rf $SOURCE_DIR/massa-node/* $MN_WORKDIR
         cp -f $SOURCE_DIR/version.json $BASEDIR
 
-        echo -e "\n\e[32m### The Mass Node and Massa Client installation is complete. ###\e[0m\n"
+        echo -e "\e[32m### The Mass Node and Massa Client installation is complete. ###\e[0m\n"
         echo "1) $(${MN_WORKDIR}/massa-node -V) ver."
         echo "2) $(${MC_WORKDIR}/massa-client -V) ver."
     else
@@ -53,6 +31,7 @@ then
         cp -fbr -S "-$ver.bak" $SOURCE_DIR/massa-client/{config,base_config} $MC_WORKDIR
         cp -fbr -S "-$ver.bak" $SOURCE_DIR/massa-node/{config,base_config} $MN_WORKDIR
         cp -f $SOURCE_DIR/version.json $BASEDIR
+
         echo -e "\n\e[32m### The Mass Node and Massa Client update is complete. ###\e[0m\n"
         echo "1) $(${MN_WORKDIR}/massa-node -V) ver."
         echo "2) $(${MC_WORKDIR}/massa-client -V) ver."
@@ -62,13 +41,5 @@ then
     rm -rf $SOURCE_DIR/*
 fi
 
-# ## Massa node launch ###
-# if [[ ! -f $PRIVKEY ]]
-# then
-#     echo -e "\n\e[32m### The Massa Node initialization ###\e[0m\n"
-#     init_node
-# fi
-
 echo -e "\n\e[32m### The Massa Node launch ###\e[0m\n"
 cd $MN_WORKDIR && ./massa-node -p $PASSWORD
-# start_node

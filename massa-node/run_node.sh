@@ -20,7 +20,7 @@ then
         cp -rf $SOURCE_DIR/massa-node/* $MN_WORKDIR
         cp -f $SOURCE_DIR/version.json $BASEDIR
 
-        echo -e "\e[32m### The Mass Node and Massa Client installation is complete. ###\e[0m\n"
+        echo -e "\e[32m### Massa Node and Massa Client installation complete successfully. ###\e[0m\n"
         echo "1) $(${MN_WORKDIR}/massa-node -V) ver."
         echo "2) $(${MC_WORKDIR}/massa-client -V) ver."
     else
@@ -32,7 +32,7 @@ then
         cp -fbr -S "-$ver.bak" $SOURCE_DIR/massa-node/{config,base_config} $MN_WORKDIR
         cp -f $SOURCE_DIR/version.json $BASEDIR
 
-        echo -e "\n\e[32m### The Mass Node and Massa Client update is complete. ###\e[0m\n"
+        echo -e "\n\e[32m### Massa Node and Massa Client update complete successfully. ###\e[0m\n"
         echo "1) $(${MN_WORKDIR}/massa-node -V) ver."
         echo "2) $(${MC_WORKDIR}/massa-client -V) ver."
     fi
@@ -41,5 +41,5 @@ then
     rm -rf $SOURCE_DIR/*
 fi
 
-echo -e "\n\e[32m### The Massa Node launch ###\e[0m\n"
+echo -e "\n\e[32m### Massa Node is running successfully ###\e[0m\n"
 cd $MN_WORKDIR && ./massa-node -p $PASSWORD

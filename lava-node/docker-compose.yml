@@ -1,23 +1,25 @@
 ---
 version: '3.9'
 services:
-  lava-node:
-    container_name: lava-node
-    image: ${IMAGE}
+  validator:
+    image: ${VAL_IMAGE}
     environment:
-    - KEY=<key name>
-    - KEYRING=test
-    - KEYALGO=eth_secp256k1
-    - MONIKER=<moniker name>
-    - NODETYPE=validator
-    - CHAINID=lava-testnet-2
-    - CONFIG_PATH=/root/.lava
-    - LOGLEVEL=info
+      - CHAINID=${CHAIN_ID}
+      - CONFIG_PATH=${CONFIG_PATH}
+      - DIFF_HEIGHT=${DIFF_HEIGHT}
+      - KEY=${VAL_KEY}
+      - KEYRING=${VAL_KEYRING}
+      - KEYALGO=${KEYALGO}
+      - LAVA_RPC=${LAVA_RPC}
+      - LOGLEVEL=${VAL_LOGLEVEL}
+      - MONIKER=${VAL_MONIKER}
+      - PEERS=${PEERS}
+      - SEEDS=${SEEDS}
     ports:
-    - '36656:36656'
-    - '36660:36660'
-    volumes:
-    - /opt/lava:/root/.lava
+      - '36656:36656'
+      - '36660:36660'
+    # volumes:
+    #   - /opt/lava:/root/.lava
     logging:
       driver: "json-file"
       options:
@@ -26,32 +28,32 @@ services:
     deploy:
       resources:
         limits:
-          cpus: '4'
-          memory: '8gb'
+          cpus: '2'
+          memory: '2gb'
     restart: unless-stopped
+    entrypoint: ["tail", "-f", "/dev/null"]
 
-  lava-provider:
-    container_name: lava-provider
-    image: ${IMAGE}
+  provider:
+    image: ${PROV_IMAGE}
     environment:
-    - CHAINID=lava-testnet-2
-    - CONFIG_PATH=/root/.lava
-    - GEOLOCATION=2
-    - KEY=<key name>
-    - KEYRING=test
-    - KEYALGO=eth_secp256k1
-    - LOGLEVEL=info
-    - MONIKER=<moniker name>
-    - NODETYPE=provider
-    - PROMETHEUS_PORT=23001
-    - TOTAL_CONNECTIONS=100
+      - CHAINID=${CHAIN_ID}
+      - CONFIG_PATH=${CONFIG_PATH}
+      - GEOLOCATION=${GEOLOCATION}
+      - KEY=${PROV_KEY}
+      - KEYRING=${PROV_KEYRING}
+      - KEYALGO=${KEYALGO}
+      - LAVA_RPC=${LAVA_RPC}
+      - LOGLEVEL=${PROV_LOGLEVEL}
+      - MONIKER=${PROV_MONIKER}
+      - PROMETHEUS_PORT=${PROMETHEUS_PORT}
+      - TOTAL_CONNECTIONS=${TOTAL_CONNECTIONS}
     ports:
-     - '22001:22001'
-     - '23001:23001'
+      - '22001:22001'
+      - '23001:23001'
     volumes:
-    - /opt/lava:/root/.lava
+      - /opt/lava:/root/.lava
     depends_on:
-      - lava-node
+      - validator
     logging:
       driver: "json-file"
       options:

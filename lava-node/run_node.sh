@@ -1,15 +1,5 @@
 #!/bin/bash
 
-INDEXER="null"
-SNAPSHOT_INTERVAL=0
-PRUNING_MODE=custom
-PRUNING_INTERVAL=10
-PRUNING_KEEP_RECENT=100
-MINIMUM_GAS_PRICES=0.0025ulava
-EXTERNAL_ADDRESS=$(wget -qO- eth0.me)
-SEEDS="3a445bfdbe2d0c8ee82461633aa3af31bc2b4dc0@testnet2-seed-node.lavanet.xyz:26656,e593c7a9ca61f5616119d6beb5bd8ef5dd28d62d@testnet2-seed-node2.lavanet.xyz:26656"
-PEERS=""
-
 init_node() {
   echo -e "\n\e[32m### Initialization node ###\e[0m\n"
 
@@ -23,30 +13,54 @@ init_node() {
   # Download genesis file
   wget -O $CONFIG_PATH/config/genesis.json https://raw.githubusercontent.com/lavanet/lava-config/main/testnet-2/genesis_json/genesis.json
 
-  # Set seeds/bpeers/peers
-  sed -i -e "s/^external_address *=.*/external_address = \"$EXTERNAL_ADDRESS:26656\"/" $CONFIG_PATH/config/config.toml
-  sed -i -e "s/^filter_peers *=.*/filter_peers = \"true\"/" $CONFIG_PATH/config/config.toml
-  sed -i -e "s/^persistent_peers *=.*/persistent_peers = \"$PEERS\"/" $CONFIG_PATH/config/config.toml
-  sed -i -e "s/^seeds *=.*/seeds = \"$SEEDS\"/" $CONFIG_PATH/config/config.toml
+  sed -i \
+    -e 's|^broadcast-mode *=.*|broadcast-mode = "sync"|' \
+    $CONFIG_PATH/config/client.toml
 
-  # Config pruning and snapshots
-  sed -i -e "s/^indexer *=.*/indexer = \"$INDEXER\"/" $CONFIG_PATH/config/config.toml
-  sed -i -e "s/^snapshot-interval *=.*/snapshot-interval = $SNAPSHOT_INTERVAL/" $CONFIG_PATH/config/app.toml
-  sed -i -e "s/^pruning *=.*/pruning = \"$PRUNING_MODE\"/" $CONFIG_PATH/config/app.toml
-  sed -i -e "s/^pruning-keep-recent *=.*/pruning-keep-recent = \"$PRUNING_KEEP_RECENT\"/" $CONFIG_PATH/config/app.toml
-  sed -i -e "s/^pruning-interval *=.*/pruning-interval = \"$PRUNING_INTERVAL\"/" $CONFIG_PATH/config/app.toml
+  # Set seeds/peers
+  sed -i \
+    -e 's|^indexer *=.*|indexer = "null"|' \
+    -e "s|^external_address *=.*|external_address = \"$(wget -qO- eth0.me):26656\"|" \
+    -e 's|^filter_peers *=.*|filter_peers = "true"|' \
+    -e "s|^persistent_peers *=.*|persistent_peers = \"$PEERS\"|" \
+    -e "s|^seeds *=.*|seeds = \"$SEEDS\"|" \
+    -e 's|^create_empty_blocks *=.*|create_empty_blocks = true|' \
+    -e 's|^create_empty_blocks_interval *=.*|create_empty_blocks_interval = "60s"|' \
+    $CONFIG_PATH/config/config.toml
 
-  # Set min price for GAZ in app.toml
-  sed -i -e "s/^minimum-gas-prices *=.*/minimum-gas-prices = \"$MINIMUM_GAS_PRICES\"/" $CONFIG_PATH/config/app.toml
+  # Set timeout
+  sed -i \
+    -e 's|^timeout_commit *=.*|timeout_commit = "30s"|' \
+    -e 's|^timeout_propose *=.*|timeout_propose = "1s"|' \
+    -e 's|^timeout_precommit *=.*|timeout_precommit = "1s"|' \
+    -e 's|^timeout_precommit_delta *=.*|timeout_precommit_delta = "500ms"|' \
+    -e 's|^timeout_prevote *=.*|timeout_prevote = "1s"|' \
+    -e 's|^timeout_prevote_delta *=.*|timeout_prevote_delta = "500ms"|' \
+    -e 's|^timeout_propose_delta *=.*|timeout_propose_delta = "500ms"|' \
+    -e 's|^skip_timeout_commit *=.*|skip_timeout_commit = false|' \
+    $CONFIG_PATH/config/config.toml
 
-  sed -i -e "s/^create_empty_blocks *=.*/create_empty_blocks = true/" $CONFIG_PATH/config/config.toml
-  sed -i -e "s/^create_empty_blocks_interval *=.*/create_empty_blocks_interval = \"60s\"/" $CONFIG_PATH/config/config.toml
-  sed -i -e "s/^timeout_propose *=.*/timeout_propose = \"60s\"/" $CONFIG_PATH/config/config.toml
-  sed -i -e "s/^timeout_commit *=.*/timeout_commit = \"60s\"/" $CONFIG_PATH/config/config.toml
-  sed -i -e "s/^timeout_broadcast_tx_commit *=.*/timeout_broadcast_tx_commit = \"601s\"/" $CONFIG_PATH/config/config.toml
+  # Config pruning, snapshots and min price for GAZ
+  sed -i \
+    -e 's|^snapshot-interval *=.*|snapshot-interval = 0|' \
+    -e 's|^pruning *=.*|pruning = "custom"|' \
+    -e 's|^pruning-keep-recent *=.*|pruning-keep-recent = "100"|' \
+    -e 's|^pruning-interval *=.*|pruning-interval = "10"|' \
+    -e 's|^minimum-gas-prices *=.*|minimum-gas-prices = "0.0025ulava"|' \
+    $CONFIG_PATH/config/app.toml
 
-  # Run this to ensure everything worked and that the genesis file is setup correctly
-  $LAVA_BINARY validate-genesis --home $CONFIG_PATH
+  LATEST_HEIGHT=$(curl -s $LAVA_RPC/block | jq -r .result.block.header.height)
+  if [[ $LATEST_HEIGHT -gt $DIFF_HEIGHT ]]
+  then 
+    SYNC_BLOCK_HEIGHT=$(($LATEST_HEIGHT - $DIFF_HEIGHT))
+    SYNC_BLOCK_HASH=$(curl -s "$LAVA_RPC/block?height=$SYNC_BLOCK_HEIGHT" | jq -r .result.block_id.hash)
+    sed -i \
+      -e 's|^enable *=.*|enable = true|' \
+      -e "s|^rpc_servers *=.*|rpc_servers = \"$LAVA_RPC\"|" \
+      -e "s|^trust_height *=.*|trust_height = $SYNC_BLOCK_HEIGHT|" \
+      -e "s|^trust_hash *=.*|trust_hash = \"$SYNC_BLOCK_HASH\"|" \
+      $CONFIG_PATH/config/config.toml
+  fi
 }
 
 create_account() {

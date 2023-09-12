@@ -27,18 +27,6 @@ LABEL build-date=$BUILD_DATE
 ENV LAVA_BINARY=$LAVA_BINARY
 ENV NODE_TYPE=$NODE_TYPE
 
-ENV KEY=test
-ENV KEYRING=test
-ENV KEYALGO=eth_secp256k1
-ENV MONIKER=test
-ENV CHAINID=lava-testnet-2
-ENV CONFIG_PATH=/root/.lava
-ENV LOGLEVEL=info
-ENV GEOLOCATION=2
-ENV PROMETHEUS_PORT=23001
-ENV TOTAL_CONNECTIONS=100
-ENV LAVA_RPC=https://public-rpc-testnet2.lavanet.xyz:443/rpc/
-
 RUN apt-get update && apt-get upgrade -y \
     && apt-get install -y tzdata ca-certificates curl wget jq \
     && apt-get -y purge && apt-get -y clean \
@@ -49,4 +37,4 @@ COPY ./run_node.sh .
 
 RUN chmod +x ./run_node.sh
 
-# ENTRYPOINT [ "/bin/bash", "/run_node.sh" ]
+ENTRYPOINT [ "/bin/bash", "/run_node.sh" ]

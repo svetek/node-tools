@@ -58,7 +58,7 @@ echo -e "Docker Image: \t$IMAGE"
 echo -e "Node type: \t$node_type"
 echo -e "Version: \t$IMAGE_TAG\n"
 
-echo -e "IMAGE=${IMAGE}\nCOMPOSE_PROJECT_NAME=lava" > .env
+# echo -e "IMAGE=${IMAGE}\nCOMPOSE_PROJECT_NAME=lava" > .env
 
 docker build -f "$DOCKERFILE" "$DIR" \
     --build-arg IMAGE_TAG="$IMAGE_TAG" \

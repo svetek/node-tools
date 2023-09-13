@@ -42,6 +42,4 @@ COPY ./run_node.sh .
 
 RUN chmod +x ./run_node.sh
 
-EXPOSE 26656 26657
-
 ENTRYPOINT [ "/bin/bash", "/run_node.sh" ]

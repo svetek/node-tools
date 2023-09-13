@@ -7,7 +7,7 @@ services:
     environment:
     - KEY=<key name>
     - KEY_PASS=<insert password>
-    - CHAINID=nibiru-itn-1
+    - CHAINID=nibiru-itn-2
     - MONIKER=<moniker name>
     - KEYRING=file
     - KEYALGO=eth_secp256k1

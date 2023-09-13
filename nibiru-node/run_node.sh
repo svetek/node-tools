@@ -1,14 +1,6 @@
 #!/bin/bash
 
-INDEXER=null
-SNAPSHOT_INTERVAL=0
-PRUNING_MODE=custom
-PRUNING_INTERVAL=10
-PRUNING_KEEP_EVERY=0
-PRUNING_KEEP_RECENT=100
-MINIMUM_GAS_PRICES=0.025unibi
-EXTERNAL_ADDRESS=$(wget -qO- eth0.me)
-SEEDS=$(curl -s https://networks.itn.nibiru.fi/$CHAINID/seeds)
+SEEDS=$(curl -s https://networks.itn2.nibiru.fi/$CHAINID/seeds)
 PEERS=""
 
 init_node() {
@@ -24,31 +16,29 @@ init_node() {
     (echo $KEY_PASS; echo $KEY_PASS) | nibid keys add $KEY --keyring-backend $KEYRING --home $CONFIG_PATH
 
     # Download genesis file
-    wget -O $CONFIG_PATH/config/genesis.json https://networks.itn.nibiru.fi/$CHAINID/genesis
+    wget -O $CONFIG_PATH/config/genesis.json https://networks.itn2.nibiru.fi/$CHAINID/genesis
 
-    # Set seeds/bpeers/peers
-    sed -i.bak -e "s/^external_address *=.*/external_address = \"$EXTERNAL_ADDRESS:26656\"/" $CONFIG_PATH/config/config.toml
-    sed -i.bak -e "s/^filter_peers *=.*/filter_peers = \"true\"/" $CONFIG_PATH/config/config.toml
-    sed -i.bak -e "s/^persistent_peers *=.*/persistent_peers = \"$PEERS\"/" $CONFIG_PATH/config/config.toml
-    sed -i.bak -e "s/^seeds *=.*/seeds = \"$SEEDS\"/" $CONFIG_PATH/config/config.toml
+    # Set seeds/peers
+    sed -i \
+      -e 's|^indexer *=.*|indexer = "null"|' \
+      -e 's|^filter_peers *=.*|filter_peers = "true"|' \
+      -e "s|^external_address *=.*|external_address = \"$(wget -qO- eth0.me):26656\"|" \
+      -e "s|^persistent_peers *=.*|persistent_peers = \"$PEERS\"|" \
+      -e "s|^seeds *=.*|seeds = \"$SEEDS\"|" \
+      -e 's|^prometheus *=.*|prometheus = true|' \
+      -e 's|^max_num_inbound_peers *=.*|max_num_inbound_peers = 50|' \
+      -e 's|^max_num_outbound_peers *=.*|max_num_outbound_peers = 50|' \
+      $CONFIG_PATH/config/config.toml
 
-    # Config pruning and snapshots
-    sed -i.bak -e "s/^indexer *=.*/indexer = \"$INDEXER\"/" $CONFIG_PATH/config/config.toml
-    sed -i.bak -e "s/^snapshot-interval *=.*/snapshot-interval = $SNAPSHOT_INTERVAL/" $CONFIG_PATH/config/app.toml
-    sed -i.bak -e "s/^pruning *=.*/pruning = \"$PRUNING_MODE\"/" $CONFIG_PATH/config/app.toml
-    sed -i.bak -e "s/^pruning-interval *=.*/pruning-interval = \"$PRUNING_INTERVAL\"/" $CONFIG_PATH/config/app.toml
-    sed -i.bak -e "s/^pruning-keep-every *=.*/pruning-keep-every = \"$PRUNING_KEEP_EVERY\"/" $CONFIG_PATH/config/app.toml
-    sed -i.bak -e "s/^pruning-keep-recent *=.*/pruning-keep-recent = \"$PRUNING_KEEP_RECENT\"/" $CONFIG_PATH/config/app.toml
-
-    # Set min price for GAZ in app.toml
-    sed -i.bak -e "s/^minimum-gas-prices *=.*/minimum-gas-prices = \"$MINIMUM_GAS_PRICES\"/" $CONFIG_PATH/config/app.toml
-    sed -i.bak -e "s/^max_num_inbound_peers *=.*/max_num_inbound_peers = 50/"  $CONFIG_PATH/config/config.toml
-    sed -i.bak -e "s/^max_num_outbound_peers *=.*/max_num_outbound_peers = 50/" $CONFIG_PATH/config/config.toml
-
-    sed -i.bak -e "s/^prometheus *=.*/prometheus = true/" $CONFIG_PATH/config/config.toml
-
-    # Run this to ensure everything worked and that the genesis file is setup correctly
-    nibid validate-genesis --home $CONFIG_PATH
+    # Config pruning, snapshots and min price for GAZ
+    sed -i \
+      -e 's|^snapshot-interval *=.*|snapshot-interval = 0|' \
+      -e 's|^pruning *=.*|pruning = "custom"|' \
+      -e 's|^pruning-interval *=.*|pruning-interval = "10"|' \
+      -e 's|^pruning-keep-every *=.*|pruning-keep-every = "0"|' \
+      -e 's|^pruning-keep-recent *=.*|pruning-keep-recent = "100"|' \
+      -e 's|^minimum-gas-prices *=.*|minimum-gas-prices = "0.025unibi"|'
+      $CONFIG_PATH/config/app.toml
 }
 
 start_node() {

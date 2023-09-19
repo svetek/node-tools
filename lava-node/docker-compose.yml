@@ -15,11 +15,12 @@ services:
       - MONIKER=${VAL_MONIKER}
       - PEERS=${PEERS}
       - SEEDS=${SEEDS}
+      - STATESYNC=${STATE_SYNC}
     ports:
       - '36656:36656'
       - '36660:36660'
-    # volumes:
-    #   - /opt/lava:/root/.lava
+    volumes:
+      - /opt/lava:/root/.lava
     logging:
       driver: "json-file"
       options:
@@ -31,7 +32,6 @@ services:
           cpus: '2'
           memory: '2gb'
     restart: unless-stopped
-    entrypoint: ["tail", "-f", "/dev/null"]
 
   provider:
     image: ${PROV_IMAGE}
@@ -65,4 +65,3 @@ services:
           cpus: '4'
           memory: '8gb'
     restart: unless-stopped
-

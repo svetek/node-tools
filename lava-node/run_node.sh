@@ -1,7 +1,7 @@
 #!/bin/bash
 
 init_node() {
-  echo -e "\n\e[32m### Initialization node ###\e[0m\n"
+  echo -e "\e[32m### Initialization node ###\e[0m\n"
 
   # Set moniker and chain-id for Lava (Moniker can be anything, chain-id must be an integer)
   $LAVA_BINARY init $MONIKER --chain-id $CHAINID --home $CONFIG_PATH
@@ -48,17 +48,23 @@ init_node() {
     -e 's|^pruning-interval *=.*|pruning-interval = "10"|' \
     -e 's|^minimum-gas-prices *=.*|minimum-gas-prices = "0.0025ulava"|' \
     $CONFIG_PATH/config/app.toml
+}
 
-  LATEST_HEIGHT=$(curl -s $LAVA_RPC/block | jq -r .result.block.header.height)
-  if [[ $LATEST_HEIGHT -gt $DIFF_HEIGHT ]]
-  then 
+state_sync() {
+  if [[ $STATESYNC && $STATESYNC == "true" ]]
+  then
+    LATEST_HEIGHT=$(curl -s $LAVA_RPC/block | jq -r .result.block.header.height)
     SYNC_BLOCK_HEIGHT=$(($LATEST_HEIGHT - $DIFF_HEIGHT))
     SYNC_BLOCK_HASH=$(curl -s "$LAVA_RPC/block?height=$SYNC_BLOCK_HEIGHT" | jq -r .result.block_id.hash)
     sed -i \
       -e 's|^enable *=.*|enable = true|' \
-      -e "s|^rpc_servers *=.*|rpc_servers = \"$LAVA_RPC\"|" \
+      -e "s|^rpc_servers *=.*|rpc_servers = \"$LAVA_RPC,$LAVA_RPC\"|" \
       -e "s|^trust_height *=.*|trust_height = $SYNC_BLOCK_HEIGHT|" \
       -e "s|^trust_hash *=.*|trust_hash = \"$SYNC_BLOCK_HASH\"|" \
+      $CONFIG_PATH/config/config.toml
+  else
+    sed -i \
+      -e 's|^enable *=.*|enable = false|' \
       $CONFIG_PATH/config/config.toml
   fi
 }
@@ -86,6 +92,7 @@ start_node() {
 
     "validator node")
       echo -e "\n\e[32m### Run Validator Node ###\e[0m\n"
+      state_sync
       $LAVA_BINARY start --home $CONFIG_PATH \
                          --pruning=nothing \
                          --log_level $LOGLEVEL

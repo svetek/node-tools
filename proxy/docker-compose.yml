@@ -18,7 +18,7 @@ services:
       - lava
 
 networks:
-    proxy: 
-    lava: 
+    proxy:
+    lava:
       name: lava_default
       external: true

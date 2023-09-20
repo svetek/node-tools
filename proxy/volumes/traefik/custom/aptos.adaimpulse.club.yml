@@ -1,7 +1,7 @@
 http:
   routers:
     aptos_adaimpulse_club:
-      entryPoints: 
+      entryPoints:
         - web
         - websecure
       service: aptos_adaimpulse_club
@@ -12,6 +12,6 @@ http:
     aptos_adaimpulse_club:
       loadBalancer:
         servers:
-          - url: "h2c://lava-provider:22001"
+          - url: "h2c://provider:22001"
         passHostHeader: true
 

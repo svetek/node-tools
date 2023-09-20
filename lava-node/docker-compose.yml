@@ -52,8 +52,6 @@ services:
       - '23001:23001'
     volumes:
       - /opt/lava:/root/.lava
-    depends_on:
-      - validator
     logging:
       driver: "json-file"
       options:

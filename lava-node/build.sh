@@ -8,17 +8,17 @@ DOCKERFILE="$DIR/Dockerfile"
 BUILD_DATE="$(date -u +'%Y-%m-%d')"
 GIT_REPOSITORY=https://github.com/lavanet/lava.git
 
-NODE_TYPES=("RPC Node" "Validator Node")
+NODE_TYPES=("provider" "validator")
 
 echo "What node type is required for build?"
 PS3="Node type selected: "
 select node_type in "${NODE_TYPES[@]}"
 do
     case $node_type in
-        "RPC Node")
-            LAVA_BINARY="lava-protocol"; break
+        "provider")
+            LAVA_BINARY="lavap"; break
             ;;
-        "Validator Node")
+        "validator")
             LAVA_BINARY="lavad"; break
             ;;
     esac
@@ -45,9 +45,9 @@ if [[ "$PUSH_FLAG" == "yes" ]]
 then
     read -r -p "Enter username: " DOCKERHUB_USERNAME
     read -r -p "Enter password: " DOCKERHUB_PASSWORD
-    IMAGE=$DOCKERHUB_USERNAME/$IMAGE_NAME:$IMAGE_TAG
+    IMAGE=$DOCKERHUB_USERNAME/$IMAGE_NAME:$IMAGE_TAG-$node_type
 else
-    IMAGE=$IMAGE_NAME:$IMAGE_TAG
+    IMAGE=$IMAGE_NAME:$IMAGE_TAG-$node_type
 fi
 
 echo -e "\n\e[32m### The build information ###\e[0m"

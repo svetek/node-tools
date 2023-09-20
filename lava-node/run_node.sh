@@ -90,7 +90,7 @@ _EOF_
 start_node() {
   case ${NODE_TYPE,,} in
 
-    "validator node")
+    "validator")
       echo -e "\n\e[32m### Run Validator Node ###\e[0m\n"
       state_sync
       $LAVA_BINARY start --home $CONFIG_PATH \
@@ -98,7 +98,7 @@ start_node() {
                          --log_level $LOGLEVEL
       ;;
 
-    "rpc node")
+    "provider")
       echo -e "\n\e[32m### Run RPC Node ###\e[0m\n"
       [[ ! -f "$CONFIG_PATH/config/rpcprovider.yml" ]] && create_endpoins_conf
       $LAVA_BINARY rpcprovider --home $CONFIG_PATH \
@@ -131,7 +131,7 @@ then
   set -x
 fi
 
-if [[ $NODE_TYPE == "Validator Node" ]] && [[ ! -d "$CONFIG_PATH/config" || $(ls -la $CONFIG_PATH/config | grep -cie .*key.json) -eq 0 ]]
+if [[ $NODE_TYPE == "validator" ]] && [[ ! -d "$CONFIG_PATH/config" || $(ls -la $CONFIG_PATH/config | grep -cie .*key.json) -eq 0 ]]
 then
   init_node
 fi

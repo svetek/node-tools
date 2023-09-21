@@ -4,10 +4,10 @@ Lava is decentralizing access to blockchain data. It is the first truly unstoppa
 
 Serving as a two-sided marketplace that incentivizes and coordinates blockchain nodes to provide dapps with blockchain data, Lava is setting the standard for fast, reliable, and secure API at scale.
 
->**Lava as a Validator**\
+> **Lava as a Validator**\
 Lava blockchain uses Proof-of-stake (PoS) as the consensus mechanism, based on Tendermint. Validators participate in the network by verifying new blocks to earn rewards.
 
->**Lava as a Provider**\
+> **Lava as a Provider**\
 Providers are the backbone of the Lava network, servicing relay requests by staking on the network and operating RPC nodes on Relay Chains queried by Consumers (e.g., Cosmos, Ethereum, Osmosis, Polygon, etc.). In return, they earn fees in the form of LAVA tokens from the Consumers for servicing these requests.
 
 ## Repository Contents
@@ -83,7 +83,7 @@ docker run --name lava-validator \
            -v ~/.lava/:/root/.lava \
            -d <image:tag>
 ```
->To create and launch a docker container, you need to define environment variables: CHAINID, KEY, LAVA_RPC, MONIKER, PEERS, SEEDS and specify an lava validator image.
+> To create and launch a docker container, you need to define environment variables: CHAINID, KEY, LAVA_RPC, MONIKER, PEERS, SEEDS and specify an lava validator image.
 
 **Lava RPC Provider**
 ```ini
@@ -103,7 +103,19 @@ docker run --name lava-provider \
            -v ~/.lava/:/root/.lava \
            -d <image:tag>
 ```
->To create and launch a docker container, you need to define environment variables: CHAINID, GEOLOCATION, KEY, LAVA_RPC, MONIKER, PROMETHEUS_PORT, TOTAL_CONNECTIONS and specify an lava provider image.
+> To create and launch a docker container, you need to define environment variables: CHAINID, GEOLOCATION, KEY, LAVA_RPC, MONIKER, PROMETHEUS_PORT, TOTAL_CONNECTIONS and specify an lava provider image.
+
+## Docker container logs
+```
+docker container logs [OPTIONS] CONTAINER
+```
+Options:\
+--details (Show extra details provided to logs)\
+--follow or -f (Follow log output)\
+--tail or -n (Number of lines to show from the end of the logs)
+
+ex.: **docker container logs -f lava-provider**
+
 
 ## Run docker compose
 
@@ -115,7 +127,7 @@ docker compose up -d
 
 Every chain must have a unique identifier or chain-id. Tendermint requires each application to define its own chain-id in the genesis.json fields.
 
-> lava-testnet-2
+>lava-testnet-2
 
 | Version name | Block height |
 |:------------:|:------------:|
@@ -125,7 +137,6 @@ Every chain must have a unique identifier or chain-id. Tendermint requires each 
 
 
 ## Geolocation
-=
 The location of the provider's nodes. (Note that 0 is only assigned via policy/gov proposal)
 
 | Version name |    Block height          |

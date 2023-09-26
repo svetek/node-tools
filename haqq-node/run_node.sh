@@ -1,98 +1,106 @@
 #!/bin/bash
 
-INDEXER="null"
-SNAPSHOT_INTERVAL=0
-PRUNING_MODE=custom
-PRUNING_INTERVAL=10
-PRUNING_KEEP_EVERY=0
-PRUNING_KEEP_RECENT=100
-MINIMUM_GAS_PRICES=0.0025aISLM
-EXTERNAL_ADDRESS=$(wget -qO- eth0.me)
-SEEDS="62bf004201a90ce00df6f69390378c3d90f6dd7e@seed2.testedge2.haqq.network:26656,23a1176c9911eac442d6d1bf15f92eeabb3981d5@seed1.testedge2.haqq.network:26656"
-PEERS=""
-
 init_node() {
-    # Set moniker and chain-id for Haqq (Moniker can be anything, chain-id must be an integer)
-    haqqd init $MONIKER --chain-id $CHAINID --home $CONFIG_PATH
+  echo -e "\e[32m### Initialization node ###\e[0m\n"
 
-    # Set keyring-backend and chain-id configuration
-    haqqd config chain-id $CHAINID --home $CONFIG_PATH
-    haqqd config keyring-backend $KEYRING --home $CONFIG_PATH
+  # Set moniker and chain-id for Lava (Moniker can be anything, chain-id must be an integer)
+  $BIN init $MONIKER --chain-id $CHAINID --home $CONFIG_PATH
 
-    # if $KEY exists it should be deleted
-    echo -e "\n\e[32m### Wallet info ###\e[0m"
+  # Set keyring-backend and chain-id configuration
+  $BIN config chain-id $CHAINID --home $CONFIG_PATH
+  $BIN config keyring-backend $KEYRING --home $CONFIG_PATH
 
-    expect -c "
-        #!/usr/bin/expect -f
-        set timeout -1
+  # Download genesis and addrbook files
+  wget -O $CONFIG_PATH/config/genesis.json $GENESIS_URL
+  wget -O $CONFIG_PATH/config/addrbook.json $ADDRBOOK_URL
 
-        spawn haqqd keys add $KEY --keyring-backend $KEYRING --home $CONFIG_PATH
-        exp_internal 0
-        expect \"Enter keyring passphrase:\"
-        send   \"$KEYPASS\n\"
-        expect \"Re-enter keyring passphrase:\"
-        send   \"$KEYPASS\n\"
-        expect eof
-    "
+  sed -i \
+    -e 's|^broadcast-mode *=.*|broadcast-mode = "sync"|' \
+    $CONFIG_PATH/config/client.toml
 
-    # Change parameter token denominations to aISLM
-    cat $CONFIG_PATH/config/genesis.json | jq '.app_state["staking"]["params"]["bond_denom"]="aISLM"' > $CONFIG_PATH/config/tmp_genesis.json && mv $CONFIG_PATH/config/tmp_genesis.json $CONFIG_PATH/config/genesis.json
-    cat $CONFIG_PATH/config/genesis.json | jq '.app_state["crisis"]["constant_fee"]["denom"]="aISLM"' > $CONFIG_PATH/config/tmp_genesis.json && mv $CONFIG_PATH/config/tmp_genesis.json $CONFIG_PATH/config/genesis.json
-    cat $CONFIG_PATH/config/genesis.json | jq '.app_state["gov"]["deposit_params"]["min_deposit"][0]["denom"]="aISLM"' > $CONFIG_PATH/config/tmp_genesis.json && mv $CONFIG_PATH/config/tmp_genesis.json $CONFIG_PATH/config/genesis.json
-    cat $CONFIG_PATH/config/genesis.json | jq '.app_state["mint"]["params"]["mint_denom"]="aISLM"' > $CONFIG_PATH/config/tmp_genesis.json && mv $CONFIG_PATH/config/tmp_genesis.json $CONFIG_PATH/config/genesis.json
-    cat $CONFIG_PATH/config/genesis.json | jq '.app_state["evm"]["params"]["evm_denom"]="aISLM"' > $CONFIG_PATH/config/tmp_genesis.json && mv $CONFIG_PATH/config/tmp_genesis.json $CONFIG_PATH/config/genesis.json
+  # Set seeds/peers
+  sed -i \
+    -e 's|^indexer *=.*|indexer = "null"|' \
+    -e "s|^external_address *=.*|external_address = \"$(wget -qO- eth0.me):26656\"|" \
+    -e 's|^filter_peers *=.*|filter_peers = "true"|' \
+    -e "s|^persistent_peers *=.*|persistent_peers = \"$PEERS\"|" \
+    -e "s|^seeds *=.*|seeds = \"$SEEDS\"|" \
+    -e 's|^create_empty_blocks *=.*|create_empty_blocks = true|' \
+    -e 's|^create_empty_blocks_interval *=.*|create_empty_blocks_interval = "0s"|' \
+    $CONFIG_PATH/config/config.toml
 
-    # 1 min for proposal's vote vaiting
-    cat $CONFIG_PATH/config/genesis.json | jq '.app_state["gov"]["voting_params"]["voting_period"]="60s"' > $CONFIG_PATH/config/tmp_genesis.json && mv $CONFIG_PATH/config/tmp_genesis.json $CONFIG_PATH/config/genesis.json
+  # Set timeout
+  sed -i \
+    -e 's|^timeout_commit *=.*|timeout_commit = "5s"|' \
+    -e 's|^timeout_propose *=.*|timeout_propose = "3s"|' \
+    -e 's|^timeout_precommit *=.*|timeout_precommit = "1s"|' \
+    -e 's|^timeout_precommit_delta *=.*|timeout_precommit_delta = "500ms"|' \
+    -e 's|^timeout_prevote *=.*|timeout_prevote = "1s"|' \
+    -e 's|^timeout_prevote_delta *=.*|timeout_prevote_delta = "500ms"|' \
+    -e 's|^timeout_propose_delta *=.*|timeout_propose_delta = "500ms"|' \
+    -e 's|^skip_timeout_commit *=.*|skip_timeout_commit = false|' \
+    $CONFIG_PATH/config/config.toml
 
-    # Set gas limit in genesis
-    cat $CONFIG_PATH/config/genesis.json | jq '.consensus_params["block"]["max_gas"]="10000000"' > $CONFIG_PATH/config/tmp_genesis.json && mv $CONFIG_PATH/config/tmp_genesis.json $CONFIG_PATH/config/genesis.json
+  # Config pruning, snapshots and min price for GAZ
+  sed -i \
+    -e 's|^snapshot-interval *=.*|snapshot-interval = 0|' \
+    -e 's|^pruning *=.*|pruning = "custom"|' \
+    -e 's|^pruning-keep-recent *=.*|pruning-keep-recent = "100"|' \
+    -e 's|^pruning-interval *=.*|pruning-interval = "10"|' \
+    -e 's|^minimum-gas-prices *=.*|minimum-gas-prices = "0.0025aISLM"|' \
+    $CONFIG_PATH/config/app.toml
+}
 
-    # Allocate genesis accounts (cosmos formatted addresses)
-    (echo $KEYPASS) | haqqd add-genesis-account $KEY 10000000000000000000aISLM --keyring-backend $KEYRING --home $CONFIG_PATH &> /dev/null
+state_sync() {
+  if [[ $STATESYNC && $STATESYNC == "true" ]]
+  then
+    LATEST_HEIGHT=$(curl -s $HAQQ_RPC/block | jq -r .result.block.header.height)
+    SYNC_BLOCK_HEIGHT=$(($LATEST_HEIGHT - $DIFF_HEIGHT))
+    SYNC_BLOCK_HASH=$(curl -s "$HAQQ_RPC/block?height=$SYNC_BLOCK_HEIGHT" | jq -r .result.block_id.hash)
+    sed -i \
+      -e 's|^enable *=.*|enable = true|' \
+      -e "s|^rpc_servers *=.*|rpc_servers = \"$HAQQ_RPC,$HAQQ_RPC\"|" \
+      -e "s|^trust_height *=.*|trust_height = $SYNC_BLOCK_HEIGHT|" \
+      -e "s|^trust_hash *=.*|trust_hash = \"$SYNC_BLOCK_HASH\"|" \
+      $CONFIG_PATH/config/config.toml
+  else
+    sed -i \
+      -e 's|^enable *=.*|enable = false|' \
+      $CONFIG_PATH/config/config.toml
+  fi
+}
 
-    # Sign genesis transaction
-    (echo $KEYPASS) | haqqd gentx $KEY 10000000000000000000aISLM --chain-id=$CHAINID --moniker=$MONIKER --commission-max-change-rate 0.05 --commission-max-rate 0.20 --commission-rate 0.05 &> /dev/null
+create_account() {
+  echo -e "\n\e[32m### Create account ###\e[0m"
+  expect -c "
+      #!/usr/bin/expect -f
+      set timeout -1
 
-    # Collect genesis tx
-    (echo $KEYPASS) | haqqd collect-gentxs --home $CONFIG_PATH &> /dev/null
-
-    # Run this to ensure everything worked and that the genesis file is setup correctly
-    (echo $KEYPASS) | haqqd validate-genesis --home $CONFIG_PATH
-
-    # Set seeds/bpeers/peers
-    sed -i.bak -e "s/^external_address *=.*/external_address = \"$EXTERNAL_ADDRESS:26656\"/" $CONFIG_PATH/config/config.toml
-    sed -i.bak -e "s/^filter_peers *=.*/filter_peers = \"true\"/" $CONFIG_PATH/config/config.toml
-    sed -i.bak -e "s/^persistent_peers *=.*/persistent_peers = \"$PEERS\"/" $CONFIG_PATH/config/config.toml
-    sed -i.bak -e "s/^seeds *=.*/seeds = \"$SEEDS\"/" $CONFIG_PATH/config/config.toml
-
-    # Config pruning and snapshots
-    sed -i.bak -e "s/^indexer *=.*/indexer = \"$INDEXER\"/" $CONFIG_PATH/config/config.toml
-    sed -i.bak -e "s/^snapshot-interval *=.*/snapshot-interval = $SNAPSHOT_INTERVAL/" $CONFIG_PATH/config/app.toml
-    sed -i.bak -e "s/^pruning *=.*/pruning = \"$PRUNING_MODE\"/" $CONFIG_PATH/config/app.toml
-    sed -i.bak -e "s/^pruning-interval *=.*/pruning-interval = \"$PRUNING_INTERVAL\"/" $CONFIG_PATH/config/app.toml
-    sed -i.bak -e "s/^pruning-keep-every *=.*/pruning-keep-every = \"$PRUNING_KEEP_EVERY\"/" $CONFIG_PATH/config/app.toml
-    sed -i.bak -e "s/^pruning-keep-recent *=.*/pruning-keep-recent = \"$PRUNING_KEEP_RECENT\"/" $CONFIG_PATH/config/app.toml
-
-    # Set min price for GAZ in app.toml
-    sed -i.bak -e "s/^minimum-gas-prices *=.*/minimum-gas-prices = \"$MINIMUM_GAS_PRICES\"/" $CONFIG_PATH/config/app.toml
-    sed -i.bak -e "s/^max_num_inbound_peers *=.*/max_num_inbound_peers = 50/"  $CONFIG_PATH/config/config.toml
-    sed -i.bak -e "s/^max_num_outbound_peers *=.*/max_num_outbound_peers = 25/" $CONFIG_PATH/config/config.toml
+      spawn $BIN keys add $KEY --keyring-backend $KEYRING --home $CONFIG_PATH
+      exp_internal 0
+      expect \"Enter keyring passphrase:\"
+      send   \"$KEYPASS\n\"
+      expect \"Re-enter keyring passphrase:\"
+      send   \"$KEYPASS\n\"
+      expect eof
+  "
 }
 
 start_node() {
-  (echo $KEYPASS) | haqqd start --home $CONFIG_PATH --log_level $LOGLEVEL
+  echo -e "\n\e[32m### Run Validator Node ###\e[0m\n"
+  state_sync
+  (echo $KEYPASS) | $BIN start --home $CONFIG_PATH --log_level $LOGLEVEL
 }
 
 set_variable() {
   source ~/.bashrc
   if [[ ! $ACC_ADDRESS ]]
   then
-    echo 'export ACC_ADDRESS='$(echo $KEYPASS | haqqd keys show $KEY -a) >> $HOME/.bashrc
+    echo 'export ACC_ADDRESS='$(echo $KEYPASS | $BIN keys show $KEY --keyring-backend $KEYRING -a) >> $HOME/.bashrc
   fi
   if [[ ! $VAL_ADDRESS ]]
   then
-    echo 'export VAL_ADDRESS='$(echo $KEYPASS | haqqd keys show $KEY --bech val -a) >> $HOME/.bashrc
+    echo 'export VAL_ADDRESS='$(echo $KEYPASS | $BIN keys show $KEY --keyring-backend $KEYRING --bech val -a) >> $HOME/.bashrc
   fi
 }
 
@@ -103,10 +111,13 @@ fi
 
 if [[ ! -d "$CONFIG_PATH" ]] || [[ ! -d "$CONFIG_PATH/config" || $(ls -la $CONFIG_PATH/config | grep -cie .*key.json) -eq 0 ]]
 then
-  echo -e "\n\e[32m### Initialization node ###\e[0m\n"
   init_node
 fi
 
-echo -e "\n\e[32m### Run node ###\e[0m\n"
+if [[ $(find $CONFIG_PATH -maxdepth 2 -type f -name $KEY.info | wc -l) -eq 0 ]]
+then
+  create_account
+fi
+
 set_variable
 start_node

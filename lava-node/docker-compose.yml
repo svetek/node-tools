@@ -6,16 +6,16 @@ services:
     environment:
       - CHAINID=${CHAIN_ID}
       - CONFIG_PATH=${CONFIG_PATH}
-      - DIFF_HEIGHT=${DIFF_HEIGHT}
+      - DIFF_HEIGHT=${VAL_DIFF_HEIGHT}
       - KEY=${VAL_KEY}
       - KEYRING=${VAL_KEYRING}
       - KEYALGO=${KEYALGO}
-      - LAVA_RPC=${LAVA_RPC}
+      - LAVA_RPC=${VAL_LAVA_RPC}
       - LOGLEVEL=${VAL_LOGLEVEL}
       - MONIKER=${VAL_MONIKER}
-      - PEERS=${PEERS}
-      - SEEDS=${SEEDS}
-      - STATESYNC=${STATE_SYNC}
+      - PEERS=${VAL_PEERS}
+      - SEEDS=${VAL_SEEDS}
+      - STATESYNC=${VAL_STATE_SYNC}
     ports:
       - '36656:36656'
       - '36660:36660'
@@ -29,8 +29,8 @@ services:
     deploy:
       resources:
         limits:
-          cpus: '2'
-          memory: '2gb'
+          cpus: '4'
+          memory: '8gb'
     restart: unless-stopped
 
   provider:
@@ -38,17 +38,16 @@ services:
     environment:
       - CHAINID=${CHAIN_ID}
       - CONFIG_PATH=${CONFIG_PATH}
-      - GEOLOCATION=${GEOLOCATION}
+      - GEOLOCATION=${PROV_GEOLOCATION}
       - KEY=${PROV_KEY}
       - KEYRING=${PROV_KEYRING}
       - KEYALGO=${KEYALGO}
-      - LAVA_RPC=${LAVA_RPC}
+      - LAVA_RPC=${PROV_LAVA_RPC}
       - LOGLEVEL=${PROV_LOGLEVEL}
       - MONIKER=${PROV_MONIKER}
-      - PROMETHEUS_PORT=${PROMETHEUS_PORT}
-      - TOTAL_CONNECTIONS=${TOTAL_CONNECTIONS}
+      - PROMETHEUS_PORT=${PROV_PROMETHEUS_PORT}
+      - TOTAL_CONNECTIONS=${PROV_TOTAL_CONNECTIONS}
     ports:
-      - '22001:22001'
       - '23001:23001'
     volumes:
       - /opt/lava:/root/.lava

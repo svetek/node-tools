@@ -12,6 +12,6 @@ http:
     avax_adaimpulse_club:
       loadBalancer:
         servers:
-          - url: "h2c://provider:22001"
+          - url: "h2c://lava-provider-1:22001"
         passHostHeader: true
 

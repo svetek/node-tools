@@ -2,6 +2,9 @@ global:
   checkNewVersion: false
   sendAnonymousUsage: false
 
+log:
+  level: DEBUG
+
 api:
   dashboard: true
   insecure: true
@@ -15,9 +18,6 @@ providers:
     directory: /etc/traefik/custom
     watch: true
 
-#experimental:
-#  http3: true
-
 entryPoints:
   web:
     address: ":80"
@@ -29,8 +29,6 @@ entryPoints:
 
   websecure:
     address: ":443"
-    #http2:
-    #  maxConcurrentStreams: 250
 
 certificatesResolvers:
   letsencrypt:

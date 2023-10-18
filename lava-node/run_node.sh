@@ -101,15 +101,16 @@ start_node() {
     "provider")
       echo -e "\n\e[32m### Run RPC Node ###\e[0m\n"
       [[ ! -f "$CONFIG_PATH/config/rpcprovider.yml" ]] && create_endpoins_conf
-      $LAVA_BINARY rpcprovider --home $CONFIG_PATH \
+      $LAVA_BINARY rpcprovider --chain-id $CHAINID \
                                --from $KEY \
-                               --keyring-backend $KEYRING \
                                --geolocation $GEOLOCATION \
-                               --chain-id $CHAINID \
-                               --parallel-connections $TOTAL_CONNECTIONS \
-                               --metrics-listen-address ":$PROMETHEUS_PORT" \
+                               --home $CONFIG_PATH \
+                               --keyring-backend $KEYRING \
                                --log_level $LOGLEVEL \
-                               --node $LAVA_RPC
+                               --metrics-listen-address ":$PROMETHEUS_PORT" \
+                               --node $LAVA_RPC \
+                               --parallel-connections $TOTAL_CONNECTIONS \
+                               --reward-server-storage "$CONFIG_PATH/$REWARDS_STORAGE_DIR" \
       ;;
   esac
 }

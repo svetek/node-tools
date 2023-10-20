@@ -2,7 +2,7 @@
 version: '3.9'
 services:
   node_exporter:
-    image: prom/node-exporter:v1.4.0
+    image: prom/node-exporter:v1.6.1
     container_name: node_exporter
     volumes:
       - type: 'bind'
@@ -20,7 +20,7 @@ services:
     image: gcr.io/cadvisor/cadvisor:latest
     container_name: cadvisor
     ports:
-    - 8080:8080
+    - 18080:8080
     volumes:
     - /:/rootfs:ro
     - /var/run:/var/run:rw

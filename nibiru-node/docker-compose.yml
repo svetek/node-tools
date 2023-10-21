@@ -17,7 +17,7 @@ services:
     - '26656:26656'
     - '26660:26660'
     volumes:
-    - /opt/nibiru:/root/.nibid
+    - /opt/nvme0/nibiru:/root/.nibid
     deploy:
       resources:
         limits:

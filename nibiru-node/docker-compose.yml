@@ -1,8 +1,7 @@
 ---
 version: '3.9'
 services:
-  nibiru-node:
-    container_name: nibiru-node
+  validator:
     image: ${IMAGE}
     environment:
     - KEY=<key name>
@@ -21,6 +20,6 @@ services:
     deploy:
       resources:
         limits:
-          cpus: '6'
-          memory: '14gb'
+          cpus: '4'
+          memory: '8gb'
     restart: unless-stopped

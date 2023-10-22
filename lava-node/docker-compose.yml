@@ -20,6 +20,8 @@ services:
         limits:
           cpus: '4'
           memory: '8gb'
+    networks:
+      - lava
     restart: unless-stopped
 
   provider:
@@ -40,4 +42,18 @@ services:
         limits:
           cpus: '4'
           memory: '8gb'
+    networks:
+      - lava
+      - cosmos
+      - starknet
     restart: unless-stopped
+
+networks:
+  lava:
+    name: lava
+  cosmos:
+    name: cosmos
+    external: true
+  starknet:
+    name: starknet
+    external: true

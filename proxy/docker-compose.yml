@@ -24,6 +24,7 @@ services:
 
 networks:
     proxy:
+      name: traefik
     lava:
-      name: lava_default
+      name: lava
       external: true

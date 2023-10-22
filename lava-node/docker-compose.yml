@@ -3,24 +3,13 @@ version: '3.9'
 services:
   validator:
     image: ${VAL_IMAGE}
-    environment:
-      - CHAINID=${CHAIN_ID}
-      - CONFIG_PATH=${CONFIG_PATH}
-      - DIFF_HEIGHT=${VAL_DIFF_HEIGHT}
-      - KEY=${VAL_KEY}
-      - KEYRING=${VAL_KEYRING}
-      - KEYALGO=${KEYALGO}
-      - LAVA_RPC=${VAL_LAVA_RPC}
-      - LOGLEVEL=${VAL_LOGLEVEL}
-      - MONIKER=${VAL_MONIKER}
-      - PEERS=${VAL_PEERS}
-      - SEEDS=${VAL_SEEDS}
-      - STATESYNC=${VAL_STATE_SYNC}
+    env_file:
+      - validator.env
     ports:
       - '36656:36656'
       - '36660:36660'
     volumes:
-      - /opt/lava:/root/.lava
+      - /opt/nvme0/lava:/root/.lava
     logging:
       driver: "json-file"
       options:
@@ -35,23 +24,12 @@ services:
 
   provider:
     image: ${PROV_IMAGE}
-    environment:
-      - CHAINID=${CHAIN_ID}
-      - CONFIG_PATH=${CONFIG_PATH}
-      - GEOLOCATION=${PROV_GEOLOCATION}
-      - KEY=${PROV_KEY}
-      - KEYRING=${PROV_KEYRING}
-      - KEYALGO=${KEYALGO}
-      - LAVA_RPC=${PROV_LAVA_RPC}
-      - LOGLEVEL=${PROV_LOGLEVEL}
-      - MONIKER=${PROV_MONIKER}
-      - REWARDS_STORAGE_DIR=${PROV_REWARDS_STORAGE_DIR}
-      - PROMETHEUS_PORT=${PROV_PROMETHEUS_PORT}
-      - TOTAL_CONNECTIONS=${PROV_TOTAL_CONNECTIONS}
+    env_file:
+      - provider.env
     ports:
       - '23001:23001'
     volumes:
-      - /opt/lava:/root/.lava
+      - /opt/nvme0/lava:/root/.lava
     logging:
       driver: "json-file"
       options:

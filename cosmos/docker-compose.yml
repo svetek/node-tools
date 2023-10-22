@@ -1,0 +1,23 @@
+---
+version: '3.9'
+services:
+  node:
+    image: ${IMAGE}
+    env_file:
+      - node.env
+    ports:
+      - '46656:26656'
+      - '46660:26660'
+    volumes:
+      - /opt/nvme0/cosmos:/root/.gaia
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "100m"
+        max-file: "1"
+    deploy:
+      resources:
+        limits:
+          cpus: '4'
+          memory: '8gb'
+    restart: unless-stopped

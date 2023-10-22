@@ -7,15 +7,20 @@ services:
     ports:
       - '80:80'
       - '443:443'
-     #- '8080:8080'
+      - '28080:8080'
     volumes:
       - ./volumes/traefik:/etc/traefik
       - /etc/localtime:/etc/localtime:ro
       - /var/run/docker.sock:/var/run/docker.sock
-    restart: unless-stopped
-    networks: 
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "100m"
+        max-file: "1"
+    networks:
       - proxy
       - lava
+    restart: unless-stopped
 
 networks:
     proxy:

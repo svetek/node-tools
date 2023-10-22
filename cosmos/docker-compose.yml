@@ -6,8 +6,8 @@ services:
     env_file:
       - node.env
     ports:
-      - '46656:26656'
-      - '46660:26660'
+      - '46656:46656'
+      - '46660:46660'
     volumes:
       - /opt/nvme0/cosmos:/root/.gaia
     logging:
@@ -20,4 +20,10 @@ services:
         limits:
           cpus: '4'
           memory: '8gb'
+    networks:
+      - cosmos
     restart: unless-stopped
+
+networks:
+  cosmos:
+    name: cosmos

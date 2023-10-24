@@ -9,7 +9,7 @@ services:
       - '46656:46656'
       - '46660:46660'
     volumes:
-      - /opt/nvme0/cosmos:/root/.gaia
+      - /opt/testnet/cosmos:/root/.gaia
     logging:
       driver: "json-file"
       options:

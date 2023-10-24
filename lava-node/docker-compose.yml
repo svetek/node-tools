@@ -9,7 +9,7 @@ services:
       - '36656:36656'
       - '36660:36660'
     volumes:
-      - /opt/nvme0/lava:/root/.lava
+      - /opt/testnet/lava:/root/.lava
     logging:
       driver: "json-file"
       options:
@@ -31,7 +31,7 @@ services:
     ports:
       - '23001:23001'
     volumes:
-      - /opt/nvme0/lava:/root/.lava
+      - /opt/testnet/lava:/root/.lava
     logging:
       driver: "json-file"
       options:

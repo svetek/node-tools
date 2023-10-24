@@ -6,7 +6,7 @@ set -e
 DIR="$( cd "$( dirname "$0" )" && pwd )"
 DOCKERFILE="$DIR/Dockerfile"
 BUILD_DATE="$(date -u +'%Y-%m-%d')"
-GIT_REPOSITORY=https://github.com/haqq-network/haqq.git
+GIT_REPOSITORY=https://github.com/haqq-network/haqq
 
 read -p "Enter image name: " -r IMAGE_NAME
 read -p "Enter release tag: " -r IMAGE_TAG
@@ -40,8 +40,6 @@ echo -e "Docker context: $DIR"
 echo -e "Dockerfile: \t$DOCKERFILE"
 echo -e "Docker Image: \t$IMAGE"
 echo -e "Version: \t$IMAGE_TAG\n"
-
-# echo -e "IMAGE=${IMAGE}\nCOMPOSE_PROJECT_NAME=haqq" > .env
 
 docker build -f "$DOCKERFILE" "$DIR" \
      --build-arg IMAGE_TAG="$IMAGE_TAG" \

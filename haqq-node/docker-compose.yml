@@ -2,30 +2,16 @@
 version: '3.9'
 services:
   validator-testnet:
-    image: ${T_IMAGE}
+    image: svetekllc/haqq-node:v1.6.1
     labels:
       network: testnet
-    environment:
-      - ADDRBOOK_URL=${T_ADDRBOOK_URL}
-      - CHAINID=${T_CHAINID}
-      - CONFIG_PATH=${CONFIG_PATH}
-      - GENESIS_URL=${T_GENESIS_URL}
-      - DIFF_HEIGHT=${DIFF_HEIGHT}
-      - HAQQ_RPC=${T_HAQQ_RPC}
-      - KEY=${T_KEY}
-      - KEYRING=${T_KEYRING}
-      - KEYALGO=${KEYALGO}
-      - KEYPASS=${T_KEYPASS}
-      - LOGLEVEL=${T_LOGLEVEL}
-      - MONIKER=${T_MONIKER}
-      - PEERS=${T_PEERS}
-      - SEEDS=${T_SEEDS}
-      - STATESYNC=${T_STATE_SYNC}
+    env_file:
+      - testnet.env
     ports:
       - '36656:36656'
       - '36660:36660'
     volumes:
-      - /opt/haqq-testnet:${CONFIG_PATH}
+      - /opt/haqq-testnet:/root/.haqqd
     logging:
       driver: "json-file"
       options:
@@ -39,30 +25,16 @@ services:
     restart: unless-stopped
 
   validator-mainnet:
-    image: ${M_IMAGE}
+    image: svetekllc/haqq-node:v1.6.1
     labels:
       network: mainnet
-    environment:
-      - ADDRBOOK_URL=${M_ADDRBOOK_URL}
-      - CHAINID=${M_CHAINID}
-      - CONFIG_PATH=${CONFIG_PATH}
-      - GENESIS_URL=${M_GENESIS_URL}
-      - DIFF_HEIGHT=${DIFF_HEIGHT}
-      - HAQQ_RPC=${M_HAQQ_RPC}
-      - KEY=${M_KEY}
-      - KEYRING=${M_KEYRING}
-      - KEYALGO=${KEYALGO}
-      - KEYPASS=${M_KEYPASS}
-      - LOGLEVEL=${M_LOGLEVEL}
-      - MONIKER=${M_MONIKER}
-      - PEERS=${M_PEERS}
-      - SEEDS=${M_SEEDS}
-      - STATESYNC=${M_STATE_SYNC}
+    env_file:
+      - mainnet.env
     ports:
     - '26656:26656'
     - '26660:26660'
     volumes:
-    - /opt/haqq-mainnet:${CONFIG_PATH}
+    - /opt/haqq-mainnet:/root/.haqqd
     logging:
       driver: "json-file"
       options:

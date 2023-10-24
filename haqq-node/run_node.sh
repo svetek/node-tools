@@ -54,12 +54,12 @@ init_node() {
 state_sync() {
   if [[ $STATESYNC && $STATESYNC == "true" ]]
   then
-    LATEST_HEIGHT=$(curl -s $HAQQ_RPC/block | jq -r .result.block.header.height)
+    LATEST_HEIGHT=$(curl -s $RPC/block | jq -r .result.block.header.height)
     SYNC_BLOCK_HEIGHT=$(($LATEST_HEIGHT - $DIFF_HEIGHT))
-    SYNC_BLOCK_HASH=$(curl -s "$HAQQ_RPC/block?height=$SYNC_BLOCK_HEIGHT" | jq -r .result.block_id.hash)
+    SYNC_BLOCK_HASH=$(curl -s "$RPC/block?height=$SYNC_BLOCK_HEIGHT" | jq -r .result.block_id.hash)
     sed -i \
       -e 's|^enable *=.*|enable = true|' \
-      -e "s|^rpc_servers *=.*|rpc_servers = \"$HAQQ_RPC,$HAQQ_RPC\"|" \
+      -e "s|^rpc_servers *=.*|rpc_servers = \"$RPC,$RPC\"|" \
       -e "s|^trust_height *=.*|trust_height = $SYNC_BLOCK_HEIGHT|" \
       -e "s|^trust_hash *=.*|trust_hash = \"$SYNC_BLOCK_HASH\"|" \
       $CONFIG_PATH/config/config.toml

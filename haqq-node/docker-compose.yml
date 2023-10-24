@@ -1,17 +1,17 @@
 ---
 version: '3.9'
 services:
-  validator-testnet:
+  node-testnet:
     image: svetekllc/haqq-node:v1.6.1
     labels:
       network: testnet
     env_file:
       - testnet.env
     ports:
-      - '36656:36656'
-      - '36660:36660'
+      - '10656:10656'
+      - '10660:10660'
     volumes:
-      - /opt/haqq-testnet:/root/.haqqd
+      - /opt/testnet/haqq:/root/.haqqd
     logging:
       driver: "json-file"
       options:
@@ -20,8 +20,8 @@ services:
     deploy:
       resources:
         limits:
-          cpus: '6'
-          memory: '14gb'
+          cpus: '4'
+          memory: '8gb'
     restart: unless-stopped
 
   validator-mainnet:
@@ -34,7 +34,7 @@ services:
     - '26656:26656'
     - '26660:26660'
     volumes:
-    - /opt/haqq-mainnet:/root/.haqqd
+    - /opt/mainnet/haqq:/root/.haqqd
     logging:
       driver: "json-file"
       options:
@@ -43,6 +43,6 @@ services:
     deploy:
       resources:
         limits:
-          cpus: '6'
-          memory: '14gb'
+          cpus: '4'
+          memory: '8gb'
     restart: unless-stopped

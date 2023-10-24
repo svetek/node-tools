@@ -4,10 +4,10 @@ init_node() {
   echo -e "\e[32m### Initialization node ###\e[0m\n"
 
   # Set moniker and chain-id for Lava (Moniker can be anything, chain-id must be an integer)
-  $BIN init $MONIKER --chain-id $CHAINID --home $CONFIG_PATH
+  $BIN init $MONIKER --chain-id $CHAIN_ID --home $CONFIG_PATH
 
   # Set keyring-backend and chain-id configuration
-  $BIN config chain-id $CHAINID --home $CONFIG_PATH
+  $BIN config chain-id $CHAIN_ID --home $CONFIG_PATH
   $BIN config keyring-backend $KEYRING --home $CONFIG_PATH
 
   # Download genesis and addrbook files
@@ -52,7 +52,7 @@ init_node() {
 }
 
 state_sync() {
-  if [[ $STATESYNC && $STATESYNC == "true" ]]
+  if [[ $STATE_SYNC && $STATE_SYNC == "true" ]]
   then
     LATEST_HEIGHT=$(curl -s $RPC/block | jq -r .result.block.header.height)
     SYNC_BLOCK_HEIGHT=$(($LATEST_HEIGHT - $DIFF_HEIGHT))

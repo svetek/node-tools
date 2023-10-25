@@ -4,10 +4,10 @@ init_node() {
   echo -e "\e[32m### Initialization node ###\e[0m\n"
 
   # Set moniker and chain-id for Lava (Moniker can be anything, chain-id must be an integer)
-  $LAVA_BINARY init $MONIKER --chain-id $CHAINID --home $CONFIG_PATH
+  $LAVA_BINARY init $MONIKER --chain-id $CHAIN_ID --home $CONFIG_PATH
 
   # Set keyring-backend and chain-id configuration
-  $LAVA_BINARY config chain-id $CHAINID --home $CONFIG_PATH
+  $LAVA_BINARY config chain-id $CHAIN_ID --home $CONFIG_PATH
   $LAVA_BINARY config keyring-backend $KEYRING --home $CONFIG_PATH
 
   # Download genesis file
@@ -51,14 +51,14 @@ init_node() {
 }
 
 state_sync() {
-  if [[ $STATESYNC && $STATESYNC == "true" ]]
+  if [[ $STATE_SYNC && $STATE_SYNC == "true" ]]
   then
-    LATEST_HEIGHT=$(curl -s $LAVA_RPC/block | jq -r .result.block.header.height)
+    LATEST_HEIGHT=$(curl -s $RPC/block | jq -r .result.block.header.height)
     SYNC_BLOCK_HEIGHT=$(($LATEST_HEIGHT - $DIFF_HEIGHT))
-    SYNC_BLOCK_HASH=$(curl -s "$LAVA_RPC/block?height=$SYNC_BLOCK_HEIGHT" | jq -r .result.block_id.hash)
+    SYNC_BLOCK_HASH=$(curl -s "$RPC/block?height=$SYNC_BLOCK_HEIGHT" | jq -r .result.block_id.hash)
     sed -i \
       -e 's|^enable *=.*|enable = true|' \
-      -e "s|^rpc_servers *=.*|rpc_servers = \"$LAVA_RPC,$LAVA_RPC\"|" \
+      -e "s|^rpc_servers *=.*|rpc_servers = \"$RPC,$RPC\"|" \
       -e "s|^trust_height *=.*|trust_height = $SYNC_BLOCK_HEIGHT|" \
       -e "s|^trust_hash *=.*|trust_hash = \"$SYNC_BLOCK_HASH\"|" \
       $CONFIG_PATH/config/config.toml
@@ -101,14 +101,14 @@ start_node() {
     "provider")
       echo -e "\n\e[32m### Run RPC Node ###\e[0m\n"
       [[ ! -f "$CONFIG_PATH/config/rpcprovider.yml" ]] && create_endpoins_conf
-      $LAVA_BINARY rpcprovider --chain-id $CHAINID \
+      $LAVA_BINARY rpcprovider --chain-id $CHAIN_ID \
                                --from $KEY \
                                --geolocation $GEOLOCATION \
                                --home $CONFIG_PATH \
                                --keyring-backend $KEYRING \
                                --log_level $LOGLEVEL \
                                --metrics-listen-address ":$PROMETHEUS_PORT" \
-                               --node $LAVA_RPC \
+                               --node $RPC \
                                --parallel-connections $TOTAL_CONNECTIONS \
                                --reward-server-storage "$CONFIG_PATH/$REWARDS_STORAGE_DIR" \
       ;;

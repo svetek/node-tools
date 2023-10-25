@@ -2,7 +2,7 @@
 version: '3.9'
 services:
   validator:
-    image: ${VAL_IMAGE}
+    image: svetekllc/lava:v0.25.2-validator
     env_file:
       - validator.env
     ports:
@@ -25,7 +25,7 @@ services:
     restart: unless-stopped
 
   provider:
-    image: ${PROV_IMAGE}
+    image: svetekllc/lava:v0.25.2-provider
     env_file:
       - provider.env
     ports:

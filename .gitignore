@@ -1,4 +1,3 @@
-lava-node/node.env
-lava-node/provider.env
-cosmos/node.env
-osmosis/node.env
+acme.json
+*.env
+!.env

@@ -4,7 +4,7 @@ services:
   validator:
     image: svetekllc/lava:v0.25.2-validator
     env_file:
-      - validator.env
+      - node.env
     ports:
       - '36656:36656'
       - '36660:36660'

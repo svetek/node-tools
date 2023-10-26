@@ -6,8 +6,8 @@ services:
     env_file:
       - node.env
     ports:
-      - '21656:21656'
-      - '21660:21660'
+      - '11656:21656'
+      - '11660:21660'
     volumes:
       - /opt/testnet/osmosis:/root/.osmosisd
     logging:

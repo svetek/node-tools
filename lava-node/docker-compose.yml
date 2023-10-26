@@ -1,13 +1,13 @@
 ---
 version: '3.9'
 services:
-  validator:
+  node:
     image: svetekllc/lava:v0.25.2-validator
     env_file:
       - node.env
     ports:
-      - '36656:36656'
-      - '36660:36660'
+      - '23656:23656'
+      - '23660:23660'
     volumes:
       - /opt/testnet/lava:/root/.lava
     logging:
@@ -19,7 +19,7 @@ services:
       resources:
         limits:
           cpus: '4'
-          memory: '8gb'
+          memory: '16gb'
     networks:
       - lava
     restart: unless-stopped
@@ -41,7 +41,7 @@ services:
       resources:
         limits:
           cpus: '4'
-          memory: '8gb'
+          memory: '16gb'
     networks:
       - lava
       - cosmos

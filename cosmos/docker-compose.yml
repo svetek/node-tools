@@ -6,8 +6,8 @@ services:
     env_file:
       - node.env
     ports:
-      - '22656:22656'
-      - '22660:22660'
+      - '12656:12656'
+      - '12660:12660'
     volumes:
       - /opt/testnet/cosmos:/root/.gaia
     logging:

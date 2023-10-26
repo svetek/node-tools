@@ -4,14 +4,19 @@ init_node() {
   echo -e "\e[32m### Initialization node ###\e[0m\n"
 
   # Set moniker and chain-id for Lava (Moniker can be anything, chain-id must be an integer)
-  $LAVA_BINARY init $MONIKER --chain-id $CHAIN_ID --home $CONFIG_PATH
+  $BIN init $MONIKER --chain-id $CHAIN_ID --home $CONFIG_PATH
 
   # Set keyring-backend and chain-id configuration
-  $LAVA_BINARY config chain-id $CHAIN_ID --home $CONFIG_PATH
-  $LAVA_BINARY config keyring-backend $KEYRING --home $CONFIG_PATH
+  $BIN config chain-id $CHAIN_ID --home $CONFIG_PATH
+  $BIN config keyring-backend $KEYRING --home $CONFIG_PATH
 
-  # Download genesis file
-  wget -O $CONFIG_PATH/config/genesis.json https://raw.githubusercontent.com/lavanet/lava-config/main/testnet-2/genesis_json/genesis.json
+  # Download genesis and addrbook files
+  wget -O $CONFIG_PATH/config/genesis.json $GENESIS_URL
+
+  if [[ -n $ADDRBOOK_URL ]]
+  then
+    wget -O $CONFIG_PATH/config/addrbook.json $ADDRBOOK_URL
+  fi
 
   sed -i \
     -e 's|^broadcast-mode *=.*|broadcast-mode = "sync"|' \
@@ -19,13 +24,12 @@ init_node() {
 
   # Set seeds/peers
   sed -i \
-    -e 's|^indexer *=.*|indexer = "null"|' \
-    -e "s|^external_address *=.*|external_address = \"$(wget -qO- eth0.me):26656\"|" \
-    -e 's|^filter_peers *=.*|filter_peers = "true"|' \
-    -e "s|^persistent_peers *=.*|persistent_peers = \"$PEERS\"|" \
-    -e "s|^seeds *=.*|seeds = \"$SEEDS\"|" \
-    -e 's|^create_empty_blocks *=.*|create_empty_blocks = true|' \
-    -e 's|^create_empty_blocks_interval *=.*|create_empty_blocks_interval = "60s"|' \
+    -e 's|^indexer =.*|indexer = "null"|' \
+    -e 's|^filter_peers =.*|filter_peers = "true"|' \
+    -e "s|^persistent_peers =.*|persistent_peers = \"$PEERS\"|" \
+    -e "s|^seeds =.*|seeds = \"$SEEDS\"|" \
+    -e 's|^create_empty_blocks =.*|create_empty_blocks = true|' \
+    -e 's|^create_empty_blocks_interval =.*|create_empty_blocks_interval = "60s"|' \
     $CONFIG_PATH/config/config.toml
 
   # Set timeout
@@ -40,13 +44,21 @@ init_node() {
     -e 's|^skip_timeout_commit *=.*|skip_timeout_commit = false|' \
     $CONFIG_PATH/config/config.toml
 
+  # Set ports P2P and Prometheus
+  sed -i \
+    -e "s|^prometheus =.*|prometheus = true|" \
+    -e "s|^prometheus_listen_addr =.*|prometheus_listen_addr = \":$PROMETHEUS_PORT\"|" \
+    -e "s|laddr = \"tcp://0.0.0.0:26656\"|laddr = \"tcp://0.0.0.0:$P2P_PORT\"|" \
+    -e "s|^external_address *=.*|external_address = \"$(wget -qO- eth0.me):$P2P_PORT\"|" \
+    $CONFIG_PATH/config/config.toml
+
   # Config pruning, snapshots and min price for GAZ
   sed -i \
-    -e 's|^snapshot-interval *=.*|snapshot-interval = 0|' \
-    -e 's|^pruning *=.*|pruning = "custom"|' \
-    -e 's|^pruning-keep-recent *=.*|pruning-keep-recent = "100"|' \
-    -e 's|^pruning-interval *=.*|pruning-interval = "10"|' \
-    -e 's|^minimum-gas-prices *=.*|minimum-gas-prices = "0.0025ulava"|' \
+    -e 's|^snapshot-interval =.*|snapshot-interval = 0|' \
+    -e 's|^pruning =.*|pruning = "custom"|' \
+    -e 's|^pruning-keep-recent =.*|pruning-keep-recent = "100"|' \
+    -e 's|^pruning-interval =.*|pruning-interval = "10"|' \
+    -e "s|^minimum-gas-prices =.*|minimum-gas-prices = \"0.0025u${TOKEN}\"|" \
     $CONFIG_PATH/config/app.toml
 }
 
@@ -57,10 +69,10 @@ state_sync() {
     SYNC_BLOCK_HEIGHT=$(($LATEST_HEIGHT - $DIFF_HEIGHT))
     SYNC_BLOCK_HASH=$(curl -s "$RPC/block?height=$SYNC_BLOCK_HEIGHT" | jq -r .result.block_id.hash)
     sed -i \
-      -e 's|^enable *=.*|enable = true|' \
-      -e "s|^rpc_servers *=.*|rpc_servers = \"$RPC,$RPC\"|" \
-      -e "s|^trust_height *=.*|trust_height = $SYNC_BLOCK_HEIGHT|" \
-      -e "s|^trust_hash *=.*|trust_hash = \"$SYNC_BLOCK_HASH\"|" \
+      -e 's|^enable =.*|enable = true|' \
+      -e "s|^rpc_servers =.*|rpc_servers = \"$RPC,$RPC\"|" \
+      -e "s|^trust_height =.*|trust_height = $SYNC_BLOCK_HEIGHT|" \
+      -e "s|^trust_hash =.*|trust_hash = \"$SYNC_BLOCK_HASH\"|" \
       $CONFIG_PATH/config/config.toml
   else
     sed -i \
@@ -71,7 +83,7 @@ state_sync() {
 
 create_account() {
   echo -e "\n\e[32m### Create account ###\e[0m"
-  $LAVA_BINARY keys add $KEY --keyring-backend $KEYRING --home $CONFIG_PATH
+  $BIN keys add $KEY --keyring-backend $KEYRING --home $CONFIG_PATH
 }
 
 create_endpoins_conf() {
@@ -93,15 +105,13 @@ start_node() {
     "validator")
       echo -e "\n\e[32m### Run Validator Node ###\e[0m\n"
       state_sync
-      $LAVA_BINARY start --home $CONFIG_PATH \
-                         --pruning=nothing \
-                         --log_level $LOGLEVEL
+      $BIN start --home $CONFIG_PATH --log_level $LOGLEVEL
       ;;
 
     "provider")
       echo -e "\n\e[32m### Run RPC Node ###\e[0m\n"
       [[ ! -f "$CONFIG_PATH/config/rpcprovider.yml" ]] && create_endpoins_conf
-      $LAVA_BINARY rpcprovider --chain-id $CHAIN_ID \
+      $BIN rpcprovider --chain-id $CHAIN_ID \
                                --from $KEY \
                                --geolocation $GEOLOCATION \
                                --home $CONFIG_PATH \
@@ -119,11 +129,11 @@ set_variable() {
   source ~/.bashrc
   if [[ ! $ACC_ADDRESS ]]
   then
-    echo 'export ACC_ADDRESS='$($LAVA_BINARY keys show $KEY --keyring-backend $KEYRING -a) >> $HOME/.bashrc
+    echo 'export ACC_ADDRESS='$($BIN keys show $KEY --keyring-backend $KEYRING -a) >> $HOME/.bashrc
   fi
   if [[ ! $VAL_ADDRESS ]]
   then
-    echo 'export VAL_ADDRESS='$($LAVA_BINARY keys show $KEY --keyring-backend $KEYRING --bech val -a) >> $HOME/.bashrc
+    echo 'export VAL_ADDRESS='$($BIN keys show $KEY --keyring-backend $KEYRING --bech val -a) >> $HOME/.bashrc
   fi
 }
 

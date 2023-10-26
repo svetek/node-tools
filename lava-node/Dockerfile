@@ -1,30 +1,17 @@
-#Download base image Debian 11 and Golang 1.19
-FROM golang:1.20-bullseye AS builder
-
-ARG IMAGE_TAG
-ARG GIT_REPOSITORY
-ARG LAVA_BINARY
-
-# Set Working Directory is /app
-WORKDIR /app
-
-# Node project build
-RUN apt update && apt install clang pkg-config libssl-dev build-essential ncdu -y
-RUN git clone --depth 1 --branch $IMAGE_TAG $GIT_REPOSITORY . && make build-$LAVA_BINARY
-
 # Node Image create
-FROM debian:bullseye-slim
+FROM debian:bookworm-slim
 
-ARG IMAGE_TAG
+ARG BIN
 ARG BUILD_DATE
-ARG LAVA_BINARY
+ARG GIT_REPOSITORY
+ARG IMAGE_TAG
 ARG NODE_TYPE
 
-LABEL node-type=$NODE_TYPE
 LABEL image-tag=$IMAGE_TAG
 LABEL build-date=$BUILD_DATE
+LABEL node-type=$NODE_TYPE
 
-ENV LAVA_BINARY=$LAVA_BINARY
+ENV BIN=$BIN
 ENV NODE_TYPE=$NODE_TYPE
 
 RUN apt-get update && apt-get upgrade -y \
@@ -32,9 +19,11 @@ RUN apt-get update && apt-get upgrade -y \
     && apt-get -y purge && apt-get -y clean \
     && apt-get -y autoremove && rm -rf /var/lib/apt/lists/*
 
-COPY --from=builder /app/build/$LAVA_BINARY /usr/bin/$LAVA_BINARY
+RUN wget -qO /usr/bin/$BIN "${GIT_REPOSITORY}/releases/download/${IMAGE_TAG}/${BIN}-${IMAGE_TAG}-linux-amd64" \
+    && chmod +x /usr/bin/$BIN
+
 COPY ./run_node.sh .
 
 RUN chmod +x ./run_node.sh
 
-ENTRYPOINT [ "/bin/bash", "/run_node.sh" ]
+ENTRYPOINT [ "./run_node.sh" ]

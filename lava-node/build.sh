@@ -6,7 +6,7 @@ set -e
 DIR="$( cd "$( dirname "$0" )" && pwd )"
 DOCKERFILE="$DIR/Dockerfile"
 BUILD_DATE="$(date -u +'%Y-%m-%d')"
-GIT_REPOSITORY=https://github.com/lavanet/lava.git
+GIT_REPOSITORY=https://github.com/lavanet/lava
 
 NODE_TYPES=("provider" "validator")
 
@@ -16,10 +16,10 @@ select node_type in "${NODE_TYPES[@]}"
 do
     case $node_type in
         "provider")
-            LAVA_BINARY="lavap"; break
+            BIN="lavap"; break
             ;;
         "validator")
-            LAVA_BINARY="lavad"; break
+            BIN="lavad"; break
             ;;
     esac
 done
@@ -58,12 +58,10 @@ echo -e "Docker Image: \t$IMAGE"
 echo -e "Node type: \t$node_type"
 echo -e "Version: \t$IMAGE_TAG\n"
 
-# echo -e "IMAGE=${IMAGE}\nCOMPOSE_PROJECT_NAME=lava" > .env
-
 docker build -f "$DOCKERFILE" "$DIR" \
     --build-arg IMAGE_TAG="$IMAGE_TAG" \
     --build-arg GIT_REPOSITORY="$GIT_REPOSITORY" \
-    --build-arg LAVA_BINARY="$LAVA_BINARY" \
+    --build-arg BIN="$BIN" \
     --build-arg NODE_TYPE="$node_type" \
     --build-arg BUILD_DATE="$BUILD_DATE" \
     --tag $IMAGE

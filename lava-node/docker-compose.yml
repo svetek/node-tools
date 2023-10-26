@@ -45,6 +45,7 @@ services:
     networks:
       - lava
       - cosmos
+      - osmosis
       - starknet
     restart: unless-stopped
 
@@ -53,6 +54,9 @@ networks:
     name: lava
   cosmos:
     name: cosmos
+    external: true
+  osmosis:
+    name: osmosis
     external: true
   starknet:
     name: starknet

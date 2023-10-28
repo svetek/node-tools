@@ -10,6 +10,8 @@ services:
       - '12660:12660'
     volumes:
       - /opt/testnet/cosmos:/root/.gaia
+      - /etc/localtime:/etc/localtime:ro
+      - /etc/timezone:/etc/timezone:ro
     logging:
       driver: "json-file"
       options:

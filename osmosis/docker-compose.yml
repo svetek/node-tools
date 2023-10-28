@@ -6,10 +6,12 @@ services:
     env_file:
       - node.env
     ports:
-      - '11656:21656'
-      - '11660:21660'
+      - '11656:11656'
+      - '11660:11660'
     volumes:
       - /opt/mainnet/osmosis:/root/.osmosisd
+      - /etc/localtime:/etc/localtime:ro
+      - /etc/timezone:/etc/timezone:ro
     logging:
       driver: "json-file"
       options:
@@ -19,7 +21,7 @@ services:
       resources:
         limits:
           cpus: '4'
-          memory: '16gb'
+          memory: '24gb'
     networks:
       - osmosis
     restart: unless-stopped

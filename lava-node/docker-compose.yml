@@ -10,6 +10,8 @@ services:
       - '23660:23660'
     volumes:
       - /opt/testnet/lava:/root/.lava
+      - /etc/localtime:/etc/localtime:ro
+      - /etc/timezone:/etc/timezone:ro
     logging:
       driver: "json-file"
       options:
@@ -32,6 +34,8 @@ services:
       - '23001:23001'
     volumes:
       - /opt/testnet/lava:/root/.lava
+      - /etc/localtime:/etc/localtime:ro
+      - /etc/timezone:/etc/timezone:ro
     logging:
       driver: "json-file"
       options:

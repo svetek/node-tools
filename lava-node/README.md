@@ -67,18 +67,23 @@ The build is complete!
 **Lava Validator**
 ```ini
 docker run --name lava-validator \
-           -e CHAINID=<chain id> \
+           -e ADDRBOOK_URL="" \
+           -e CHAIN_ID=<set chain_id> \
            -e CONFIG_PATH='/root/.lava' \
            -e DIFF_HEIGHT=1000 \
-           -e KEY=<key name> \
-           -e KEYRING='test' \
+           -e GENESIS_URL=<set genesis url> \
+           -e KEY=<set key name> \
+           -e KEYRING=<set keyring type> \
            -e KEYALGO=eth_secp256k1 \
-           -e LAVA_RPC=<url lava rpc> \
            -e LOGLEVEL='info' \
-           -e MONIKER=<pool name> \
+           -e MONIKER=<set moniker name> \
            -e PEERS=<list peers> \
+           -e RPC=<url lava rpc> \
+           -e PROMETHEUS_PORT=<set prometheus port> \
+           -e P2P_PORT=<set p2p port> \
            -e SEEDS=<list seeds> \
            -e STATESYNC='true' \
+           -e TOKEN=lava \
            -p 26656:26656 \
            -v ~/.lava/:/root/.lava \
            -d <image:tag>
@@ -88,16 +93,17 @@ docker run --name lava-validator \
 **Lava RPC Provider**
 ```ini
 docker run --name lava-provider \
-           -e CHAINID=<set chain_id> \
+           -e CHAIN_ID=<set chain_id> \
            -e CONFIG_PATH='/root/.lava' \
            -e GEOLOCATION=<set geolocation> \
            -e KEY=<set key name> \
            -e KEYRING='test' \
            -e KEYALGO=eth_secp256k1 \
-           -e LAVA_RPC=<url lava rpc> \
            -e LOGLEVEL='info' \
            -e MONIKER=<pool name> \
            -e PROMETHEUS_PORT=<prometheus port> \
+           -e REWARDS_STORAGE_DIR=<set rewards dir> \
+           -e RPC=<url lava rpc> \
            -e TOTAL_CONNECTIONS=<total connection> \
            -p 26656:26656 \
            -v ~/.lava/:/root/.lava \

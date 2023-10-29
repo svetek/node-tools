@@ -112,15 +112,15 @@ start_node() {
       echo -e "\n\e[32m### Run RPC Node ###\e[0m\n"
       [[ ! -f "$CONFIG_PATH/config/rpcprovider.yml" ]] && create_endpoins_conf
       $BIN rpcprovider --chain-id $CHAIN_ID \
-                               --from $KEY \
-                               --geolocation $GEOLOCATION \
-                               --home $CONFIG_PATH \
-                               --keyring-backend $KEYRING \
-                               --log_level $LOGLEVEL \
-                               --metrics-listen-address ":$PROMETHEUS_PORT" \
-                               --node $RPC \
-                               --parallel-connections $TOTAL_CONNECTIONS \
-                               --reward-server-storage "$CONFIG_PATH/$REWARDS_STORAGE_DIR" \
+                       --from $KEY \
+                       --geolocation $GEOLOCATION \
+                       --home $CONFIG_PATH \
+                       --keyring-backend $KEYRING \
+                       --log_level $LOGLEVEL \
+                       --metrics-listen-address ":$PROMETHEUS_PORT" \
+                       --node $RPC \
+                       --parallel-connections $TOTAL_CONNECTIONS \
+                       --reward-server-storage "$CONFIG_PATH/$REWARDS_STORAGE_DIR" \
       ;;
   esac
 }

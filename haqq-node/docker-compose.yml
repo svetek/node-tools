@@ -2,7 +2,7 @@
 version: '3.9'
 services:
   node-testnet:
-    image: svetekllc/haqq-node:v1.6.1
+    image: svetekllc/haqq:v1.6.1
     labels:
       network: testnet
     env_file:
@@ -12,6 +12,8 @@ services:
       - '20660:20660'
     volumes:
       - /opt/testnet/haqq:/root/.haqqd
+      - /etc/localtime:/etc/localtime:ro
+      - /etc/timezone:/etc/timezone:ro
     logging:
       driver: "json-file"
       options:
@@ -25,16 +27,18 @@ services:
     restart: unless-stopped
 
   node-mainnet:
-    image: svetekllc/haqq-node:v1.6.2
+    image: svetekllc/haqq:v1.6.3
     labels:
       network: mainnet
     env_file:
       - mainnet.env
     ports:
-    - '10656:10656'
-    - '10660:10660'
+      - '10656:10656'
+      - '10660:10660'
     volumes:
-    - /opt/mainnet/haqq:/root/.haqqd
+      - /opt/mainnet/haqq:/root/.haqqd
+      - /etc/localtime:/etc/localtime:ro
+      - /etc/timezone:/etc/timezone:ro
     logging:
       driver: "json-file"
       options:

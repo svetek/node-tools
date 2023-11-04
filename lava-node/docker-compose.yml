@@ -2,7 +2,7 @@
 version: '3.9'
 services:
   node:
-    image: svetekllc/lava:v0.25.2-validator
+    image: svetekllc/lava:v0.26.1-validator
     env_file:
       - node.env
     ports:
@@ -27,7 +27,7 @@ services:
     restart: unless-stopped
 
   provider:
-    image: svetekllc/lava:v0.25.2-provider
+    image: svetekllc/lava:v0.26.1-provider
     env_file:
       - provider.env
     ports:

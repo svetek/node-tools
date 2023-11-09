@@ -1,0 +1,31 @@
+---
+version: '3.9'
+services:
+  node:
+    image: mantra:test
+    env_file:
+      - node.env
+    ports:
+      - '21656:21656'
+      - '21660:21660'
+    volumes:
+      - /opt/testnet/mantra:/root/.mantrachain
+      - /etc/localtime:/etc/localtime:ro
+      - /etc/timezone:/etc/timezone:ro
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "100m"
+        max-file: "1"
+    deploy:
+      resources:
+        limits:
+          cpus: '4'
+          memory: '16gb'
+    networks:
+      - mantra
+    restart: unless-stopped
+
+networks:
+  mantra:
+    name: mantra

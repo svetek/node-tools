@@ -1,17 +1,16 @@
 http:
   routers:
-    axelar_adaimpulse_club:
+    starknet_ept_cx:
       entryPoints:
         - web
         - websecure
-      service: axelar_adaimpulse_club
-      rule: Host(`axelar.adaimpulse.club`)
+      service: starknet_ept_cx
+      rule: Host(`starknet.ept.cx`)
       tls:
         certResolver: letsencrypt
   services:
-    axelar_adaimpulse_club:
+    starknet_ept_cx:
       loadBalancer:
         servers:
-          - url: "h2c://lava-provider-1:22001"
+          - url: "h2c://lava-provider-m-1:22002"
         passHostHeader: true
-

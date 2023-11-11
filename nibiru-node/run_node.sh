@@ -27,6 +27,7 @@ init_node() {
 
   # Set seeds/peers
   sed -i \
+    -e 's|^indexer =.*|indexer = "null"|' \
     -e 's|^filter_peers =.*|filter_peers = "true"|' \
     -e "s|^persistent_peers =.*|persistent_peers = \"$PEERS\"|" \
     -e "s|^seeds =.*|seeds = \"$SEEDS\"|" \

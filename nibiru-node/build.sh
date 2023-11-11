@@ -3,18 +3,26 @@ export DOCKER_BUILDKIT=1
 
 set -e
 
-GIT_REPOSITORY=https://github.com/NibiruChain/nibiru.git
 DIR="$( cd "$( dirname "$0" )" && pwd )"
 DOCKERFILE="$DIR/Dockerfile"
 BUILD_DATE="$(date -u +'%Y-%m-%d')"
+GIT_REPOSITORY=https://github.com/NibiruChain/nibiru
 
 read -p "Enter image name: " -r IMAGE_NAME
 read -p "Enter release tag: " -r IMAGE_TAG
-read -p "Do you want to send the image to DockerHub [yes/no]: " -r PUSH_FLAG
 
-while [[ "$PUSH_FLAG" != "yes" && "$PUSH_FLAG" != "no" ]]
+echo "Do you want to send the image to DockerHub?"
+PS3="Send the image to DockerHub: "
+select answer in "yes" "no"
 do
-    read -r -p "Please answer yes/no: " PUSH_FLAG
+    case $answer in
+        "yes")
+            PUSH_FLAG="yes"; break
+            ;;
+        "no")
+            PUSH_FLAG="no"; break
+            ;;
+    esac
 done
 
 if [[ "$PUSH_FLAG" == "yes" ]]
@@ -26,18 +34,17 @@ else
     IMAGE=$IMAGE_NAME:$IMAGE_TAG
 fi
 
-echo -e "\nBuilding node"
+echo -e "\n\e[32m### The build information ###\e[0m"
 echo -e "Build date: \t$BUILD_DATE"
-echo -e "Dockerfile: \t$DOCKERFILE"
 echo -e "Docker context: $DIR"
+echo -e "Dockerfile: \t$DOCKERFILE"
 echo -e "Docker Image: \t$IMAGE"
 echo -e "Version: \t$IMAGE_TAG\n"
-
-echo -e "IMAGE=${IMAGE}\nCOMPOSE_PROJECT_NAME=nibiru" > .env
 
 docker build -f "$DOCKERFILE" "$DIR" \
      --build-arg IMAGE_TAG="$IMAGE_TAG" \
      --build-arg GIT_REPOSITORY="$GIT_REPOSITORY" \
+     --build-arg BIN="nibid" \
      --build-arg BUILD_DATE="$BUILD_DATE" \
      --tag $IMAGE
 
@@ -48,4 +55,4 @@ then
     docker push $IMAGE
 fi
 
-echo -e "\nThe build is complete\n"
+echo -e "\n\e[32mThe build is complete! \n\e[0m"

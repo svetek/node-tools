@@ -1,58 +1,123 @@
 #!/bin/bash
 
-SEEDS=$(curl -s https://networks.itn2.nibiru.fi/$CHAINID/seeds)
-PEERS=""
-
 init_node() {
-    # Set moniker and chain-id for Haqq (Moniker can be anything, chain-id must be an integer)
-    nibid init $MONIKER --chain-id $CHAINID --home $CONFIG_PATH
+  echo -e "\e[32m### Initialization node ###\e[0m\n"
 
-    # Set keyring-backend and chain-id configuration
-    nibid config chain-id $CHAINID --home $CONFIG_PATH
-    nibid config keyring-backend $KEYRING --home $CONFIG_PATH
+  # Set moniker and chain-id for Lava (Moniker can be anything, chain-id must be an integer)
+  $BIN init $MONIKER --chain-id $CHAIN_ID --home $CONFIG_PATH
 
-    # if $KEY exists it should be deleted
-    echo -e "\n\e[32m### Wallet info ###\e[0m"
-    (echo $KEY_PASS; echo $KEY_PASS) | nibid keys add $KEY --keyring-backend $KEYRING --home $CONFIG_PATH
+  # Set keyring-backend and chain-id configuration
+  $BIN config chain-id $CHAIN_ID --home $CONFIG_PATH
+  $BIN config keyring-backend $KEYRING --home $CONFIG_PATH
 
-    # Download genesis file
-    wget -O $CONFIG_PATH/config/genesis.json https://networks.itn2.nibiru.fi/$CHAINID/genesis
+  # Download addrbook and genesis files
+  if [[ -n $ADDRBOOK_URL ]]
+  then
+    wget -O $CONFIG_PATH/config/addrbook.json $ADDRBOOK_URL
+  fi
 
-    # Set seeds/peers
+  if [[ -n $GENESIS_URL ]]
+  then
+    wget -O $CONFIG_PATH/config/genesis.json $GENESIS_URL
+  fi
+
+  sed -i \
+    -e 's|^broadcast-mode *=.*|broadcast-mode = "sync"|' \
+    $CONFIG_PATH/config/client.toml
+
+  # Set seeds/peers
+  sed -i \
+    -e 's|^filter_peers =.*|filter_peers = "true"|' \
+    -e "s|^persistent_peers =.*|persistent_peers = \"$PEERS\"|" \
+    -e "s|^seeds =.*|seeds = \"$SEEDS\"|" \
+    -e 's|^create_empty_blocks =.*|create_empty_blocks = true|' \
+    -e 's|^create_empty_blocks_interval =.*|create_empty_blocks_interval = "0s"|' \
+    $CONFIG_PATH/config/config.toml
+
+  # Set timeout
+  sed -i \
+    -e 's|^timeout_commit =.*|timeout_commit = "5s"|' \
+    -e 's|^timeout_propose =.*|timeout_propose = "3s"|' \
+    -e 's|^timeout_precommit =.*|timeout_precommit = "1s"|' \
+    -e 's|^timeout_precommit_delta =.*|timeout_precommit_delta = "500ms"|' \
+    -e 's|^timeout_prevote =.*|timeout_prevote = "1s"|' \
+    -e 's|^timeout_prevote_delta =.*|timeout_prevote_delta = "500ms"|' \
+    -e 's|^timeout_propose_delta =.*|timeout_propose_delta = "500ms"|' \
+    -e 's|^skip_timeout_commit =.*|skip_timeout_commit = false|' \
+    $CONFIG_PATH/config/config.toml
+
+  # Set ports P2P and Prometheus
+  sed -i \
+    -e "s|^prometheus =.*|prometheus = true|" \
+    -e "s|^prometheus_listen_addr =.*|prometheus_listen_addr = \":$PROMETHEUS_PORT\"|" \
+    -e "s|laddr = \"tcp://0.0.0.0:26656\"|laddr = \"tcp://0.0.0.0:$P2P_PORT\"|" \
+    -e "s|^external_address *=.*|external_address = \"$(wget -qO- eth0.me):$P2P_PORT\"|" \
+    $CONFIG_PATH/config/config.toml
+
+  # Config pruning, snapshots and min price for GAZ
+  sed -i \
+    -e 's|^snapshot-interval =.*|snapshot-interval = 0|' \
+    -e 's|^pruning =.*|pruning = "custom"|' \
+    -e 's|^pruning-keep-recent =.*|pruning-keep-recent = "100"|' \
+    -e 's|^pruning-interval =.*|pruning-interval = "10"|' \
+    -e "s|^minimum-gas-prices =.*|minimum-gas-prices = \"0.0025u${TOKEN}\"|" \
+    $CONFIG_PATH/config/app.toml
+}
+
+state_sync() {
+  if [[ $STATE_SYNC && $STATE_SYNC == "true" ]]
+  then
+    LATEST_HEIGHT=$(curl -s $RPC/block | jq -r .result.block.header.height)
+    SYNC_BLOCK_HEIGHT=$(($LATEST_HEIGHT - $DIFF_HEIGHT))
+    SYNC_BLOCK_HASH=$(curl -s "$RPC/block?height=$SYNC_BLOCK_HEIGHT" | jq -r .result.block_id.hash)
     sed -i \
-      -e 's|^indexer *=.*|indexer = "null"|' \
-      -e 's|^filter_peers *=.*|filter_peers = "true"|' \
-      -e "s|^external_address *=.*|external_address = \"$(wget -qO- eth0.me):26656\"|" \
-      -e "s|^persistent_peers *=.*|persistent_peers = \"$PEERS\"|" \
-      -e "s|^seeds *=.*|seeds = \"$SEEDS\"|" \
-      -e 's|^prometheus *=.*|prometheus = true|' \
-      -e 's|^max_num_inbound_peers *=.*|max_num_inbound_peers = 50|' \
-      -e 's|^max_num_outbound_peers *=.*|max_num_outbound_peers = 50|' \
+      -e 's|^enable =.*|enable = true|' \
+      -e "s|^rpc_servers =.*|rpc_servers = \"$RPC,$RPC\"|" \
+      -e "s|^trust_height =.*|trust_height = $SYNC_BLOCK_HEIGHT|" \
+      -e "s|^trust_hash =.*|trust_hash = \"$SYNC_BLOCK_HASH\"|" \
       $CONFIG_PATH/config/config.toml
-
-    # Config pruning, snapshots and min price for GAZ
+  else
     sed -i \
-      -e 's|^snapshot-interval *=.*|snapshot-interval = 0|' \
-      -e 's|^pruning *=.*|pruning = "custom"|' \
-      -e 's|^pruning-interval *=.*|pruning-interval = "10"|' \
-      -e 's|^pruning-keep-every *=.*|pruning-keep-every = "0"|' \
-      -e 's|^pruning-keep-recent *=.*|pruning-keep-recent = "100"|' \
-      -e 's|^minimum-gas-prices *=.*|minimum-gas-prices = "0.025unibi"|' \
-      $CONFIG_PATH/config/app.toml
+      -e 's|^enable *=.*|enable = false|' \
+      $CONFIG_PATH/config/config.toml
+  fi
+}
+
+create_account() {
+  echo -e "\n\e[32m### Create account ###\e[0m"
+  if [[ -z $KEYRING || $KEYRING == "os" || $KEYRING == "file" ]]
+  then
+    expect -c "
+        #!/usr/bin/expect -f
+        set timeout -1
+        spawn $BIN keys add $KEY --home $CONFIG_PATH
+        exp_internal 0
+        expect \"Enter keyring passphrase*:\"
+        send   \"$KEYPASS\n\"
+        expect \"Re-enter keyring passphrase*:\"
+        send   \"$KEYPASS\n\"
+        expect eof
+    "
+  else
+    $BIN keys add $KEY --home $CONFIG_PATH
+  fi
 }
 
 start_node() {
-  (echo $KEY_PASS) | nibid start --home $CONFIG_PATH --log_level $LOGLEVEL
+  echo -e "\n\e[32m### Run Validator Node ###\e[0m\n"
+  state_sync
+  (echo $KEYPASS) | $BIN start --home $CONFIG_PATH --log_level $LOGLEVEL
 }
 
 set_variable() {
+  source ~/.bashrc
   if [[ ! $ACC_ADDRESS ]]
   then
-    echo 'export ACC_ADDRESS='$(echo $KEY_PASS | nibid keys show $KEY -a) >> $HOME/.bashrc
+    echo 'export ACC_ADDRESS='$(echo $KEYPASS | $BIN keys show $KEY -a) >> $HOME/.bashrc
   fi
   if [[ ! $VAL_ADDRESS ]]
   then
-    echo 'export VAL_ADDRESS='$(echo $KEY_PASS | nibid keys show $KEY --bech val -a) >> $HOME/.bashrc
+    echo 'export VAL_ADDRESS='$(echo $KEYPASS | $BIN keys show $KEY --bech val -a) >> $HOME/.bashrc
   fi
 }
 
@@ -63,10 +128,13 @@ fi
 
 if [[ ! -d "$CONFIG_PATH" ]] || [[ ! -d "$CONFIG_PATH/config" || $(ls -la $CONFIG_PATH/config | grep -cie .*key.json) -eq 0 ]]
 then
-  echo -e "\n\e[32m### Initialization node ###\e[0m\n"
   init_node
 fi
 
-echo -e "\n\e[32m### Run node ###\e[0m\n"
+if [[ $(find $CONFIG_PATH -maxdepth 2 -type f -name $KEY.info | wc -l) -eq 0 ]]
+then
+  create_account
+fi
+
 set_variable
 start_node

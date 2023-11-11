@@ -12,6 +12,6 @@ http:
     t-rpc_nibiru_adaimpulse_club:
       loadBalancer:
         servers:
-          - url: "http://nibiru-node-1:26657"
+          - url: "http://nibiru-node-testnet-1:26657"
         passHostHeader: true
 

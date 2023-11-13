@@ -1,15 +1,15 @@
 http:
   routers:
-    avax_adaimpulse_club:
-      entryPoints: 
+    provider-01_lava_impulse_expert:
+      entryPoints:
         - web
         - websecure
-      service: avax_adaimpulse_club
-      rule: Host(`avax.adaimpulse.club`)
+      service: provider-01_lava_impulse_expert
+      rule: Host(`provider-01.lava.impulse.expert`)
       tls:
         certResolver: letsencrypt
   services:
-    avax_adaimpulse_club:
+    provider-01_lava_impulse_expert:
       loadBalancer:
         servers:
           - url: "h2c://lava-provider-1:22001"

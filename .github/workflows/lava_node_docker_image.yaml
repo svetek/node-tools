@@ -1,4 +1,4 @@
-# name: test
+name: Build lava node docker image
 run-name: Deploy to ${{ inputs.deploy_target }} by @${{ github.actor }}
 on: [push]
 jobs:

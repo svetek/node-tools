@@ -6,6 +6,6 @@ jobs:
       runs-on: ubuntu-latest
       steps:
         - name: Task 1
-          run: echo 'Test 1'
+          run: BUILD_DATE="$(date -u +'%Y-%m-%d')" && echo "$BUILD_DATE"          
         - name: Task 1
           run: echo 'Test 2'

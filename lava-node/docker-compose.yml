@@ -27,7 +27,7 @@ services:
     restart: unless-stopped
 
   provider:
-    image: svetekllc/lava:v0.27.0-provider
+    image: svetekllc/lava:v0.27.1-provider
     env_file:
       - provider.env
     ports:

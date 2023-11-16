@@ -2,19 +2,10 @@ name: Build lava node docker image
 run-name: Deploy to ${{ inputs.deploy_target }} by @${{ github.actor }}
 on: [push]
 jobs:
-  build:
-
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        go-version: [ '1.19', '1.20', '1.21.x' ]
-
-    steps:
-      - uses: actions/checkout@v4
-      - name: Setup Go ${{ matrix.go-version }}
-        uses: actions/setup-go@v4
-        with:
-          go-version: ${{ matrix.go-version }}
-      # You can test your matrix by printing the current Go version
-      - name: Display Go version
-        run: go version
+    my-jobname:
+      runs-on: ubuntu-latest
+      steps:
+        - name: Task 1
+          run: echo 'Test 1'
+        - name: Task 1
+          run: echo 'Test 2'

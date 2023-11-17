@@ -47,7 +47,7 @@ init_node() {
   # Set ports P2P and Prometheus
   sed -i \
     -e "s|^prometheus =.*|prometheus = true|" \
-    -e "s|^prometheus_listen_addr =.*|prometheus_listen_addr = \":$PROMETHEUS_PORT\"|" \
+    -e "s|^prometheus_listen_addr =.*|prometheus_listen_addr = \":$METRICS_PORT\"|" \
     -e "s|laddr = \"tcp://0.0.0.0:26656\"|laddr = \"tcp://0.0.0.0:$P2P_PORT\"|" \
     -e "s|^external_address *=.*|external_address = \"$(wget -qO- eth0.me):$P2P_PORT\"|" \
     $CONFIG_PATH/config/config.toml
@@ -101,26 +101,39 @@ _EOF_
 
 start_node() {
   case ${NODE_TYPE,,} in
+    "cache")
+      echo -e "\n\e[32m### Run Cache ###\e[0m\n"
+      args=(
+            "$CACHE_LISTEN_ADDRESS:$CACHE_PORT" \
+            "--metrics_address $METRICS_LISTEN_ADDRESS:$METRICS_PORT" \
+            "--log_level $LOGLEVEL"
+      )
+      $BIN cache ${args[@]}
+      ;;
+
+    "provider")
+      echo -e "\n\e[32m### Run RPC Provider ###\e[0m\n"
+      [[ ! -f "$CONFIG_PATH/config/rpcprovider.yml" ]] && create_endpoins_conf
+      args=(
+            "--chain-id $CHAIN_ID" \
+            "--from $KEY" \
+            "--geolocation $GEOLOCATION" \
+            "--home $CONFIG_PATH" \
+            "--keyring-backend $KEYRING" \
+            "--log_level $LOGLEVEL" \
+            "--metrics-listen-address $METRICS_LISTEN_ADDRESS:$METRICS_PORT" \
+            "--node $RPC" \
+            "--parallel-connections $TOTAL_CONNECTIONS" \
+            "--reward-server-storage $CONFIG_PATH/$REWARDS_STORAGE_DIR" \
+      )
+      [[ $CACHE_ENABLE == "true" ]] && args+=( "--cache-be $CACHE_ADDRESS:$CACHE_PORT" )
+      $BIN rpcprovider ${args[@]}
+      ;;
 
     "validator")
       echo -e "\n\e[32m### Run Validator Node ###\e[0m\n"
       state_sync
       $BIN start --home $CONFIG_PATH --log_level $LOGLEVEL
-      ;;
-
-    "provider")
-      echo -e "\n\e[32m### Run RPC Node ###\e[0m\n"
-      [[ ! -f "$CONFIG_PATH/config/rpcprovider.yml" ]] && create_endpoins_conf
-      $BIN rpcprovider --chain-id $CHAIN_ID \
-                       --from $KEY \
-                       --geolocation $GEOLOCATION \
-                       --home $CONFIG_PATH \
-                       --keyring-backend $KEYRING \
-                       --log_level $LOGLEVEL \
-                       --metrics-listen-address ":$PROMETHEUS_PORT" \
-                       --node $RPC \
-                       --parallel-connections $TOTAL_CONNECTIONS \
-                       --reward-server-storage "$CONFIG_PATH/$REWARDS_STORAGE_DIR" \
       ;;
   esac
 }
@@ -147,10 +160,14 @@ then
   init_node
 fi
 
-if [[ $(find $CONFIG_PATH -maxdepth 2 -type f -name $KEY.info | wc -l) -eq 0 ]]
+if [[ $NODE_TYPE == "validator" || $NODE_TYPE == "provider" ]] && [[ $(find $CONFIG_PATH -maxdepth 2 -type f -name $KEY.info | wc -l) -eq 0 ]]
 then
   create_account
 fi
 
-set_variable
+if [[ $NODE_TYPE == "validator" || $NODE_TYPE == "provider" ]]
+then
+  set_variable
+fi
+
 start_node

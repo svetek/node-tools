@@ -8,13 +8,16 @@ DOCKERFILE="$DIR/Dockerfile"
 BUILD_DATE="$(date -u +'%Y-%m-%d')"
 GIT_REPOSITORY=https://github.com/lavanet/lava
 
-NODE_TYPES=("provider" "validator")
+NODE_TYPES=("cache" "provider" "validator")
 
 echo "What node type is required for build?"
 PS3="Node type selected: "
 select node_type in "${NODE_TYPES[@]}"
 do
     case $node_type in
+        "cache")
+            BIN="lavap"; break
+            ;;
         "provider")
             BIN="lavap"; break
             ;;

@@ -112,6 +112,12 @@ start_node() {
       $BIN cache ${args[@]}
       ;;
 
+    "node")
+      echo -e "\n\e[32m### Run Node ###\e[0m\n"
+      state_sync
+      $BIN start --home $CONFIG_PATH --log_level $LOGLEVEL
+      ;;
+
     "provider")
       echo -e "\n\e[32m### Run RPC Provider ###\e[0m\n"
       [[ ! -f "$CONFIG_PATH/config/rpcprovider.yml" ]] && create_endpoins_conf
@@ -129,12 +135,6 @@ start_node() {
       )
       [[ $CACHE_ENABLE == "true" ]] && args+=( "--cache-be $CACHE_ADDRESS:$CACHE_PORT" )
       $BIN rpcprovider ${args[@]}
-      ;;
-
-    "validator")
-      echo -e "\n\e[32m### Run Validator Node ###\e[0m\n"
-      state_sync
-      $BIN start --home $CONFIG_PATH --log_level $LOGLEVEL
       ;;
   esac
 }
@@ -156,17 +156,17 @@ then
   set -x
 fi
 
-if [[ $NODE_TYPE == "validator" ]] && [[ ! -d "$CONFIG_PATH/config" || $(ls -la $CONFIG_PATH/config | grep -cie .*key.json) -eq 0 ]]
+if [[ $NODE_TYPE == "node" ]] && [[ ! -d "$CONFIG_PATH/config" || $(ls -la $CONFIG_PATH/config | grep -cie .*key.json) -eq 0 ]]
 then
   init_node
 fi
 
-if [[ $NODE_TYPE == "validator" || $NODE_TYPE == "provider" ]] && [[ $(find $CONFIG_PATH -maxdepth 2 -type f -name $KEY.info | wc -l) -eq 0 ]]
+if [[ $NODE_TYPE == "node" || $NODE_TYPE == "provider" ]] && [[ $(find $CONFIG_PATH -maxdepth 2 -type f -name $KEY.info | wc -l) -eq 0 ]]
 then
   create_account
 fi
 
-if [[ $NODE_TYPE == "validator" || $NODE_TYPE == "provider" ]]
+if [[ $NODE_TYPE == "node" || $NODE_TYPE == "provider" ]]
 then
   set_variable
 fi

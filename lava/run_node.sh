@@ -46,10 +46,11 @@ init_node() {
 
   # Set ports P2P and Prometheus
   sed -i \
+    -e "s|^laddr = \"tcp://127.0.0.1:26657\"|laddr = \"tcp://0.0.0.0:$RPC_PORT\"|" \
+    -e "s|^laddr = \"tcp://0.0.0.0:26656\"|laddr = \"tcp://0.0.0.0:$P2P_PORT\"|" \
+    -e "s|^external_address *=.*|external_address = \"$(wget -qO- eth0.me):$P2P_PORT\"|" \
     -e "s|^prometheus =.*|prometheus = true|" \
     -e "s|^prometheus_listen_addr =.*|prometheus_listen_addr = \":$METRICS_PORT\"|" \
-    -e "s|laddr = \"tcp://0.0.0.0:26656\"|laddr = \"tcp://0.0.0.0:$P2P_PORT\"|" \
-    -e "s|^external_address *=.*|external_address = \"$(wget -qO- eth0.me):$P2P_PORT\"|" \
     $CONFIG_PATH/config/config.toml
 
   # Config pruning, snapshots and min price for GAZ

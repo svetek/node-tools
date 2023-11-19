@@ -1,11 +1,74 @@
-name: Build lava node docker image
-run-name: Deploy to ${{ inputs.deploy_target }} by @${{ github.actor }}
+name: Lava Build Image
+run-name: Lava build image by @${{ github.actor }}
 on: workflow_dispatch
 jobs:
-    my-jobname:
-      runs-on: ubuntu-latest
-      steps:
-        - name: Task 1
-          run: BUILD_DATE="$(date -u +'%Y-%m-%d')" && echo "$BUILD_DATE"          
-        - name: Task 1
-          run: echo 'Test 2'
+  check_new_version:
+    name: Check the new version
+    runs-on: ubuntu-latest
+    outputs:
+      is_update: ${{ steps.compare_versions.outputs.is_update }}
+      version: ${{ steps.compare_versions.outputs.version }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: 📝 Get last version from the DockerHub registry
+        id: get_last_version_from_dockerhub
+        run: |
+          version=$(curl -s -S "https://registry.hub.docker.com/v2/repositories/svetekllc/lava/tags/" | jq -r '."results"[]["name"] | select(test("^v[0-9]+\\.[0-9]+\\.[0-9]+-provider$")) | gsub("-provider";"")' | sort -V | tail -n1)
+          echo "Last version is $version"
+          echo "d_last_version=$version" >> "$GITHUB_OUTPUT"
+
+      - name: 📝 Get last version from the GitHub repository
+        id: get_last_version_from_github
+        run: |
+          version=$(curl -s "https://api.github.com/repos/lavanet/lava/releases" | jq -r '.[].tag_name' | sort -V | tail -n 1)
+          echo "Last version is $version"
+          echo "g_last_version=$version" >> "$GITHUB_OUTPUT"
+
+      - name: 🆚 Compare versions and set update flag
+        id: compare_versions
+        env:
+          version_from_docker: ${{ steps.get_last_version_from_dockerhub.outputs.d_last_version }}
+          version_from_git: ${{ steps.get_last_version_from_github.outputs.g_last_version }}
+        run: |
+          if [[ "$version_from_docker" != "$version_from_git" ]]
+          then
+            echo "Versions are different. Running build."
+            echo "is_update=true" >> "$GITHUB_OUTPUT"
+            echo "version=$version_from_git" >> "$GITHUB_OUTPUT"
+          else
+            echo "Versions are the same. Skipping build."
+            echo "is_update=false" >> "$GITHUB_OUTPUT"
+          fi
+
+  build_push_image:
+    name: Build and Push image to DockerHub
+    needs: check_new_version
+    if: ${{ needs.check_new_version.outputs.is_update == 'true' }}
+    env:
+      tag: ${{ needs.check_new_version.outputs.version }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: check
+        run: |
+          echo $tag
+      - name: Login to DockerHub
+        uses: docker/login-action@v3.0.0
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      - name: Build and push image
+        uses: docker/build-push-action@v5.0.0
+        with:
+          build-args: |
+            IMAGE_TAG=${{ env.tag }}
+            GIT_REPOSITORY=${{ vars.LAVA_GIT_REPOSITORY }}
+            BIN=${{ vars.LAVA_BIN }}
+            NODE_TYPE=${{ vars.LAVA_NODE_TYPE }}
+            BUILD_DATE=${{ vars.BUILD_DATE }}
+          context: "{{defaultContext}}:lava"
+          tags: "svetekllc/lava:${{ env.tag }}-${{ vars.LAVA_NODE_TYPE }}"
+          push: true
+
+          

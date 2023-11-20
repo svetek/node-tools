@@ -1,0 +1,26 @@
+{
+    "project_name": [
+        "haqq",
+        "lava"
+    ],
+    "git_url": ["https://github.com"],
+    "git_api_url": ["https://api.github.com/repos"],
+    "include": [
+        {
+            "project_name": "haqq",
+            "git_repository_name": "haqq-network",
+            "binary": {
+                "node": "haqqd"
+            }
+        },
+        {
+            "project_name": "lava",
+            "git_repository_name": "lavanet",
+            "binary": {
+                "cache": "lavap",
+                "node": "lavad",
+                "provider": "lavap"
+            }
+        }
+    ]
+}

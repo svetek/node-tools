@@ -1,6 +1,8 @@
-name: Lava Build Image
-run-name: Lava build image by @${{ github.actor }}
-on: workflow_dispatch
+name: Build Image
+run-name: ${{inputs.project_name }} build image version ${{inputs.version }} by @${{ github.actor }}
+on:
+  repository_dispatch:
+    types: [repository_dispatch]
 jobs:
   check_new_version:
     name: Check the new version
@@ -70,5 +72,3 @@ jobs:
           context: "{{defaultContext}}:lava"
           tags: "svetekllc/lava:${{ env.tag }}-${{ vars.LAVA_NODE_TYPE }}"
           push: true
-
-          

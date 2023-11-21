@@ -2,7 +2,7 @@
 version: '3.9'
 services:
   node-testnet:
-    image: svetekllc/haqq:v1.6.1
+    image: svetekllc/haqq:v1.6.1-node
     labels:
       network: testnet
     env_file:
@@ -24,10 +24,12 @@ services:
         limits:
           cpus: '4'
           memory: '8gb'
+    networks:
+      - haqq
     restart: unless-stopped
 
   node-mainnet:
-    image: svetekllc/haqq:v1.6.3
+    image: svetekllc/haqq:v1.6.3-node
     labels:
       network: mainnet
     env_file:
@@ -49,4 +51,10 @@ services:
         limits:
           cpus: '4'
           memory: '8gb'
+    networks:
+      - haqq
     restart: unless-stopped
+
+networks:
+  haqq:
+    name: haqq

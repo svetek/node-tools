@@ -1,5 +1,5 @@
 name: Check a new version
-run-name: Check a new version by @${{ github.actor }}
+run-name: Check a new version
 on: workflow_dispatch
 
 jobs:
@@ -18,7 +18,7 @@ jobs:
           echo "result=$(cat ./projects.json | jq -c '.')" >> $GITHUB_OUTPUT
 
   check_new_version:
-    name: Check a new version for ${{ matrix.project_name }}
+    name: Check a new version for ${{ matrix.project_name }} ${{ matrix.node_type }}
     needs: get_projects_config
     runs-on: ubuntu-latest
     strategy:
@@ -30,7 +30,7 @@ jobs:
       - name: 📝 Get last version from the DockerHub registry
         id: get_last_version_from_dockerhub
         run: |
-          version=$(curl -s -S "https://registry.hub.docker.com/v2/repositories/svetekllc/${{ matrix.project_name }}/tags/" | jq -r '.results[].name' | sort -V | tail -n1)
+          version=$(curl -s -S "https://registry.hub.docker.com/v2/repositories/svetekllc/${{ matrix.project_name }}/tags/" | jq -r '.results[].name | select(test("${{ matrix.node_type }}"))' | sort -V | tail -n1)
           echo "Last version is $version"
           echo "d_last_version=$version" >> "$GITHUB_OUTPUT"
 
@@ -41,24 +41,25 @@ jobs:
           echo "Last version is $version"
           echo "g_last_version=$version" >> "$GITHUB_OUTPUT"
 
-      - name: 🆚 Compare versions and set update flag
+      - name: 🆚 Compare versions
         id: compare_versions
         env:
+          bin: ${{ matrix.binary }}
+          git_repository: ${{ matrix.git_url }}/${{ matrix.git_repository_name }}/${{ matrix.project_name }}
+          node_type: ${{ matrix.node_type }}
+          project_name: ${{matrix.project_name }}
+          tag: ${{ steps.get_last_version_from_github.outputs.g_last_version }}
           version_from_docker: ${{ steps.get_last_version_from_dockerhub.outputs.d_last_version }}
           version_from_git: ${{ steps.get_last_version_from_github.outputs.g_last_version }}
         run: |
           if [[ "$version_from_docker" != "$version_from_git" ]]
           then
             echo "Versions are different. Running build."
-            curl -L \
-            -X POST \
+            curl -L -X POST \
             -H "Accept: application/vnd.github+json" \
             -H "Authorization: Bearer ${{ secrets.WORKFLOW_GITHUB_TOKEN }}" \
-            -H "X-GitHub-Api-Version: 2022-11-28" \
-            https://api.github.com/repos/svetek/node-tools/actions/workflows/WORKFLOW_ID/dispatches \
-            -d '{"ref":"check_version_workflow","inputs":{"name":"Mona the Octocat","home":"San Francisco, CA"}}'
-            
+            https://api.github.com/repos/svetek/node-tools/actions/workflows/build_docker_image.yaml/dispatches \
+            -d "{\"ref\":\"main\",\"inputs\":{\"project_name\": \"$project_name\",\"tag\": \"$tag\", \"git_repository\": \"$git_repository\", \"bin\": \"$bin\", \"node_type\": \"$node_type\"}}"
           else
             echo "Versions are the same. Skipping build."
           fi
-

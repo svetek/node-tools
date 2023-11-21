@@ -52,7 +52,7 @@ jobs:
           version_from_docker: ${{ steps.get_last_version_from_dockerhub.outputs.d_last_version }}
           version_from_git: ${{ steps.get_last_version_from_github.outputs.g_last_version }}
         run: |
-          if [[ "$version_from_docker" != "$version_from_git" ]]
+          if [[ "${version_from_docker//-$node_type}" != "$version_from_git" ]]
           then
             echo "Versions are different. Running build."
             curl -L -X POST \

@@ -1,5 +1,5 @@
 name: Build Image
-run-name: ${{inputs.project_name }} build image ${{inputs.tag }}
+run-name: ${{inputs.project_name }} ${{inputs.node_type }} build image ${{inputs.tag }}
 on: 
   workflow_dispatch:
     inputs:

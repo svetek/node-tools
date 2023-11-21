@@ -1,26 +1,42 @@
 {
-    "project_name": [
-        "haqq",
-        "lava"
+    "node_name": [
+        "haqq-node",
+        "lava-node",
+        "lava-cache",
+        "lava-provider"
     ],
-    "git_url": ["https://github.com"],
-    "git_api_url": ["https://api.github.com/repos"],
     "include": [
         {
-            "project_name": "haqq",
-            "git_repository_name": "haqq-network",
-            "binary": {
-                "node": "haqqd"
-            }
+            "git_url": "https://github.com",
+            "git_api_url": "https://api.github.com/repos"
         },
         {
+            "node_name": "haqq-node",
+            "project_name": "haqq",
+            "git_repository_name": "haqq-network",
+            "node_type": "node",
+            "binary": "haqqd"
+        },
+        {
+            "node_name": "lava-node",
             "project_name": "lava",
             "git_repository_name": "lavanet",
-            "binary": {
-                "cache": "lavap",
-                "node": "lavad",
-                "provider": "lavap"
-            }
+            "node_type": "node",
+            "binary": "lavad"
+        },
+        {
+            "node_name": "lava-cache",
+            "project_name": "lava",
+            "git_repository_name": "lavanet",
+            "node_type": "cache",
+            "binary": "lavap"
+        },
+        {
+            "node_name": "lava-provider",
+            "project_name": "lava",
+            "git_repository_name": "lavanet",
+            "node_type": "provider",
+            "binary": "lavap"
         }
     ]
 }

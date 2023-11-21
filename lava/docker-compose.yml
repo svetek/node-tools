@@ -2,7 +2,7 @@
 version: '3.9'
 services:
   cache:
-    image: svetekllc/lava:v0.27.1-cache
+    image: svetekllc/lava:v0.27.3-cache
     env_file:
       - cache.env
     ports:
@@ -50,7 +50,7 @@ services:
     restart: unless-stopped
 
   provider:
-    image: svetekllc/lava:v0.27.1-provider
+    image: svetekllc/lava:v0.27.3-provider
     env_file:
       - provider.env
     ports:

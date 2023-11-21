@@ -62,12 +62,11 @@ echo -e "Node type: \t$node_type"
 echo -e "Version: \t$IMAGE_TAG\n"
 
 docker build -f "$DOCKERFILE" "$DIR" \
-    --build-arg IMAGE_TAG="$IMAGE_TAG" \
-    --build-arg GIT_REPOSITORY="$GIT_REPOSITORY" \
-    --build-arg BIN="$BIN" \
-    --build-arg NODE_TYPE="$node_type" \
-    --build-arg BUILD_DATE="$BUILD_DATE" \
-    --tag $IMAGE
+     --build-arg IMAGE_TAG="$IMAGE_TAG" \
+     --build-arg GIT_REPOSITORY="$GIT_REPOSITORY" \
+     --build-arg BIN="$BIN" \
+     --build-arg NODE_TYPE="$node_type" \
+     --tag $IMAGE
 
 if [[ "$PUSH_FLAG" == "yes" ]]
 then

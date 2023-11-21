@@ -1,7 +1,8 @@
 name: Check a new version
 run-name: Check a new version
-on: workflow_dispatch
-
+on:
+  schedule:
+    - cron: "10 0,12 * * *"
 jobs:
   get_projects_config:
     name: Get projects config
@@ -16,7 +17,6 @@ jobs:
         id: convert-json
         run: |
           echo "result=$(cat ./projects.json | jq -c '.')" >> $GITHUB_OUTPUT
-
   check_new_version:
     name: Check a new version for ${{ matrix.project_name }} ${{ matrix.node_type }}
     needs: get_projects_config

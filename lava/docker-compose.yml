@@ -3,6 +3,8 @@ version: '3.9'
 services:
   cache:
     image: svetekllc/lava:v0.27.3-cache
+    labels:
+      network: testnet
     env_file:
       - cache.env
     ports:
@@ -26,6 +28,8 @@ services:
 
   node:
     image: svetekllc/lava:v0.27.0-validator
+    labels:
+      network: testnet
     env_file:
       - node.env
     ports:
@@ -51,6 +55,8 @@ services:
 
   provider:
     image: svetekllc/lava:v0.27.3-provider
+    labels:
+      network: testnet
     env_file:
       - provider.env
     ports:

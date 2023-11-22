@@ -3,6 +3,8 @@ version: '3.9'
 services:
   node_exporter:
     image: prom/node-exporter:v1.6.1
+    labels:
+      network: mainnet
     container_name: node_exporter
     volumes:
       - type: 'bind'
@@ -18,7 +20,8 @@ services:
 
   cadvisor:
     image: gcr.io/cadvisor/cadvisor:latest
-    container_name: cadvisor
+    labels:
+      network: mainnet
     ports:
     - 18080:8080
     volumes:
@@ -26,4 +29,10 @@ services:
     - /var/run:/var/run:rw
     - /sys:/sys:ro
     - /var/lib/docker/:/var/lib/docker:ro
+    networks:
+      - monitoring
     restart: unless-stopped
+
+networks:
+  monitoring:
+    name: monitoring

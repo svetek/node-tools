@@ -3,6 +3,8 @@ version: '3.9'
 services:
   node:
     image: svetekllc/cosmos:v13.0.0
+    labels:
+      network: mainnet
     env_file:
       - node.env
     ports:

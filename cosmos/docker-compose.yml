@@ -11,7 +11,7 @@ services:
       - '12656:12656'
       - '12660:12660'
     volumes:
-      - /opt/testnet/cosmos:/root/.gaia
+      - /opt/nvme0n1/cosmos:/root/.gaia
       - /etc/localtime:/etc/localtime:ro
       - /etc/timezone:/etc/timezone:ro
     logging:

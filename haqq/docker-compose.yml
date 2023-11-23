@@ -11,7 +11,7 @@ services:
       - '20656:20656'
       - '20660:20660'
     volumes:
-      - /opt/testnet/haqq:/root/.haqqd
+      - /opt/nvme0n1/haqq:/root/.haqqd
       - /etc/localtime:/etc/localtime:ro
       - /etc/timezone:/etc/timezone:ro
     logging:

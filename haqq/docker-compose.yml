@@ -38,7 +38,7 @@ services:
       - '10656:10656'
       - '10660:10660'
     volumes:
-      - /opt/mainnet/haqq:/root/.haqqd
+      - /opt/nvme1n1/haqq:/root/.haqqd
       - /etc/localtime:/etc/localtime:ro
       - /etc/timezone:/etc/timezone:ro
     logging:

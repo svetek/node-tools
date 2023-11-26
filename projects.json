@@ -1,5 +1,6 @@
 {
     "node_name": [
+        "evmos-node",
         "haqq-node",
         "lava-node",
         "lava-cache",
@@ -9,6 +10,13 @@
         {
             "git_url": "https://github.com",
             "git_api_url": "https://api.github.com/repos"
+        },
+        {
+            "node_name": "evmos-node",
+            "project_name": "evmos",
+            "git_repository_name": "evmos",
+            "node_type": "node",
+            "binary": "evmosd"
         },
         {
             "node_name": "haqq-node",

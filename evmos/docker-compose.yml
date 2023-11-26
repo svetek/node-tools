@@ -1,0 +1,31 @@
+---
+version: '3.9'
+services:
+  node:
+    image: svetekllc/evmos:v15.0.0-node
+    labels:
+      network: mainnet
+    env_file:
+      - node.env
+    ports:
+      - '14656:14656'
+      - '14660:14660'
+    volumes:
+      - /opt/nvme1n1/evmos:/root/.evmosd
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "100m"
+        max-file: "1"
+    deploy:
+      resources:
+        limits:
+          cpus: '8'
+          memory: '32gb'
+    networks:
+      - evmos
+    restart: unless-stopped
+
+networks:
+  evmos:
+    name: evmos

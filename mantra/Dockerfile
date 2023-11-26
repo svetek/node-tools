@@ -2,14 +2,15 @@
 FROM debian:bookworm-slim
 
 ARG BIN
-ARG BUILD_DATE
-ARG IMAGE_TAG
 ARG GIT_REPOSITORY
+ARG IMAGE_TAG
+ARG NODE_TYPE
 
 LABEL image-tag=$IMAGE_TAG
-LABEL build-date=$BUILD_DATE
+LABEL node-type=$NODE_TYPE
 
 ENV BIN=$BIN
+ENV NODE_TYPE=$NODE_TYPE
 
 RUN apt-get update && apt-get upgrade -y \
     && apt-get install -y tzdata ca-certificates curl wget jq expect unzip \
@@ -29,6 +30,6 @@ RUN chmod ug+x /usr/bin/$BIN
 
 COPY ./run_node.sh .
 
-RUN chmod ug+x ./run_node.sh
+RUN chmod +x ./run_node.sh
 
 ENTRYPOINT [ "./run_node.sh" ]

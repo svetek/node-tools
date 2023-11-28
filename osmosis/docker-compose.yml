@@ -10,8 +10,6 @@ services:
       - '11660:11660'
     volumes:
       - /opt/nvme1n1/osmosis:/root/.osmosisd
-      - /etc/localtime:/etc/localtime:ro
-      - /etc/timezone:/etc/timezone:ro
     logging:
       driver: "json-file"
       options:

@@ -12,8 +12,6 @@ services:
       - '20660:20660'
     volumes:
       - /opt/nvme0n1/haqq:/root/.haqqd
-      - /etc/localtime:/etc/localtime:ro
-      - /etc/timezone:/etc/timezone:ro
     logging:
       driver: "json-file"
       options:
@@ -39,8 +37,6 @@ services:
       - '10660:10660'
     volumes:
       - /opt/nvme1n1/haqq:/root/.haqqd
-      - /etc/localtime:/etc/localtime:ro
-      - /etc/timezone:/etc/timezone:ro
     logging:
       driver: "json-file"
       options:

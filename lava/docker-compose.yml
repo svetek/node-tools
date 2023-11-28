@@ -2,16 +2,13 @@
 version: '3.9'
 services:
   cache:
-    image: svetekllc/lava:v0.27.3-cache
+    image: svetekllc/lava:v0.27.1-cache
     labels:
       network: testnet
     env_file:
       - cache.env
     ports:
       - '23101:23101'
-    volumes:
-      - /etc/localtime:/etc/localtime:ro
-      - /etc/timezone:/etc/timezone:ro
     logging:
       driver: "json-file"
       options:
@@ -37,8 +34,6 @@ services:
       - '23660:23660'
     volumes:
       - /opt/nvme0n1/lava:/root/.lava
-      - /etc/localtime:/etc/localtime:ro
-      - /etc/timezone:/etc/timezone:ro
     logging:
       driver: "json-file"
       options:
@@ -54,7 +49,7 @@ services:
     restart: unless-stopped
 
   provider:
-    image: svetekllc/lava:v0.27.3-provider
+    image: svetekllc/lava:v0.27.1-provider
     labels:
       network: testnet
     env_file:
@@ -63,8 +58,6 @@ services:
       - '23001:23001'
     volumes:
       - /opt/nvme0n1/lava:/root/.lava
-      - /etc/localtime:/etc/localtime:ro
-      - /etc/timezone:/etc/timezone:ro
     logging:
       driver: "json-file"
       options:

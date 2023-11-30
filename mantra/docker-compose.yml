@@ -3,15 +3,15 @@ version: '3.9'
 services:
   node:
     image: mantra:test
+    labels:
+      network: testnet
     env_file:
       - node.env
     ports:
       - '21656:21656'
       - '21660:21660'
     volumes:
-      - /opt/testnet/mantra:/root/.mantrachain
-      - /etc/localtime:/etc/localtime:ro
-      - /etc/timezone:/etc/timezone:ro
+      - /opt/nvme0n1/mantra:/root/.mantrachain
     logging:
       driver: "json-file"
       options:

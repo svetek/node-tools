@@ -32,6 +32,19 @@ services:
       - monitoring
     restart: unless-stopped
 
+  smartctl:
+    image: prometheuscommunity/smartctl-exporter
+    labels:
+      org.label-schema.group: monitoring
+      network: mainnet
+    privileged: true
+    user: root
+    ports:
+    - 9633:9633
+    networks:
+      - monitoring
+    restart: unless-stopped
+
 networks:
   monitoring:
     name: monitoring

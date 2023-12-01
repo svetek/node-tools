@@ -2,7 +2,7 @@
 version: '3.9'
 services:
   node:
-    image: near:1.36.0-node
+    image: svetekllc/near:1.36.0-node
     labels:
       network: mainnet
     env_file:

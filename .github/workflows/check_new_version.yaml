@@ -37,7 +37,7 @@ jobs:
       - name: 📝 Get last version from the GitHub repository
         id: get_last_version_from_github
         run: |
-          version=$(curl -s "${{ matrix.git_api_url}}/${{ matrix.git_repository_name}}/${{ matrix.project_name}}/releases" | jq -r '.[].tag_name' | sort -V | tail -n 1)
+          version=$(curl -s "${{ matrix.git_api_url}}/${{ matrix.git_repository}}/releases" | jq -r '.[].tag_name' | sort -V | tail -n 1)
           echo "Last version is $version"
           echo "g_last_version=$version" >> "$GITHUB_OUTPUT"
 
@@ -45,7 +45,7 @@ jobs:
         id: compare_versions
         env:
           bin: ${{ matrix.binary }}
-          git_repository: ${{ matrix.git_url }}/${{ matrix.git_repository_name }}/${{ matrix.project_name }}
+          git_repository: ${{ matrix.git_url }}/${{ matrix.git_repository }}
           node_type: ${{ matrix.node_type }}
           project_name: ${{matrix.project_name }}
           tag: ${{ steps.get_last_version_from_github.outputs.g_last_version }}

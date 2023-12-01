@@ -4,7 +4,8 @@
         "haqq-node",
         "lava-node",
         "lava-cache",
-        "lava-provider"
+        "lava-provider",
+        "near-node"
     ],
     "include": [
         {
@@ -14,37 +15,44 @@
         {
             "node_name": "evmos-node",
             "project_name": "evmos",
-            "git_repository_name": "evmos",
+            "git_repository": "evmos/evmos",
             "node_type": "node",
             "binary": "evmosd"
         },
         {
             "node_name": "haqq-node",
             "project_name": "haqq",
-            "git_repository_name": "haqq-network",
+            "git_repository": "haqq-network/haqq",
             "node_type": "node",
             "binary": "haqqd"
         },
         {
             "node_name": "lava-node",
             "project_name": "lava",
-            "git_repository_name": "lavanet",
+            "git_repository": "lavanet/lava",
             "node_type": "node",
             "binary": "lavad"
         },
         {
             "node_name": "lava-cache",
             "project_name": "lava",
-            "git_repository_name": "lavanet",
+            "git_repository": "lavanet/lava",
             "node_type": "cache",
             "binary": "lavap"
         },
         {
             "node_name": "lava-provider",
             "project_name": "lava",
-            "git_repository_name": "lavanet",
+            "git_repository": "lavanet/lava",
             "node_type": "provider",
             "binary": "lavap"
+        },
+        {
+            "node_name": "near-node",
+            "project_name": "near",
+            "git_repository": "near/nearcore",
+            "node_type": "node",
+            "binary": "neard"
         }
     ]
 }

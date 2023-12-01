@@ -4,19 +4,19 @@ on:
   workflow_dispatch:
     inputs:
       bin:
-        description: 'Name Binary file'
+        description: 'Binary file name'
         required: true
       git_repository:
-        description: 'Project Git repository'
+        description: 'Git repository'
         required: true
       node_type:
         description: 'Node type'
         required: true
       project_name:
-        description: 'Project Name'
+        description: 'Image name'
         required: true
       tag:
-        description: 'Tag'
+        description: 'Image tag'
         required: true
 jobs:
   build_push_image:

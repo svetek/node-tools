@@ -1,0 +1,30 @@
+---
+version: '3.9'
+services:
+  node:
+    image: near:1.36.0-node
+    labels:
+      network: mainnet
+    env_file:
+      - mainnet.env
+    ports:
+      - '3030:3030'
+    volumes:
+      - /opt/nvme1n1/near:/root/.near
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "100m"
+        max-file: "1"
+    deploy:
+      resources:
+        limits:
+          cpus: '8'
+          memory: '24gb'
+    networks:
+      - near
+    restart: unless-stopped
+
+networks:
+  near:
+    name: near

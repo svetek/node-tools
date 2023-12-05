@@ -1,30 +1,34 @@
 # Builder Image
-FROM rust:1.63.0 AS builder
+FROM rust:slim-bookworm AS builder
 
-ARG IMAGE_TAG
 ARG GIT_REPOSITORY
+ARG IMAGE_TAG
 
 # Set Working Directory is /app
 WORKDIR /app
 
 # Node project build
+RUN apt-get update -qq && apt-get install git cmake clang llvm pkg-config g++ libssl-dev libclang-dev -y
 RUN git clone --depth 1 --branch $IMAGE_TAG $GIT_REPOSITORY .
-RUN apt-get update && apt-get install -y pkg-config build-essential libssl-dev libclang-dev cmake
-RUN rustup toolchain install 1.72.0 && rustup default 1.72.0
 RUN cargo build --release --bin massa-node --bin massa-client
 
 # Production Image
-FROM debian:bullseye-slim AS runtime
+FROM debian:bookworm-slim
 
+ARG BIN
 ARG IMAGE_TAG
-ARG BUILD_DATE
+ARG NODE_TYPE
+
 LABEL image-tag=$IMAGE_TAG
-LABEL build-date=$BUILD_DATE
+LABEL node-type=$NODE_TYPE
+
+ENV BIN=$BIN
+ENV NODE_TYPE=$NODE_TYPE
 
 WORKDIR /app
 
 RUN apt-get update && apt-get upgrade -y \
-    && apt-get install -y tzdata ca-certificates curl wget jq expect\
+    && apt-get install -y tzdata ca-certificates curl wget jq expect \
     && apt-get -y purge && apt-get -y clean \
     && apt-get -y autoremove && rm -rf /var/lib/apt/lists/*
  
@@ -41,6 +45,6 @@ RUN echo "{\n\t\"version\":\"$IMAGE_TAG\"\n}" > /source/version.json
 
 COPY run_node.sh /
 
-EXPOSE 31244 31245 33034 33035
+EXPOSE 31244 31245
 
 ENTRYPOINT [ "/bin/bash", "/run_node.sh" ]

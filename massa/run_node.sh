@@ -42,4 +42,4 @@ then
 fi
 
 echo -e "\n\e[32m### Massa Node is running successfully ###\e[0m\n"
-cd $MN_WORKDIR && ./massa-node -p $PASSWORD
+cd $MN_WORKDIR && ./$BIN -p $PASSWORD

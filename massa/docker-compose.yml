@@ -1,37 +1,31 @@
 ---
 version: '3.9'
 services:
-  massa-node:
-    container_name: massa-node
-    image: ${IMAGE}
-    environment:
-      - PASSWORD=<insert password>
-      - LOGGING=false
-    # ports:
-    # - '31244:31244'
-    # - '31245:31245'
-    # - '33035:33035'
+  node:
+    image: svetekllc/massa:TEST.27.4-node
+    labels:
+      network: mainnet
+    env_file:
+      - mainnet.env
+    ports:
+      - '31244:31244'
+      - '31245:31245'
     volumes:
-    - /opt/massa/data:/app
-    network_mode: 'host'
+      - /opt/nvme1n1/massa:/app
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "100m"
+        max-file: "1"
     deploy:
       resources:
         limits:
-          cpus: '6'
-          memory: 10gb
+          cpus: '4'
+          memory: 8gb
+    networks:
+      - massa
     restart: unless-stopped
 
-  node_exporter:
-    image: prom/node-exporter:v1.4.0
-    container_name: node_exporter
-    volumes:
-      - type: 'bind'
-        source: '/'
-        target: '/rootfs'
-        read_only: true
-    command:
-      - '--path.rootfs=/rootfs'
-      - '--collector.filesystem.ignored-mount-points=^/(sys|proc|dev|host|run|mnt)($$|/)'
-    pid: 'host'
-    network_mode: host
-    restart: unless-stopped
+networks:
+  massa:
+    name: massa

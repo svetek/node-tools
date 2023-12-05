@@ -5,6 +5,7 @@
         "lava-node",
         "lava-cache",
         "lava-provider",
+        "massa-node",
         "near-node"
     ],
     "include": [
@@ -46,6 +47,13 @@
             "git_repository": "lavanet/lava",
             "node_type": "provider",
             "binary": "lavap"
+        },
+        {
+            "node_name": "massa-node",
+            "project_name": "massa",
+            "git_repository": "massalabs/massa",
+            "node_type": "node",
+            "binary": "massa-node"
         },
         {
             "node_name": "near-node",

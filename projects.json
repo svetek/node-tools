@@ -1,5 +1,6 @@
 {
     "node_name": [
+        "cascadia-node",
         "evmos-node",
         "haqq-node",
         "lava-node",
@@ -12,6 +13,13 @@
         {
             "git_url": "https://github.com",
             "git_api_url": "https://api.github.com/repos"
+        },
+        {
+            "node_name": "cascadia-node",
+            "project_name": "cascadia",
+            "git_repository": "CascadiaFoundation/cascadia",
+            "node_type": "node",
+            "binary": "cascadiad"
         },
         {
             "node_name": "evmos-node",

@@ -115,7 +115,7 @@ start_node() {
     "node")
       echo -e "\n\e[32m### Run Node ###\e[0m\n"
       state_sync
-      $BIN start --home $CONFIG_PATH --log_level $LOGLEVEL
+      $BIN start --home $CONFIG_PATH --chain-id $CHAIN_ID --log_level $LOGLEVEL
       ;;
 
     "provider")

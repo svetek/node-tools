@@ -63,11 +63,11 @@ init_node() {
     celestia-appd collect-gentxs --home $CONFIG_PATH &> /dev/null
 
     # Run this to ensure everything worked and that the genesis file is setup correctly
-    celestia-appd validate-genesis --home $CONFIG_PATH    
+    celestia-appd validate-genesis --home $CONFIG_PATH
 }
 
 start_node() { 
-  celestia-appd start --home $CONFIG_PATH --pruning=nothing --log_level $LOGLEVEL
+  celestia-appd start --home $CONFIG_PATH --chain-id $CHAIN_ID --log_level $LOGLEVEL
 }
 
 set_variable() {

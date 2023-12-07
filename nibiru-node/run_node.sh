@@ -107,7 +107,7 @@ create_account() {
 start_node() {
   echo -e "\n\e[32m### Run Validator Node ###\e[0m\n"
   state_sync
-  (echo $KEYPASS) | $BIN start --home $CONFIG_PATH --log_level $LOGLEVEL
+  $BIN start --home $CONFIG_PATH --chain-id $CHAIN_ID --log_level $LOGLEVEL
 }
 
 set_variable() {

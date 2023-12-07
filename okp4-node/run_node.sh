@@ -51,7 +51,7 @@ init_node() {
 }
 
 start_node() {
-  okp4d start --home $CONFIG_PATH --pruning=nothing --log_level $LOGLEVEL
+  okp4d start --home $CONFIG_PATH --chain-id $CHAIN_ID --log_level $LOGLEVEL
 }
 
 set_variable() {

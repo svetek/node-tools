@@ -18,6 +18,7 @@ services:
         max-size: "100m"
         max-file: "1"
     networks:
+      - cascadia
       - lava
       - mantra
       - nibiru
@@ -27,6 +28,9 @@ services:
 networks:
     traefik:
       name: traefik
+    cascadia:
+      name: cascadia
+      external: true
     lava:
       name: lava
       external: true

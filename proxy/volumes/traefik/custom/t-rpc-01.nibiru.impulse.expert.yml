@@ -1,17 +1,16 @@
 http:
   routers:
-    t-rpc_nibiru_adaimpulse_club:
+    t-rpc-01_nibiru_impulse_expert:
       entryPoints:
         - web
         - websecure
-      service: t-rpc_nibiru_adaimpulse_club
-      rule: Host(`t-rpc.nibiru.adaimpulse.club`)
+      service: t-rpc-01_nibiru_impulse_expert
+      rule: Host(`t-rpc-01.nibiru.impulse.expert`)
       tls:
         certResolver: letsencrypt
   services:
-    t-rpc_nibiru_adaimpulse_club:
+    t-rpc-01_nibiru_impulse_expert:
       loadBalancer:
         servers:
           - url: "http://nibiru-node-testnet-1:26657"
         passHostHeader: true
-

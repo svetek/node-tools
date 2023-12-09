@@ -2,7 +2,7 @@
 version: '3.9'
 services:
   node_exporter:
-    image: prom/node-exporter:v1.6.1
+    image: prom/node-exporter:v1.7.0
     labels:
       network: mainnet
     volumes:
@@ -10,9 +10,14 @@ services:
         source: '/'
         target: '/rootfs'
         read_only: true
+      - type: 'bind'
+        source: '/opt/node-tools/monitoring/metrics'
+        target: '/opt/metrics'
+        read_only: true
     command:
       - '--path.rootfs=/rootfs'
       - '--collector.filesystem.ignored-mount-points=^/(sys|proc|dev|host|run|mnt)($$|/)'
+      - '--collector.textfile.directory=/opt/node-tools/monitoring/metrics'
     pid: 'host'
     network_mode: host
     restart: unless-stopped

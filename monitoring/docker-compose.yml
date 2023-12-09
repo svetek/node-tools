@@ -17,7 +17,7 @@ services:
     command:
       - '--path.rootfs=/rootfs'
       - '--collector.filesystem.ignored-mount-points=^/(sys|proc|dev|host|run|mnt)($$|/)'
-      - '--collector.textfile.directory=/opt/node-tools/monitoring/metrics'
+      - '--collector.textfile.directory=/opt/metrics'
     pid: 'host'
     network_mode: host
     restart: unless-stopped

@@ -1,6 +1,7 @@
 {
     "node_name": [
         "cascadia-node",
+        "cosmos-node",
         "evmos-node",
         "haqq-node",
         "lava-node",
@@ -20,6 +21,13 @@
             "git_repository": "CascadiaFoundation/cascadia",
             "node_type": "node",
             "binary": "cascadiad"
+        },
+        {
+            "node_name": "cosmos-node",
+            "project_name": "cosmos",
+            "git_repository": "cosmos/gaia",
+            "node_type": "node",
+            "binary": "gaiad"
         },
         {
             "node_name": "evmos-node",

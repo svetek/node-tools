@@ -1,17 +1,24 @@
 version: "3"
 services:
   node:
-    image: eqlabs/pathfinder:v0.9.3
-    environment:
-      - RUST_LOG=info
-      - PATHFINDER_ETHEREUM_API_URL=<insert HTTP-JSON URL Ethereum>
+    image: eqlabs/pathfinder:v0.10.2
+    labels:
+      network: mainnet
+    env_file:
+      - node.env
     volumes:
-      - /opt/nvme0/starknet/data:/usr/share/pathfinder/data
+      - /opt/nvme0n1/starknet/data:/usr/share/pathfinder/data
     ports:
-      - 9545:9545
+      - 19546:19546
     logging:
       driver: "json-file"
       options:
         max-size: "100m"
         max-file: "1"
+    networks:
+      - starknet
     restart: unless-stopped
+
+networks:
+  starknet:
+    name: starknet

@@ -46,7 +46,7 @@ services:
       resources:
         limits:
           cpus: '4'
-          memory: '8gb'
+          memory: '16gb'
     networks:
       - haqq
     restart: unless-stopped

@@ -19,6 +19,11 @@ services:
       - '--collector.filesystem.ignored-mount-points=^/(sys|proc|dev|host|run|mnt)($$|/)'
       - '--collector.textfile.directory=/opt/metrics'
     pid: 'host'
+    deploy:
+      resources:
+        limits:
+          cpus: '0.25'
+          memory: '512M'
     network_mode: host
     restart: unless-stopped
 
@@ -33,6 +38,11 @@ services:
     - /var/run:/var/run:rw
     - /sys:/sys:ro
     - /var/lib/docker/:/var/lib/docker:ro
+    deploy:
+      resources:
+        limits:
+          cpus: '0.25'
+          memory: '512M'
     networks:
       - monitoring
     restart: unless-stopped
@@ -46,6 +56,11 @@ services:
     user: root
     ports:
     - 9633:9633
+    deploy:
+      resources:
+        limits:
+          cpus: '0.25'
+          memory: '512M'
     networks:
       - monitoring
     restart: unless-stopped

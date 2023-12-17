@@ -1,4 +1,5 @@
-version: "3"
+---
+version: '3.9'
 services:
   node:
     image: eqlabs/pathfinder:v0.10.2
@@ -6,15 +7,20 @@ services:
       network: mainnet
     env_file:
       - node.env
-    volumes:
-      - /opt/nvme0n1/starknet/data:/usr/share/pathfinder/data
     ports:
       - 19546:19546
+    volumes:
+      - /opt/nvme0n1/starknet/data:/usr/share/pathfinder/data
     logging:
       driver: "json-file"
       options:
         max-size: "100m"
         max-file: "1"
+    deploy:
+      resources:
+        limits:
+          cpus: '4'
+          memory: '24gb'
     networks:
       - starknet
     restart: unless-stopped

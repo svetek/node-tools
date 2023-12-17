@@ -18,12 +18,12 @@ services:
       - '--path.rootfs=/rootfs'
       - '--collector.filesystem.ignored-mount-points=^/(sys|proc|dev|host|run|mnt)($$|/)'
       - '--collector.textfile.directory=/opt/metrics'
-    pid: 'host'
     deploy:
       resources:
         limits:
           cpus: '0.25'
           memory: '512M'
+    pid: 'host'
     network_mode: host
     restart: unless-stopped
 

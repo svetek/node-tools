@@ -1,0 +1,31 @@
+---
+version: '3.9'
+services:
+  node:
+    image: svetekllc/canto:v7.0.0-node
+    labels:
+      network: mainnet
+    env_file:
+      - node.env
+    ports:
+      - '14656:14656'
+      - '14660:14660'
+    volumes:
+      - /opt/nvme1n1/canto:/root/.cantod
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "100m"
+        max-file: "1"
+    deploy:
+      resources:
+        limits:
+          cpus: '4'
+          memory: '16gb'
+    networks:
+      - canto
+    restart: unless-stopped
+
+networks:
+  canto:
+    name: canto

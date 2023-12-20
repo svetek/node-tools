@@ -2,7 +2,7 @@
 version: '3.9'
 services:
   node-testnet:
-    image: svetekllc/haqq:v1.6.1-node
+    image: svetekllc/haqq:v1.6.4-node
     labels:
       network: testnet
     env_file:

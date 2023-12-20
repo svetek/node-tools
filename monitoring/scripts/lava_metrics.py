@@ -9,23 +9,6 @@ class MetricsCollector():
         self.container = container
         self.metrics   = []
 
-    def get_provider_last_version(self):
-        self.metrics.append('# HELP Lava provider last version.')
-        self.metrics.append('# TYPE lava_provider_last_version gauge')
-        command = "docker exec %s bash -c 'lavap query protocol params -o json'" % self.container
-        output = json.loads(os.popen(command).read())
-        last_version='lava_provider_last_version{version="%s"} 1' % (output["params"]["version"]["provider_target"])
-        self.metrics.append(last_version)
-
-    def get_provider_curent_version(self):
-        self.metrics.append('# HELP Lava provider curent version.')
-        self.metrics.append('# TYPE lava_provider_curent_version gauge')
-        command = "docker exec %s bash -c 'lavap version'" % self.container
-        output = os.popen(command).read().strip()
-        print(output)
-        curent_version='lava_provider_curent_version{version="%s"} 1' % (output)
-        self.metrics.append(curent_version)
-
     def get_chain_status(self):
         self.metrics.append('# HELP Lava provider chain status.\n# TYPE lava_provider_chain_status gauge')
         statuses  = ['provider', 'frozen', 'unstaked']
@@ -38,8 +21,6 @@ class MetricsCollector():
                     self.metrics.append(metric)
 
     def get_metrics(self):
-        self.get_provider_last_version()
-        self.get_provider_curent_version()
         self.get_chain_status()
         return self.metrics
 

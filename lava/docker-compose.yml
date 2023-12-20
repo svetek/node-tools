@@ -2,7 +2,7 @@
 version: '3.9'
 services:
   cache:
-    image: svetekllc/lava:v0.31.1-cache
+    image: svetekllc/lava:v0.31.3-cache
     labels:
       network: testnet
     env_file:
@@ -49,7 +49,7 @@ services:
     restart: unless-stopped
 
   provider:
-    image: svetekllc/lava:v0.31.1-provider
+    image: svetekllc/lava:v0.31.3-provider
     labels:
       network: testnet
     env_file:
@@ -69,16 +69,24 @@ services:
           cpus: '4'
           memory: '16gb'
     networks:
-      - lava
+      - canto
       - cosmos
+      - lava
+      - near
       - starknet
     restart: unless-stopped
 
 networks:
-  lava:
-    name: lava
+  canto:
+    name: canto
+    external: true
   cosmos:
     name: cosmos
+    external: true
+  lava:
+    name: lava
+  near:
+    name: near
     external: true
   starknet:
     name: starknet

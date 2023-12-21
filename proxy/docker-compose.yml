@@ -23,6 +23,7 @@ services:
           cpus: '1'
           memory: '4gb'
     networks:
+      - canto
       - cascadia
       - lava
       - mantra
@@ -33,6 +34,9 @@ services:
 networks:
     traefik:
       name: traefik
+    canto:
+      name: canto
+      external: true
     cascadia:
       name: cascadia
       external: true

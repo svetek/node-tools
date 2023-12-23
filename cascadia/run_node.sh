@@ -9,6 +9,7 @@ init_node() {
   # Set keyring-backend and chain-id configuration
   $BIN config chain-id $CHAIN_ID --home $CONFIG_PATH
   $BIN config keyring-backend $KEYRING --home $CONFIG_PATH
+  $BIN config node http://0.0.0.0:$RPC_PORT --home $CONFIG_PATH
 
   # Download addrbook and genesis files
   if [[ -n $ADDRBOOK_URL ]]

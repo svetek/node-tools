@@ -9,13 +9,17 @@ init_node() {
   # Set keyring-backend and chain-id configuration
   $BIN config chain-id $CHAIN_ID --home $CONFIG_PATH
   $BIN config keyring-backend $KEYRING --home $CONFIG_PATH
+  $BIN config node http://0.0.0.0:$RPC_PORT --home $CONFIG_PATH
 
-  # Download genesis and addrbook files
-  wget -O $CONFIG_PATH/config/genesis.json $GENESIS_URL
-
+  # Download addrbook and genesis files
   if [[ -n $ADDRBOOK_URL ]]
   then
     wget -O $CONFIG_PATH/config/addrbook.json $ADDRBOOK_URL
+  fi
+
+  if [[ -n $GENESIS_URL ]]
+  then
+    wget -O $CONFIG_PATH/config/genesis.json $GENESIS_URL
   fi
 
   sed -i \
@@ -46,10 +50,11 @@ init_node() {
 
   # Set ports P2P and Prometheus
   sed -i \
-    -e "s|^prometheus =.*|prometheus = true|" \
-    -e "s|^prometheus_listen_addr =.*|prometheus_listen_addr = \":$PROMETHEUS_PORT\"|" \
-    -e "s|laddr = \"tcp://0.0.0.0:26656\"|laddr = \"tcp://0.0.0.0:$P2P_PORT\"|" \
+    -e "s|^laddr = \"tcp://127.0.0.1:26657\"|laddr = \"tcp://0.0.0.0:$RPC_PORT\"|" \
+    -e "s|^laddr = \"tcp://0.0.0.0:26656\"|laddr = \"tcp://0.0.0.0:$P2P_PORT\"|" \
     -e "s|^external_address *=.*|external_address = \"$(wget -qO- eth0.me):$P2P_PORT\"|" \
+    -e "s|^prometheus =.*|prometheus = true|" \
+    -e "s|^prometheus_listen_addr =.*|prometheus_listen_addr = \":$METRICS_PORT\"|" \
     $CONFIG_PATH/config/config.toml
 
   # Config pruning, snapshots and min price for GAZ
@@ -87,12 +92,12 @@ create_account() {
       #!/usr/bin/expect -f
       set timeout -1
 
-      spawn $BIN keys add $KEY --keyring-backend $KEYRING --home $CONFIG_PATH
+      spawn $BIN keys add $WALLET --keyring-backend $KEYRING --home $CONFIG_PATH
       exp_internal 0
-      expect \"Enter keyring passphrase:\"
-      send   \"$KEYPASS\n\"
-      expect \"Re-enter keyring passphrase:\"
-      send   \"$KEYPASS\n\"
+      expect \"Enter keyring passphrase*:\"
+      send   \"$WALLET_PASS\n\"
+      expect \"Re-enter keyring passphrase*:\"
+      send   \"$WALLET_PASS\n\"
       expect eof
   "
 }
@@ -107,11 +112,11 @@ set_variable() {
   source ~/.bashrc
   if [[ ! $ACC_ADDRESS ]]
   then
-    echo 'export ACC_ADDRESS='$(echo $KEYPASS | $BIN keys show $KEY --keyring-backend $KEYRING -a) >> $HOME/.bashrc
+    echo 'export ACC_ADDRESS='$(echo $WALLET_PASS | $BIN keys show $WALLET --keyring-backend $KEYRING -a) >> $HOME/.bashrc
   fi
   if [[ ! $VAL_ADDRESS ]]
   then
-    echo 'export VAL_ADDRESS='$(echo $KEYPASS | $BIN keys show $KEY --keyring-backend $KEYRING --bech val -a) >> $HOME/.bashrc
+    echo 'export VAL_ADDRESS='$(echo $WALLET_PASS | $BIN keys show $WALLET --keyring-backend $KEYRING --bech val -a) >> $HOME/.bashrc
   fi
 }
 
@@ -125,10 +130,14 @@ then
   init_node
 fi
 
-if [[ $(find $CONFIG_PATH -maxdepth 2 -type f -name $KEY.info | wc -l) -eq 0 ]]
+if [[ $WALLET && $(find $CONFIG_PATH -maxdepth 2 -type f -name $WALLET.info | wc -l) -eq 0 ]]
 then
   create_account
 fi
 
-set_variable
+if [[ $WALLET && $(find $CONFIG_PATH -maxdepth 2 -type f -name $WALLET.info | wc -l) -ne 0 ]]
+then
+  set_variable
+fi
+
 start_node

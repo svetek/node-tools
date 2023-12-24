@@ -27,7 +27,7 @@ services:
     restart: unless-stopped
 
   node-mainnet:
-    image: svetekllc/haqq:v1.6.3-node
+    image: svetekllc/haqq:v1.6.4-node
     labels:
       network: mainnet
     env_file:

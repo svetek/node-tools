@@ -1,15 +1,15 @@
 http:
   routers:
-    axelar_ept_cx:
+    maksimus_ept_cx:
       entryPoints:
         - web
         - websecure
-      service: axelar_ept_cx
-      rule: Host(`axelar.ept.cx`)
+      service: maksimus_ept_cx
+      rule: Host(`maksimus.ept.cx`)
       tls:
         certResolver: letsencrypt
   services:
-    axelar_ept_cx:
+    maksimus_ept_cx:
       loadBalancer:
         servers:
           - url: "h2c://lava-provider-m-1:22002"

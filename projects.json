@@ -1,6 +1,7 @@
 {
     "node_name": [
         "artela-node",
+        "canto-node",
         "cascadia-node",
         "cosmos-node",
         "evmos-node",
@@ -22,6 +23,13 @@
             "git_repository": "artela-network/artela",
             "node_type": "node",
             "binary": "artelad"
+        },
+        {
+            "node_name": "canto-node",
+            "project_name": "canto",
+            "git_repository": "Canto-Network/Canto",
+            "node_type": "node",
+            "binary": "cantod"
         },
         {
             "node_name": "cascadia-node",

@@ -9,7 +9,7 @@ WORKDIR /app
 RUN apt-get update && apt-get upgrade -y
 RUN git clone --depth 1 --branch $IMAGE_TAG $GIT_REPOSITORY . && make build
 
-# # # Node Image create
+### Node Image create
 FROM debian:bookworm-slim
 
 ARG BIN

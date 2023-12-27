@@ -2,7 +2,7 @@
 version: '3.9'
 services:
   cache:
-    image: svetekllc/lava:v0.31.5-cache
+    image: svetekllc/lava:v0.32.1-cache
     labels:
       network: testnet
     env_file:
@@ -24,7 +24,7 @@ services:
     restart: unless-stopped
 
   node:
-    image: svetekllc/lava:v0.31.1-node
+    image: svetekllc/lava:v0.32.0-node
     labels:
       network: testnet
     env_file:
@@ -49,7 +49,7 @@ services:
     restart: unless-stopped
 
   provider:
-    image: svetekllc/lava:v0.31.5-provider
+    image: svetekllc/lava:v0.32.1-provider
     labels:
       network: testnet
     env_file:

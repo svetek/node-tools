@@ -1,0 +1,16 @@
+http:
+  routers:
+    t-rpc-01_haqq_impulse_expert:
+      entryPoints:
+        - web
+        - websecure
+      service: t-rpc-01_haqq_impulse_expert
+      rule: Host(`t-rpc-01.haqq.impulse.expert`)
+      tls:
+        certResolver: letsencrypt
+  services:
+    t-rpc-01_haqq_impulse_expert:
+      loadBalancer:
+        servers:
+          - url: "http://haqq-node-testnet-1:20657"
+        passHostHeader: true

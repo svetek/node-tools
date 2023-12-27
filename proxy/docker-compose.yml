@@ -25,6 +25,7 @@ services:
     networks:
       - canto
       - cascadia
+      - haqq
       - lava
       - mantra
       - nibiru
@@ -39,6 +40,9 @@ networks:
       external: true
     cascadia:
       name: cascadia
+      external: true
+    haqq:
+      name: haqq
       external: true
     lava:
       name: lava

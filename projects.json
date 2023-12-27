@@ -1,5 +1,6 @@
 {
     "node_name": [
+        "artela-node",
         "cascadia-node",
         "cosmos-node",
         "evmos-node",
@@ -14,6 +15,13 @@
         {
             "git_url": "https://github.com",
             "git_api_url": "https://api.github.com/repos"
+        },
+        {
+            "node_name": "artela-node",
+            "project_name": "artela",
+            "git_repository": "artela-network/artela",
+            "node_type": "node",
+            "binary": "artelad"
         },
         {
             "node_name": "cascadia-node",

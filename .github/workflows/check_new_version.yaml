@@ -30,14 +30,14 @@ jobs:
       - name: 📝 Get last version from the DockerHub registry
         id: get_last_version_from_dockerhub
         run: |
-          version=$(curl -s -S "https://registry.hub.docker.com/v2/repositories/svetekllc/${{ matrix.project_name }}/tags/" | jq -r '.results[].name | select(test("${{ matrix.node_type }}"))' | sort -V | tail -n1)
+          version=$(curl -s -S "https://registry.hub.docker.com/v2/repositories/svetekllc/${{ matrix.project_name }}/tags/" | jq -r '.results[].name | select(test("${{ matrix.node_type }}"))' | head -n1)
           echo "Last version is $version"
           echo "d_last_version=$version" >> "$GITHUB_OUTPUT"
 
       - name: 📝 Get last version from the GitHub repository
         id: get_last_version_from_github
         run: |
-          version=$(curl -s "${{ matrix.git_api_url}}/${{ matrix.git_repository}}/releases" | jq -r '.[].tag_name' | sort -V | tail -n 1)
+          version=$(curl -s "${{ matrix.git_api_url}}/${{ matrix.git_repository}}/releases" | jq -r '.[].tag_name' | head -n1)
           echo "Last version is $version"
           echo "g_last_version=$version" >> "$GITHUB_OUTPUT"
 

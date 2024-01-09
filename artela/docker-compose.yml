@@ -2,7 +2,7 @@
 version: '3.9'
 services:
   node:
-    image: svetekllc/artela:v0.4.6-beta-node
+    image: svetekllc/artela:v0.4.7-rc4-node
     labels:
       network: testnet
     env_file:

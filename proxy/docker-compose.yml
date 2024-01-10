@@ -23,6 +23,7 @@ services:
           cpus: '1'
           memory: '4gb'
     networks:
+      - artela
       - canto
       - cascadia
       - haqq
@@ -35,6 +36,9 @@ services:
 networks:
     traefik:
       name: traefik
+    artela:
+      name: artela
+      external: true
     canto:
       name: canto
       external: true

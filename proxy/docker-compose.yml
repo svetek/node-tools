@@ -26,10 +26,11 @@ services:
       - artela
       - canto
       - cascadia
+      - evmos
       - haqq
+      - juneo
       - lava
       - mantra
-      - nibiru
       - traefik
     restart: unless-stopped
 
@@ -45,15 +46,18 @@ networks:
     cascadia:
       name: cascadia
       external: true
+    evmos:
+      name: evmos
+      external: true
     haqq:
       name: haqq
+      external: true
+    juneo:
+      name: juneo
       external: true
     lava:
       name: lava
       external: true
     mantra:
       name: mantra
-      external: true
-    nibiru:
-      name: nibiru
       external: true

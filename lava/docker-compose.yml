@@ -71,6 +71,7 @@ services:
     networks:
       - canto
       - cosmos
+      - evmos
       - lava
       - near
       - starknet
@@ -82,6 +83,9 @@ networks:
     external: true
   cosmos:
     name: cosmos
+    external: true
+  evmos:
+    name: evmos
     external: true
   lava:
     name: lava

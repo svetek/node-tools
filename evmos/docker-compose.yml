@@ -2,14 +2,18 @@
 version: '3.9'
 services:
   node:
-    image: svetekllc/evmos:v15.0.0-node
+    image: svetekllc/evmos:v16.0.2
     labels:
       network: mainnet
     env_file:
       - node.env
     ports:
-      - '14656:14656'
-      - '14660:14660'
+      - '11090:11090'
+      - '11317:11317'
+      - '11545:11545'
+      - '11656:11656'
+      - '11657:11657'
+      - '11660:11660'
     volumes:
       - /opt/nvme1n1/evmos:/root/.evmosd
     logging:

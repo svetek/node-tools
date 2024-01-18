@@ -69,6 +69,7 @@ jobs:
               -H "Authorization: Bearer ${{ secrets.WORKFLOW_GITHUB_TOKEN }}" \
               https://api.github.com/repos/svetek/node-tools/actions/workflows/other_build_image.yaml/dispatches \
               -d "{\"ref\":\"main\",\"inputs\":{\"project_name\": \"$project_name\",\"tag\": \"$tag\", \"git_repository\": \"$git_repository\", \"bin\": \"$bin\"}}"
+            fi
           else
             echo "Versions are the same. Skipping build."
           fi

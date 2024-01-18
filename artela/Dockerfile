@@ -9,19 +9,13 @@ WORKDIR /app
 RUN apt-get update && apt-get upgrade -y
 RUN git clone --depth 1 --branch $IMAGE_TAG $GIT_REPOSITORY . && make build
 
-### Node Image create
+
+# Node Image create
 FROM debian:bookworm-slim
 
 ARG BIN
-ARG GIT_REPOSITORY
-ARG IMAGE_TAG
-ARG NODE_TYPE
-
-LABEL image-tag=$IMAGE_TAG
-LABEL node-type=$NODE_TYPE
 
 ENV BIN=$BIN
-ENV NODE_TYPE=$NODE_TYPE
 
 RUN apt-get update && apt-get upgrade -y \
     && apt-get install -y tzdata ca-certificates curl wget jq expect \

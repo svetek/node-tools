@@ -57,6 +57,7 @@ jobs:
           then
             echo "Versions are different. Running build."
             if [[ "${project_name}" == "lava" ]]
+            then
               curl -L -X POST \
               -H "Accept: application/vnd.github+json" \
               -H "Authorization: Bearer ${{ secrets.WORKFLOW_GITHUB_TOKEN }}" \

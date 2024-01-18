@@ -2,7 +2,7 @@ name: Check a new version
 run-name: Check a new version
 on:
   schedule:
-    - cron: "10 0,4 * * *"
+    - cron: "0 0/4 * * *"
 jobs:
   get_projects_config:
     name: Get projects config

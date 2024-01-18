@@ -31,7 +31,7 @@ jobs:
       - name: 📝 Get last version from the DockerHub registry
         id: get_last_version_from_dockerhub
         run: |
-          version=$(curl -s -S "https://registry.hub.docker.com/v2/repositories/svetekllc/${{ matrix.project_name }}/tags/" | jq -r '.results[].name | select(test("${{ matrix.node_type }}"))' | head -n1)
+          version=$(curl -s -S "https://registry.hub.docker.com/v2/repositories/svetekllc/${{ matrix.project_name }}/tags/" | jq -r '.results[].name | select(test("${{ matrix.node_type }}") or (test("${{ matrix.node_type }}" | not))' | head -n1)
           echo "Last version is $version"
           echo "d_last_version=$version" >> "$GITHUB_OUTPUT"
 

@@ -56,11 +56,18 @@ jobs:
           if [[ "${version_from_docker//-$node_type}" != "$version_from_git" ]]
           then
             echo "Versions are different. Running build."
-            curl -L -X POST \
-            -H "Accept: application/vnd.github+json" \
-            -H "Authorization: Bearer ${{ secrets.WORKFLOW_GITHUB_TOKEN }}" \
-            https://api.github.com/repos/svetek/node-tools/actions/workflows/build_docker_image.yaml/dispatches \
-            -d "{\"ref\":\"main\",\"inputs\":{\"project_name\": \"$project_name\",\"tag\": \"$tag\", \"git_repository\": \"$git_repository\", \"bin\": \"$bin\", \"node_type\": \"$node_type\"}}"
+            if [[ "${project_name}" == "lava" ]]
+              curl -L -X POST \
+              -H "Accept: application/vnd.github+json" \
+              -H "Authorization: Bearer ${{ secrets.WORKFLOW_GITHUB_TOKEN }}" \
+              https://api.github.com/repos/svetek/node-tools/actions/workflows/lava_build_image.yaml/dispatches \
+              -d "{\"ref\":\"main\",\"inputs\":{\"project_name\": \"$project_name\",\"tag\": \"$tag\", \"git_repository\": \"$git_repository\", \"bin\": \"$bin\", \"node_type\": \"$node_type\"}}"
+            else
+              curl -L -X POST \
+              -H "Accept: application/vnd.github+json" \
+              -H "Authorization: Bearer ${{ secrets.WORKFLOW_GITHUB_TOKEN }}" \
+              https://api.github.com/repos/svetek/node-tools/actions/workflows/other_build_image.yaml/dispatches \
+              -d "{\"ref\":\"main\",\"inputs\":{\"project_name\": \"$project_name\",\"tag\": \"$tag\", \"git_repository\": \"$git_repository\", \"bin\": \"$bin\"}}"
           else
             echo "Versions are the same. Skipping build."
           fi

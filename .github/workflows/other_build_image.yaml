@@ -1,0 +1,41 @@
+name: Build Image
+run-name: ${{inputs.project_name }} node build image ${{inputs.tag }}
+on: 
+  workflow_dispatch:
+    inputs:
+      bin:
+        description: 'Binary file name'
+        required: true
+        type: string
+      git_repository:
+        description: 'Git repository'
+        required: true
+        type: string
+      project_name:
+        description: 'Image name'
+        type: string
+        required: true
+      tag:
+        description: 'Image tag'
+        type: string
+        required: true
+jobs:
+  build_push_image:
+    name: Build and Push image to DockerHub
+    runs-on: ubuntu-latest
+    steps:
+      - name: Login to DockerHub
+        uses: docker/login-action@v3.0.0
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      - name: Build and push image
+        uses: docker/build-push-action@v5.0.0
+        with:
+          build-args: |
+            IMAGE_TAG=${{ inputs.tag }}
+            GIT_REPOSITORY=${{ inputs.git_repository }}
+            BIN=${{ inputs.bin }}
+          context: "{{defaultContext}}:${{ inputs.project_name }} "
+          tags: "svetekllc/${{ inputs.project_name }}:${{ inputs.tag }}"
+          push: true

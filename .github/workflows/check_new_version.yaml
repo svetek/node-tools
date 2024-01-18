@@ -1,6 +1,7 @@
 name: Check a new version
 run-name: Check a new version
 on:
+  workflow_dispatch:
   schedule:
     - cron: "0 0/4 * * *"
 jobs:

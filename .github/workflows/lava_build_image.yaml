@@ -46,6 +46,6 @@ jobs:
             GIT_REPOSITORY=${{ inputs.git_repository }}
             BIN=${{ inputs.bin }}
             NODE_TYPE=${{ inputs.node_type }}
-          context: "{{ defaultContext }}:${{ inputs.project_name }} "
+          context: "{{ defaultContext }}:${{ inputs.project_name }}"
           tags: "svetekllc/${{ inputs.project_name }}:${{ inputs.tag }}-${{ inputs.node_type }}"
           push: true

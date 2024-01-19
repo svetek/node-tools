@@ -31,9 +31,16 @@ jobs:
       - name: 📝 Get last version from the DockerHub registry
         id: get_last_version_from_dockerhub
         run: |
-          version=$(curl -s -S "https://registry.hub.docker.com/v2/repositories/svetekllc/${{ matrix.project_name }}/tags/" | jq -r '.results[].name | select(test("${{ matrix.node_type }}") // true)' | head -n1)
-          echo "Last version is $version"
-          echo "d_last_version=$version" >> "$GITHUB_OUTPUT"
+          if [[ "${{ matrix.project_name }}" == "lava" ]]
+          then
+            version=$(curl -s -S "https://registry.hub.docker.com/v2/repositories/svetekllc/${{ matrix.project_name }}/tags/" | jq -r '.results[].name | select(test("${{ matrix.node_type }}"))' | head -n1)
+            echo "Last version is $version"
+            echo "d_last_version=$version" >> "$GITHUB_OUTPUT"
+          else
+            version=$(curl -s -S "https://registry.hub.docker.com/v2/repositories/svetekllc/${{ matrix.project_name }}/tags/" | jq -r '.results[].name | head -n1)
+            echo "Last version is $version"
+            echo "d_last_version=$version" >> "$GITHUB_OUTPUT"
+          fi
 
       - name: 📝 Get last version from the GitHub repository
         id: get_last_version_from_github
@@ -48,7 +55,7 @@ jobs:
           bin: ${{ matrix.binary }}
           git_repository: ${{ matrix.git_url }}/${{ matrix.git_repository }}
           node_type: ${{ matrix.node_type }}
-          project_name: ${{matrix.project_name }}
+          project_name: ${{ matrix.project_name }}
           tag: ${{ steps.get_last_version_from_github.outputs.g_last_version }}
           version_from_docker: ${{ steps.get_last_version_from_dockerhub.outputs.d_last_version }}
           version_from_git: ${{ steps.get_last_version_from_github.outputs.g_last_version }}

@@ -37,7 +37,7 @@ jobs:
             echo "Last version is $version"
             echo "d_last_version=$version" >> "$GITHUB_OUTPUT"
           else
-            version=$(curl -s -S "https://registry.hub.docker.com/v2/repositories/svetekllc/${{ matrix.project_name }}/tags/" | jq -r '.results[].name | head -n1)
+            version=$(curl -s -S "https://registry.hub.docker.com/v2/repositories/svetekllc/${{ matrix.project_name }}/tags/" | jq -r '.results[].name' | head -n1)
             echo "Last version is $version"
             echo "d_last_version=$version" >> "$GITHUB_OUTPUT"
           fi

@@ -1,14 +1,38 @@
 ---
 version: '3.9'
 services:
-  node:
+  node-testnet:
+    image: svetekllc/near:1.36.4-node
+    labels:
+      network: testnet
+    env_file:
+      - testnet.env
+    ports:
+      - '25030:3030'
+    volumes:
+      - /opt/nvme0n1/near:/root/.near
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "100m"
+        max-file: "1"
+    deploy:
+      resources:
+        limits:
+          cpus: '8'
+          memory: '24gb'
+    networks:
+      - near
+    restart: unless-stopped
+
+  node-mainnet:
     image: svetekllc/near:1.36.4-node
     labels:
       network: mainnet
     env_file:
       - mainnet.env
     ports:
-      - '3030:3030'
+      - '15030:3030'
     volumes:
       - /opt/nvme1n1/near:/root/.near
     logging:

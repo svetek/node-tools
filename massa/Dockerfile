@@ -17,13 +17,8 @@ FROM debian:bookworm-slim
 
 ARG BIN
 ARG IMAGE_TAG
-ARG NODE_TYPE
-
-LABEL image-tag=$IMAGE_TAG
-LABEL node-type=$NODE_TYPE
 
 ENV BIN=$BIN
-ENV NODE_TYPE=$NODE_TYPE
 
 WORKDIR /app
 

@@ -2,7 +2,7 @@
 version: '3.9'
 services:
   node:
-    image: svetekllc/cascadia:v0.2.0-node
+    image: svetekllc/cascadia:v0.3.0
     labels:
       network: testnet
     env_file:

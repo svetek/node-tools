@@ -25,7 +25,6 @@ services:
     networks:
       - artela
       - canto
-      - cascadia
       - evmos
       - haqq
       - juneo
@@ -42,9 +41,6 @@ networks:
       external: true
     canto:
       name: canto
-      external: true
-    cascadia:
-      name: cascadia
       external: true
     evmos:
       name: evmos

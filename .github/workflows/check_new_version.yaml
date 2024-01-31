@@ -55,7 +55,7 @@ jobs:
         run: |
           last_version_info=$(curl -s -S "${{ matrix.git_api_url}}/${{ matrix.git_repository}}/releases" | jq -r -c '.[] | {name, published_at}' | head -n1)
           version=$(echo $last_version_info | jq -r .name)
-          version_date=$(echo $last_version_info | jq -r .tag_last_pushed)
+          version_date=$(echo $last_version_info | jq -r .published_at)
           echo "Last version is $version"
           echo "g_last_version=$version" >> "$GITHUB_OUTPUT"
           echo "Last version date is $version_date"

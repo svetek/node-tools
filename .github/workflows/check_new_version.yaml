@@ -53,8 +53,8 @@ jobs:
       - name: 📝 Get last version from the GitHub repository
         id: get_last_version_from_github
         run: |
-          last_version_info=$(curl -s -S "${{ matrix.git_api_url}}/${{ matrix.git_repository}}/releases" | jq -r -c '.[] | {name, published_at}' | head -n1)
-          version=$(echo $last_version_info | jq -r .name)
+          last_version_info=$(curl -s -S "${{ matrix.git_api_url}}/${{ matrix.git_repository}}/releases" | jq -r -c '.[] | {tag_name, published_at}' | head -n1)
+          version=$(echo $last_version_info | jq -r .tag_name)
           version_date=$(echo $last_version_info | jq -r .published_at)
           echo "Last version is $version"
           echo "g_last_version=$version" >> "$GITHUB_OUTPUT"

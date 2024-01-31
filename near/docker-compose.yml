@@ -2,7 +2,7 @@
 version: '3.9'
 services:
   node-testnet:
-    image: svetekllc/near:1.36.4-node
+    image: svetekllc/near:1.36.5
     labels:
       network: testnet
     env_file:
@@ -26,7 +26,7 @@ services:
     restart: unless-stopped
 
   node-mainnet:
-    image: svetekllc/near:1.36.4-node
+    image: svetekllc/near:1.36.5
     labels:
       network: mainnet
     env_file:

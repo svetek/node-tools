@@ -1,15 +1,15 @@
 http:
   routers:
-    maksimus_ept_cx:
+    starknet_maksimus_ept_cx:
       entryPoints:
         - web
         - websecure
-      service: maksimus_ept_cx
-      rule: Host(`maksimus.ept.cx`)
+      service: starknet_maksimus_ept_cx
+      rule: Host(`starknet.maksimus.ept.cx`)
       tls:
         certResolver: letsencrypt
   services:
-    maksimus_ept_cx:
+    starknet_maksimus_ept_cx:
       loadBalancer:
         servers:
           - url: "h2c://lava-provider-m-1:22002"

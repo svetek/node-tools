@@ -1,0 +1,16 @@
+http:
+  routers:
+    avalanche_maksimus_ept_cx:
+      entryPoints:
+        - web
+        - websecure
+      service: avalanche_maksimus_ept_cx
+      rule: Host(`avalanche.maksimus.ept.cx`)
+      tls:
+        certResolver: letsencrypt
+  services:
+    avalanche_maksimus_ept_cx:
+      loadBalancer:
+        servers:
+          - url: "h2c://lava-provider-m-1:22002"
+        passHostHeader: true

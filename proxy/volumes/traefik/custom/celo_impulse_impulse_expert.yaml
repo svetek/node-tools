@@ -1,0 +1,17 @@
+http:
+  routers:
+    celo_impulse_impulse_expert:
+      entryPoints:
+        - web
+        - websecure
+      service: celo_impulse_impulse_expert
+      rule: Host(`celo.impulse.impulse.expert`)
+      tls:
+        certResolver: letsencrypt
+  services:
+    celo_impulse_impulse_expert:
+      loadBalancer:
+        servers:
+          - url: "h2c://lava-provider-1:22001"
+        passHostHeader: true
+

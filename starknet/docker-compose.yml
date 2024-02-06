@@ -2,7 +2,7 @@
 version: '3.9'
 services:
   node:
-    image: eqlabs/pathfinder:v0.10.5
+    image: eqlabs/pathfinder:v0.10.6
     labels:
       network: mainnet
     env_file:

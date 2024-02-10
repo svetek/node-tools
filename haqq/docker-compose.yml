@@ -2,7 +2,7 @@
 version: '3.9'
 services:
   node-testnet:
-    image: svetekllc/haqq:v1.7.0-node
+    image: svetekllc/haqq:v1.7.1
     labels:
       network: testnet
     env_file:
@@ -27,7 +27,7 @@ services:
     restart: unless-stopped
 
   node-mainnet:
-    image: svetekllc/haqq:v1.7.0-node
+    image: svetekllc/haqq:v1.7.1
     labels:
       network: mainnet
     env_file:

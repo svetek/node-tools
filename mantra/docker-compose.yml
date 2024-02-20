@@ -2,7 +2,7 @@
 version: '3.9'
 services:
   node:
-    image: mantra:test
+    image: mantra:latest
     labels:
       network: testnet
     env_file:

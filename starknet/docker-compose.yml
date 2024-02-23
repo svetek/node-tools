@@ -2,7 +2,7 @@
 version: '3.9'
 services:
   node:
-    image: eqlabs/pathfinder:v0.10.6
+    image: eqlabs/pathfinder:v0.11.0-rc0
     labels:
       network: mainnet
     env_file:
@@ -20,7 +20,7 @@ services:
       resources:
         limits:
           cpus: '4'
-          memory: '24gb'
+          memory: '16gb'
     networks:
       - starknet
     restart: unless-stopped

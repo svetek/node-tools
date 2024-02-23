@@ -10,7 +10,7 @@ services:
     ports:
       - 19546:19546
     volumes:
-      - /opt/nvme0n1/starknet/data:/usr/share/pathfinder/data
+      - /opt/nvme2n1/starknet/data:/usr/share/pathfinder/data
     logging:
       driver: "json-file"
       options:

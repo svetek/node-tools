@@ -11,7 +11,7 @@ services:
       - '14656:14656'
       - '14660:14660'
     volumes:
-      - /opt/nvme1n1/canto:/root/.cantod
+      - /opt/nvme3n1/canto:/root/.cantod
     logging:
       driver: "json-file"
       options:

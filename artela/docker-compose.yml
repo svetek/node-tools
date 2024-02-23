@@ -11,7 +11,7 @@ services:
       - '24656:24656'
       - '24660:24660'
     volumes:
-      - /opt/nvme0n1/artela:/root/.artelad
+      - /opt/nvme2n1/artela:/root/.artelad
     logging:
       driver: "json-file"
       options:
@@ -20,8 +20,8 @@ services:
     deploy:
       resources:
         limits:
-          cpus: '4'
-          memory: '8gb'
+          cpus: '8'
+          memory: '16gb'
     networks:
       - artela
     restart: unless-stopped

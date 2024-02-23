@@ -2,7 +2,7 @@
 version: '3.9'
 services:
   node:
-    image: svetekllc/evmos:v16.0.2
+    image: svetekllc/evmos:v16.0.3
     labels:
       network: mainnet
     env_file:
@@ -15,7 +15,7 @@ services:
       - '11657:11657'
       - '11660:11660'
     volumes:
-      - /opt/nvme1n1/evmos:/root/.evmosd
+      - /opt/nvme3n1/evmos:/root/.evmosd
     logging:
       driver: "json-file"
       options:

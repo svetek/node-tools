@@ -11,7 +11,7 @@ services:
       - '20656:20656'
       - '20660:20660'
     volumes:
-      - /opt/nvme0n1/haqq:/root/.haqqd
+      - /opt/nvme2n1/haqq:/root/.haqqd
     logging:
       driver: "json-file"
       options:
@@ -36,7 +36,7 @@ services:
       - '10656:10656'
       - '10660:10660'
     volumes:
-      - /opt/nvme1n1/haqq:/root/.haqqd
+      - /opt/nvme3n1/haqq:/root/.haqqd
     logging:
       driver: "json-file"
       options:

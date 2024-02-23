@@ -11,7 +11,7 @@ services:
       - '21656:21656'
       - '21660:21660'
     volumes:
-      - /opt/nvme0n1/mantra:/root/.mantrachain
+      - /opt/nvme2n1/mantra:/root/.mantrachain
     logging:
       driver: "json-file"
       options:

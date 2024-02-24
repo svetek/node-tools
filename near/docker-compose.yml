@@ -10,7 +10,7 @@ services:
     ports:
       - '25030:3030'
     volumes:
-      - /opt/nvme0n1/near:/root/.near
+      - /opt/nvme2n1/near:/root/.near
     logging:
       driver: "json-file"
       options:
@@ -34,7 +34,7 @@ services:
     ports:
       - '15030:3030'
     volumes:
-      - /opt/nvme1n1/near:/root/.near
+      - /opt/nvme3n1/near:/root/.near
     logging:
       driver: "json-file"
       options:

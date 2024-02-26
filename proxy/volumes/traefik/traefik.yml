@@ -5,6 +5,16 @@ global:
 log:
   level: DEBUG
 
+accessLog:
+  filePath: "/etc/traefik/logs/access.log"
+  # format: json
+  filters:
+    statusCodes:
+      - "400-499"
+      - "500-599"
+    retryAttempts: true
+    # minDuration: "100ms"
+
 api:
   dashboard: true
   insecure: true

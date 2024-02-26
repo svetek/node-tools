@@ -2,7 +2,7 @@
 version: '3.9'
 services:
   proxy:
-    image: traefik:v2.10
+    image: traefik:v2.11
     labels:
       network: mainnet
     ports:
@@ -27,15 +27,13 @@ services:
       - canto
       - evmos
       - haqq
-      - juneo
       - lava
       - mantra
+      - juneo
       - traefik
     restart: unless-stopped
 
 networks:
-    traefik:
-      name: traefik
     artela:
       name: artela
       external: true
@@ -48,12 +46,14 @@ networks:
     haqq:
       name: haqq
       external: true
-    juneo:
-      name: juneo
-      external: true
     lava:
       name: lava
       external: true
     mantra:
       name: mantra
       external: true
+    juneo:
+      name: juneo
+      external: true
+    traefik:
+      name: traefik

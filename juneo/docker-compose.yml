@@ -11,7 +11,7 @@ services:
       - '9650:9650'
       - '9651:9651'
     volumes:
-      - /opt/nvme0n1/juneo:/root/.juneogo
+      - /opt/nvme2n1/juneo:/root/.juneogo
     logging:
       driver: "json-file"
       options:
@@ -24,6 +24,8 @@ services:
           memory: '8gb'
     networks:
       - juneo
+    ulimits:
+      nofile: 32768
     restart: unless-stopped
 
 networks:

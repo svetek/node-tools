@@ -105,10 +105,10 @@ start_node() {
     "cache")
       echo -e "\n\e[32m### Run Cache ###\e[0m\n"
       $BIN cache "$CACHE_ADDRESS" \
-                  ${EXPIRATION:+"--expiration $EXPIRATION"} \
-                  ${LOGLEVEL:+"--log_level $LOGLEVEL"} \
-                  ${MAX_ITEMS:+"--max-items $MAX_ITEMS"} \
-                  ${METRICS_ADDRESS+:"--metrics_address $METRICS_ADDRESS"}
+                  ${EXPIRATION:+--expiration $EXPIRATION} \
+                  ${LOGLEVEL:+--log_level $LOGLEVEL} \
+                  ${MAX_ITEMS:+--max-items $MAX_ITEMS} \
+                  ${METRICS_ADDRESS:+--metrics_address $METRICS_ADDRESS}
       ;;
 
     "node")

@@ -104,12 +104,11 @@ start_node() {
   case ${NODE_TYPE,,} in
     "cache")
       echo -e "\n\e[32m### Run Cache ###\e[0m\n"
-      args=(
-            "$CACHE_LISTEN_ADDRESS:$CACHE_PORT" \
-            "--metrics_address $METRICS_LISTEN_ADDRESS:$METRICS_PORT" \
-            "--log_level $LOGLEVEL"
-      )
-      $BIN cache ${args[@]}
+      $BIN cache "$CACHE_ADDRESS" \
+                  ${EXPIRATION:+"--expiration $EXPIRATION"} \
+                  ${LOGLEVEL:+"--log_level $LOGLEVEL"} \
+                  ${MAX_ITEMS:+"--max-items $MAX_ITEMS"} \
+                  ${METRICS_ADDRESS+:"--metrics_address $METRICS_ADDRESS"}
       ;;
 
     "node")

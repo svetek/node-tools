@@ -2,7 +2,7 @@
 version: '3.9'
 services:
   cache:
-    image: svetekllc/lava:v0.35.3-cache
+    image: svetekllc/lava:v0.35.6-cache
     labels:
       network: testnet
     env_file:
@@ -18,7 +18,7 @@ services:
       resources:
         limits:
           cpus: '4'
-          memory: '8gb'
+          memory: '16gb'
     networks:
       - lava
     restart: unless-stopped
@@ -49,7 +49,7 @@ services:
     restart: unless-stopped
 
   provider:
-    image: svetekllc/lava:v0.35.3-provider
+    image: svetekllc/lava:v0.35.6-provider
     labels:
       network: testnet
     env_file:
@@ -66,8 +66,8 @@ services:
     deploy:
       resources:
         limits:
-          cpus: '4'
-          memory: '16gb'
+          cpus: '10'
+          memory: '24gb'
     networks:
       - canto
       - cosmos

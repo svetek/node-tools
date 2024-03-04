@@ -55,7 +55,7 @@ jobs:
         run: |
           if [[ "${{ matrix.project_name }}" == "lava" ]]
           then
-            last_version_info=$(curl -s -S "${{ matrix.git_api_url}}/${{ matrix.git_repository}}/releases" | jq -r -c --arg BINARY "${{ matrix.binary }}" '.[] | select(.assets[]?.name | test("^" + $BINARY + "-.*$")) | {tag_name, published_at}' | head -n1)
+            last_version_info=$(curl -s -S "${{ matrix.git_api_url}}/${{ matrix.git_repository}}/releases" | jq -r -c --arg BINARY "${{ matrix.binary }}" 'first(.[] | select(.assets[]?.name | test("^" + $BINARY + "-.*$")) | {tag_name, published_at})')
             version=$(echo $last_version_info | jq -r .tag_name)
             version_date=$(echo $last_version_info | jq -r .published_at)
             echo "Last version is $version"

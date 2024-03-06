@@ -24,7 +24,7 @@ services:
     deploy:
       resources:
         limits:
-          cpus: '8'
+          cpus: '16'
           memory: '32gb'
     networks:
       - evmos

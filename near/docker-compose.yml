@@ -2,7 +2,7 @@
 version: '3.9'
 services:
   node-testnet:
-    image: svetekllc/near:1.37.0-rc.3
+    image: svetekllc/near:1.37.0
     labels:
       network: testnet
     env_file:
@@ -26,7 +26,7 @@ services:
     restart: unless-stopped
 
   node-mainnet:
-    image: svetekllc/near:1.36.5
+    image: svetekllc/near:1.37.0
     labels:
       network: mainnet
     env_file:
@@ -43,8 +43,8 @@ services:
     deploy:
       resources:
         limits:
-          cpus: '8'
-          memory: '24gb'
+          cpus: '16'
+          memory: '32gb'
     networks:
       - near
     restart: unless-stopped

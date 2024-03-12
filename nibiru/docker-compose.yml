@@ -2,7 +2,7 @@
 version: '3.9'
 services:
   node:
-    image: svetekllc/nibiru:v1.0.0
+    image: svetekllc/nibiru:v1.0.2
     labels:
       network: mainnet
     env_file:
@@ -26,7 +26,7 @@ services:
       - nibiru
     restart: unless-stopped
 
-  pricefeeder-testnet:
+  pricefeeder:
     image: pricefeeder
     build: ./pricefeeder
     env_file:

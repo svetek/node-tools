@@ -3,9 +3,10 @@ export DOCKER_BUILDKIT=1
 
 set -e
 
+BIN="nibid"
+BUILD_DATE="$(date -u +'%Y-%m-%d')"
 DIR="$( cd "$( dirname "$0" )" && pwd )"
 DOCKERFILE="$DIR/Dockerfile"
-BUILD_DATE="$(date -u +'%Y-%m-%d')"
 GIT_REPOSITORY=https://github.com/NibiruChain/nibiru
 
 read -p "Enter image name: " -r IMAGE_NAME
@@ -44,8 +45,7 @@ echo -e "Version: \t$IMAGE_TAG\n"
 docker build -f "$DOCKERFILE" "$DIR" \
      --build-arg IMAGE_TAG="$IMAGE_TAG" \
      --build-arg GIT_REPOSITORY="$GIT_REPOSITORY" \
-     --build-arg BIN="nibid" \
-     --build-arg BUILD_DATE="$BUILD_DATE" \
+     --build-arg BIN="$BIN" \
      --tag $IMAGE
 
 if [[ "$PUSH_FLAG" == "yes" ]]

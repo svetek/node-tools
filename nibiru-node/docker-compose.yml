@@ -1,35 +1,22 @@
 ---
 version: '3.9'
 services:
-  node-testnet:
-    image: svetekllc/nibiru:v0.21.11
-    env_file:
-      - testnet.env
-    ports:
-      - '26656:26656'
-      - '26660:26660'
-    volumes:
-      - /opt/nvme0n1/nibiru:/root/.nibid
-    deploy:
-      resources:
-        limits:
-          cpus: '4'
-          memory: '8gb'
-    networks:
-      - nibiru
-    restart: unless-stopped
-
-  node-mainnet:
+  node:
     image: svetekllc/nibiru:v1.0.0
     labels:
       network: mainnet
     env_file:
-      - mainnet.env
+      - node.env
     ports:
       - '13656:13656'
       - '13660:13660'
     volumes:
-      - /opt/nvme1n1/nibiru:/root/.nibid
+      - /opt/nvme2n1/nibiru:/root/.nibid
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "100m"
+        max-file: "1"
     deploy:
       resources:
         limits:

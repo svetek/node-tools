@@ -10,6 +10,7 @@
         "lava-cache",
         "lava-provider",
         "massa-node",
+        "nibiru-node",
         "near-node"
     ],
     "include": [
@@ -86,6 +87,13 @@
             "git_repository": "massalabs/massa",
             "node_type": "node",
             "binary": "massa-node"
+        },
+        {
+            "node_name": "nibiru-node",
+            "project_name": "nibiru",
+            "git_repository": "NibiruChain/nibiru",
+            "node_type": "node",
+            "binary": "nibid"
         },
         {
             "node_name": "near-node",

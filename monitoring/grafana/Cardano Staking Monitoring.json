@@ -21,7 +21,7 @@
       "type": "grafana",
       "id": "grafana",
       "name": "Grafana",
-      "version": "10.0.1"
+      "version": "10.2.2"
     },
     {
       "type": "panel",
@@ -256,9 +256,10 @@
           "values": false
         },
         "text": {},
-        "textMode": "auto"
+        "textMode": "auto",
+        "wideLayout": true
       },
-      "pluginVersion": "10.0.1",
+      "pluginVersion": "10.2.2",
       "targets": [
         {
           "datasource": {
@@ -319,9 +320,10 @@
           "values": false
         },
         "text": {},
-        "textMode": "auto"
+        "textMode": "auto",
+        "wideLayout": true
       },
-      "pluginVersion": "10.0.1",
+      "pluginVersion": "10.2.2",
       "targets": [
         {
           "datasource": {
@@ -390,9 +392,10 @@
           "values": false
         },
         "text": {},
-        "textMode": "value"
+        "textMode": "value",
+        "wideLayout": true
       },
-      "pluginVersion": "10.0.1",
+      "pluginVersion": "10.2.2",
       "targets": [
         {
           "datasource": {
@@ -468,9 +471,10 @@
           "values": false
         },
         "text": {},
-        "textMode": "auto"
+        "textMode": "auto",
+        "wideLayout": true
       },
-      "pluginVersion": "10.0.1",
+      "pluginVersion": "10.2.2",
       "targets": [
         {
           "datasource": {
@@ -540,6 +544,7 @@
         "displayMode": "basic",
         "minVizHeight": 10,
         "minVizWidth": 0,
+        "namePlacement": "auto",
         "orientation": "horizontal",
         "reduceOptions": {
           "calcs": [
@@ -552,7 +557,7 @@
         "text": {},
         "valueMode": "color"
       },
-      "pluginVersion": "10.0.1",
+      "pluginVersion": "10.2.2",
       "targets": [
         {
           "datasource": {
@@ -614,9 +619,10 @@
           "values": false
         },
         "text": {},
-        "textMode": "auto"
+        "textMode": "auto",
+        "wideLayout": true
       },
-      "pluginVersion": "10.0.1",
+      "pluginVersion": "10.2.2",
       "targets": [
         {
           "datasource": {
@@ -675,9 +681,10 @@
           "values": false
         },
         "text": {},
-        "textMode": "auto"
+        "textMode": "auto",
+        "wideLayout": true
       },
-      "pluginVersion": "10.0.1",
+      "pluginVersion": "10.2.2",
       "targets": [
         {
           "datasource": {
@@ -764,9 +771,10 @@
           "values": false
         },
         "text": {},
-        "textMode": "auto"
+        "textMode": "auto",
+        "wideLayout": true
       },
-      "pluginVersion": "10.0.1",
+      "pluginVersion": "10.2.2",
       "targets": [
         {
           "datasource": {
@@ -844,6 +852,7 @@
         "displayMode": "lcd",
         "minVizHeight": 10,
         "minVizWidth": 0,
+        "namePlacement": "auto",
         "orientation": "horizontal",
         "reduceOptions": {
           "calcs": [
@@ -856,7 +865,7 @@
         "text": {},
         "valueMode": "color"
       },
-      "pluginVersion": "10.0.1",
+      "pluginVersion": "10.2.2",
       "targets": [
         {
           "datasource": {
@@ -917,9 +926,10 @@
           "values": false
         },
         "text": {},
-        "textMode": "auto"
+        "textMode": "auto",
+        "wideLayout": true
       },
-      "pluginVersion": "10.0.1",
+      "pluginVersion": "10.2.2",
       "targets": [
         {
           "datasource": {
@@ -1023,6 +1033,7 @@
         "displayMode": "lcd",
         "minVizHeight": 10,
         "minVizWidth": 0,
+        "namePlacement": "auto",
         "orientation": "horizontal",
         "reduceOptions": {
           "calcs": [
@@ -1035,7 +1046,7 @@
         "text": {},
         "valueMode": "color"
       },
-      "pluginVersion": "10.0.1",
+      "pluginVersion": "10.2.2",
       "targets": [
         {
           "datasource": {
@@ -1154,9 +1165,10 @@
           "values": false
         },
         "text": {},
-        "textMode": "auto"
+        "textMode": "auto",
+        "wideLayout": true
       },
-      "pluginVersion": "10.0.1",
+      "pluginVersion": "10.2.2",
       "targets": [
         {
           "datasource": {
@@ -1238,9 +1250,10 @@
           "values": false
         },
         "text": {},
-        "textMode": "auto"
+        "textMode": "auto",
+        "wideLayout": true
       },
-      "pluginVersion": "10.0.1",
+      "pluginVersion": "10.2.2",
       "targets": [
         {
           "datasource": {
@@ -1306,9 +1319,10 @@
           "values": false
         },
         "text": {},
-        "textMode": "auto"
+        "textMode": "auto",
+        "wideLayout": true
       },
-      "pluginVersion": "10.0.1",
+      "pluginVersion": "10.2.2",
       "targets": [
         {
           "datasource": {
@@ -1371,9 +1385,10 @@
           "values": false
         },
         "text": {},
-        "textMode": "auto"
+        "textMode": "auto",
+        "wideLayout": true
       },
-      "pluginVersion": "10.0.1",
+      "pluginVersion": "10.2.2",
       "targets": [
         {
           "datasource": {
@@ -1453,9 +1468,10 @@
           "values": false
         },
         "text": {},
-        "textMode": "auto"
+        "textMode": "auto",
+        "wideLayout": true
       },
-      "pluginVersion": "10.0.1",
+      "pluginVersion": "10.2.2",
       "targets": [
         {
           "datasource": {
@@ -1525,6 +1541,7 @@
         "displayMode": "lcd",
         "minVizHeight": 10,
         "minVizWidth": 0,
+        "namePlacement": "auto",
         "orientation": "horizontal",
         "reduceOptions": {
           "calcs": [
@@ -1537,7 +1554,7 @@
         "text": {},
         "valueMode": "color"
       },
-      "pluginVersion": "10.0.1",
+      "pluginVersion": "10.2.2",
       "targets": [
         {
           "datasource": {
@@ -1657,9 +1674,10 @@
           "values": false
         },
         "text": {},
-        "textMode": "auto"
+        "textMode": "auto",
+        "wideLayout": true
       },
-      "pluginVersion": "10.0.1",
+      "pluginVersion": "10.2.2",
       "targets": [
         {
           "datasource": {
@@ -1740,9 +1758,10 @@
           "values": false
         },
         "text": {},
-        "textMode": "auto"
+        "textMode": "auto",
+        "wideLayout": true
       },
-      "pluginVersion": "10.0.1",
+      "pluginVersion": "10.2.2",
       "targets": [
         {
           "datasource": {
@@ -1808,9 +1827,10 @@
           "values": false
         },
         "text": {},
-        "textMode": "auto"
+        "textMode": "auto",
+        "wideLayout": true
       },
-      "pluginVersion": "10.0.1",
+      "pluginVersion": "10.2.2",
       "targets": [
         {
           "datasource": {
@@ -1873,9 +1893,10 @@
           "values": false
         },
         "text": {},
-        "textMode": "auto"
+        "textMode": "auto",
+        "wideLayout": true
       },
-      "pluginVersion": "10.0.1",
+      "pluginVersion": "10.2.2",
       "targets": [
         {
           "datasource": {
@@ -1955,9 +1976,10 @@
           "values": false
         },
         "text": {},
-        "textMode": "auto"
+        "textMode": "auto",
+        "wideLayout": true
       },
-      "pluginVersion": "10.0.1",
+      "pluginVersion": "10.2.2",
       "targets": [
         {
           "datasource": {
@@ -2027,6 +2049,7 @@
         "displayMode": "lcd",
         "minVizHeight": 10,
         "minVizWidth": 0,
+        "namePlacement": "auto",
         "orientation": "horizontal",
         "reduceOptions": {
           "calcs": [
@@ -2039,7 +2062,7 @@
         "text": {},
         "valueMode": "color"
       },
-      "pluginVersion": "10.0.1",
+      "pluginVersion": "10.2.2",
       "targets": [
         {
           "datasource": {
@@ -2158,9 +2181,10 @@
           "values": false
         },
         "text": {},
-        "textMode": "auto"
+        "textMode": "auto",
+        "wideLayout": true
       },
-      "pluginVersion": "10.0.1",
+      "pluginVersion": "10.2.2",
       "targets": [
         {
           "datasource": {
@@ -2241,9 +2265,10 @@
           "values": false
         },
         "text": {},
-        "textMode": "auto"
+        "textMode": "auto",
+        "wideLayout": true
       },
-      "pluginVersion": "10.0.1",
+      "pluginVersion": "10.2.2",
       "targets": [
         {
           "datasource": {
@@ -2309,9 +2334,10 @@
           "values": false
         },
         "text": {},
-        "textMode": "auto"
+        "textMode": "auto",
+        "wideLayout": true
       },
-      "pluginVersion": "10.0.1",
+      "pluginVersion": "10.2.2",
       "targets": [
         {
           "datasource": {
@@ -2374,9 +2400,10 @@
           "values": false
         },
         "text": {},
-        "textMode": "auto"
+        "textMode": "auto",
+        "wideLayout": true
       },
-      "pluginVersion": "10.0.1",
+      "pluginVersion": "10.2.2",
       "targets": [
         {
           "datasource": {
@@ -2456,9 +2483,10 @@
           "values": false
         },
         "text": {},
-        "textMode": "auto"
+        "textMode": "auto",
+        "wideLayout": true
       },
-      "pluginVersion": "10.0.1",
+      "pluginVersion": "10.2.2",
       "targets": [
         {
           "datasource": {
@@ -2467,507 +2495,6 @@
           },
           "exemplar": true,
           "expr": "rts_gc_wall_ms{hostname=\"relay-eu\"} / (1000)",
-          "format": "time_series",
-          "hide": false,
-          "instant": true,
-          "interval": "",
-          "intervalFactor": 1,
-          "legendFormat": "{{alias}}",
-          "refId": "A",
-          "step": 40
-        }
-      ],
-      "title": "Uptime",
-      "type": "stat"
-    },
-    {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "${DS_PROMETHEUS}"
-      },
-      "description": "",
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "thresholds"
-          },
-          "decimals": 1,
-          "mappings": [],
-          "max": 100,
-          "min": 0,
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "light-green",
-                "value": null
-              },
-              {
-                "color": "light-yellow",
-                "value": 60
-              },
-              {
-                "color": "dark-red",
-                "value": 85
-              }
-            ]
-          },
-          "unit": "percent"
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 3,
-        "w": 10,
-        "x": 0,
-        "y": 16
-      },
-      "id": 216,
-      "interval": "",
-      "options": {
-        "displayMode": "lcd",
-        "minVizHeight": 10,
-        "minVizWidth": 0,
-        "orientation": "horizontal",
-        "reduceOptions": {
-          "calcs": [
-            "last"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "showUnfilled": true,
-        "text": {},
-        "valueMode": "color"
-      },
-      "pluginVersion": "10.0.1",
-      "targets": [
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "${DS_PROMETHEUS}"
-          },
-          "exemplar": true,
-          "expr": "100 - (avg by(alias) (irate(node_cpu_seconds_total{mode=\"idle\",hostname=\"relay-us\"}[1m])) * 100)",
-          "instant": false,
-          "interval": "",
-          "legendFormat": "CPU",
-          "refId": "A"
-        },
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "${DS_PROMETHEUS}"
-          },
-          "exemplar": true,
-          "expr": "(1 - (node_memory_MemAvailable_bytes{hostname=\"relay-us\"} / (node_memory_MemTotal_bytes{hostname=\"relay-us\"})))* 100",
-          "hide": false,
-          "instant": false,
-          "interval": "",
-          "legendFormat": "RAM",
-          "refId": "B"
-        },
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "${DS_PROMETHEUS}"
-          },
-          "exemplar": true,
-          "expr": "(1 - (node_memory_SwapFree_bytes{hostname=\"relay-us\"} / node_memory_SwapTotal_bytes{hostname=\"relay-us\"})) * 100",
-          "hide": false,
-          "instant": false,
-          "interval": "",
-          "legendFormat": "SWAP",
-          "refId": "E"
-        },
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "${DS_PROMETHEUS}"
-          },
-          "exemplar": true,
-          "expr": "100 - ((node_filesystem_avail_bytes{mountpoint=\"/\",fstype!=\"rootfs\",hostname=\"relay-us\"} * 100) / node_filesystem_size_bytes{mountpoint=\"/\",fstype!=\"rootfs\",hostname=\"relay-us\"})",
-          "instant": false,
-          "interval": "",
-          "legendFormat": "Disk",
-          "refId": "F"
-        }
-      ],
-      "title": "Relay-US Node System Health",
-      "type": "bargauge"
-    },
-    {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "${DS_PROMETHEUS}"
-      },
-      "description": "Connected peers to/from Relay 1",
-      "fieldConfig": {
-        "defaults": {
-          "decimals": 0,
-          "mappings": [
-            {
-              "options": {
-                "match": "null",
-                "result": {
-                  "text": "N/A"
-                }
-              },
-              "type": "special"
-            }
-          ],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "semi-dark-green",
-                "value": null
-              },
-              {
-                "color": "semi-dark-yellow",
-                "value": 16
-              },
-              {
-                "color": "#FA6400",
-                "value": 20
-              }
-            ]
-          },
-          "unit": "none"
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 3,
-        "w": 3,
-        "x": 10,
-        "y": 16
-      },
-      "id": 217,
-      "links": [],
-      "maxDataPoints": 100,
-      "options": {
-        "colorMode": "background",
-        "graphMode": "none",
-        "justifyMode": "auto",
-        "orientation": "horizontal",
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "text": {},
-        "textMode": "auto"
-      },
-      "pluginVersion": "10.0.1",
-      "targets": [
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "${DS_PROMETHEUS}"
-          },
-          "editorMode": "code",
-          "exemplar": false,
-          "expr": "cardano_node_metrics_peers_connectedPeers_int{hostname=\"relay-us\"}",
-          "format": "time_series",
-          "instant": true,
-          "interval": "",
-          "intervalFactor": 1,
-          "legendFormat": "{{alias}}",
-          "refId": "A",
-          "step": 20
-        }
-      ],
-      "title": "Peers",
-      "type": "stat"
-    },
-    {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "${DS_PROMETHEUS}"
-      },
-      "description": "",
-      "fieldConfig": {
-        "defaults": {
-          "decimals": 0,
-          "mappings": [
-            {
-              "options": {
-                "": {
-                  "text": "N/A"
-                }
-              },
-              "type": "value"
-            }
-          ],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "blue",
-                "value": null
-              }
-            ]
-          },
-          "unit": "locale"
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 3,
-        "w": 3,
-        "x": 13,
-        "y": 16
-      },
-      "id": 218,
-      "links": [],
-      "maxDataPoints": 100,
-      "options": {
-        "colorMode": "background",
-        "fieldOptions": {
-          "calcs": [
-            "lastNotNull"
-          ]
-        },
-        "graphMode": "none",
-        "justifyMode": "auto",
-        "orientation": "horizontal",
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "text": {},
-        "textMode": "auto"
-      },
-      "pluginVersion": "10.0.1",
-      "targets": [
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "${DS_PROMETHEUS}"
-          },
-          "exemplar": false,
-          "expr": "cardano_node_metrics_txsProcessedNum_int{hostname=\"relay-us\"}",
-          "hide": false,
-          "instant": true,
-          "interval": "",
-          "legendFormat": "{{alias}}",
-          "refId": "A"
-        }
-      ],
-      "title": "Relay TX's processed",
-      "type": "stat"
-    },
-    {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "${DS_PROMETHEUS}"
-      },
-      "description": "",
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "thresholds"
-          },
-          "links": [],
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "blue",
-                "value": null
-              }
-            ]
-          },
-          "unit": "locale"
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 3,
-        "w": 3,
-        "x": 16,
-        "y": 16
-      },
-      "id": 219,
-      "links": [],
-      "options": {
-        "colorMode": "background",
-        "graphMode": "none",
-        "justifyMode": "auto",
-        "orientation": "horizontal",
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "text": {},
-        "textMode": "auto"
-      },
-      "pluginVersion": "10.0.1",
-      "targets": [
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "${DS_PROMETHEUS}"
-          },
-          "exemplar": true,
-          "expr": "cardano_node_metrics_blockNum_int{hostname=\"relay-us\"}",
-          "interval": "",
-          "legendFormat": "{{alias}}",
-          "refId": "A"
-        }
-      ],
-      "title": "Block",
-      "type": "stat"
-    },
-    {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "${DS_PROMETHEUS}"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "thresholds"
-          },
-          "links": [],
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "blue",
-                "value": null
-              }
-            ]
-          },
-          "unit": "locale"
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 3,
-        "w": 3,
-        "x": 19,
-        "y": 16
-      },
-      "id": 220,
-      "links": [],
-      "options": {
-        "colorMode": "background",
-        "graphMode": "none",
-        "justifyMode": "auto",
-        "orientation": "auto",
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "text": {},
-        "textMode": "auto"
-      },
-      "pluginVersion": "10.0.1",
-      "targets": [
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "${DS_PROMETHEUS}"
-          },
-          "exemplar": true,
-          "expr": "cardano_node_metrics_slotNum_int{hostname=\"relay-us\"}",
-          "hide": false,
-          "instant": false,
-          "interval": "",
-          "legendFormat": "{{alias}}",
-          "refId": "A"
-        }
-      ],
-      "title": "Slot",
-      "type": "stat"
-    },
-    {
-      "datasource": {
-        "type": "prometheus",
-        "uid": "${DS_PROMETHEUS}"
-      },
-      "description": "Relay node 1 uptime",
-      "fieldConfig": {
-        "defaults": {
-          "decimals": 1,
-          "mappings": [
-            {
-              "options": {
-                "match": "null",
-                "result": {
-                  "text": "N/A"
-                }
-              },
-              "type": "special"
-            }
-          ],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "blue",
-                "value": null
-              }
-            ]
-          },
-          "unit": "s"
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 3,
-        "w": 2,
-        "x": 22,
-        "y": 16
-      },
-      "hideTimeOverride": true,
-      "id": 222,
-      "links": [],
-      "maxDataPoints": 100,
-      "options": {
-        "colorMode": "background",
-        "fieldOptions": {
-          "calcs": [
-            "lastNotNull"
-          ]
-        },
-        "graphMode": "none",
-        "justifyMode": "auto",
-        "orientation": "horizontal",
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "text": {},
-        "textMode": "auto"
-      },
-      "pluginVersion": "10.0.1",
-      "targets": [
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "${DS_PROMETHEUS}"
-          },
-          "exemplar": false,
-          "expr": "rts_gc_wall_ms{hostname=\"relay-us\"} / (1000)",
           "format": "time_series",
           "hide": false,
           "instant": true,
@@ -2991,10 +2518,586 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 19
+        "y": 16
       },
-      "id": 224,
+      "id": 204,
       "panels": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "palette-classic"
+              },
+              "custom": {
+                "axisCenteredZero": false,
+                "axisColorMode": "text",
+                "axisLabel": "Load",
+                "axisPlacement": "auto",
+                "barAlignment": 0,
+                "drawStyle": "line",
+                "fillOpacity": 24,
+                "gradientMode": "opacity",
+                "hideFrom": {
+                  "legend": false,
+                  "tooltip": false,
+                  "viz": false
+                },
+                "insertNulls": false,
+                "lineInterpolation": "linear",
+                "lineStyle": {
+                  "fill": "solid"
+                },
+                "lineWidth": 1,
+                "pointSize": 5,
+                "scaleDistribution": {
+                  "type": "linear"
+                },
+                "showPoints": "never",
+                "spanNulls": true,
+                "stacking": {
+                  "group": "A",
+                  "mode": "none"
+                },
+                "thresholdsStyle": {
+                  "mode": "off"
+                }
+              },
+              "decimals": 0,
+              "links": [],
+              "mappings": [],
+              "min": 0,
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green"
+                  },
+                  {
+                    "color": "red",
+                    "value": 80
+                  }
+                ]
+              },
+              "unit": "%"
+            },
+            "overrides": [
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "Load 1m"
+                },
+                "properties": [
+                  {
+                    "id": "color",
+                    "value": {
+                      "fixedColor": "#8AB8FF",
+                      "mode": "fixed"
+                    }
+                  },
+                  {
+                    "id": "custom.fillOpacity",
+                    "value": 100
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "Load 5m"
+                },
+                "properties": [
+                  {
+                    "id": "color",
+                    "value": {
+                      "fixedColor": "#FFEE52",
+                      "mode": "fixed"
+                    }
+                  },
+                  {
+                    "id": "custom.fillOpacity",
+                    "value": 100
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "Load 15m"
+                },
+                "properties": [
+                  {
+                    "id": "color",
+                    "value": {
+                      "fixedColor": "#C4162A",
+                      "mode": "fixed"
+                    }
+                  },
+                  {
+                    "id": "custom.fillOpacity",
+                    "value": 100
+                  }
+                ]
+              }
+            ]
+          },
+          "gridPos": {
+            "h": 9,
+            "w": 8,
+            "x": 0,
+            "y": 17
+          },
+          "id": 51,
+          "links": [],
+          "options": {
+            "legend": {
+              "calcs": [
+                "min",
+                "mean",
+                "max",
+                "lastNotNull"
+              ],
+              "displayMode": "table",
+              "placement": "bottom",
+              "showLegend": true
+            },
+            "tooltip": {
+              "mode": "single",
+              "sort": "none"
+            }
+          },
+          "pluginVersion": "8.1.2",
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "${DS_PROMETHEUS}"
+              },
+              "expr": "node_load1{hostname=\"producer\"}*100",
+              "format": "time_series",
+              "interval": "",
+              "intervalFactor": 4,
+              "legendFormat": "Load 1m",
+              "refId": "A",
+              "step": 480
+            },
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "${DS_PROMETHEUS}"
+              },
+              "expr": "node_load5{hostname=\"producer\"}*100",
+              "format": "time_series",
+              "interval": "",
+              "intervalFactor": 4,
+              "legendFormat": "Load 5m",
+              "refId": "B",
+              "step": 480
+            },
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "${DS_PROMETHEUS}"
+              },
+              "expr": "node_load15{hostname=\"producer\"}*100",
+              "format": "time_series",
+              "interval": "",
+              "intervalFactor": 4,
+              "legendFormat": "Load 15m",
+              "refId": "C",
+              "step": 480
+            }
+          ],
+          "title": "System Load (producer node)",
+          "type": "timeseries"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "palette-classic"
+              },
+              "custom": {
+                "axisCenteredZero": false,
+                "axisColorMode": "text",
+                "axisLabel": "Load",
+                "axisPlacement": "auto",
+                "barAlignment": 0,
+                "drawStyle": "line",
+                "fillOpacity": 100,
+                "gradientMode": "opacity",
+                "hideFrom": {
+                  "legend": false,
+                  "tooltip": false,
+                  "viz": false
+                },
+                "insertNulls": false,
+                "lineInterpolation": "linear",
+                "lineWidth": 1,
+                "pointSize": 5,
+                "scaleDistribution": {
+                  "type": "linear"
+                },
+                "showPoints": "never",
+                "spanNulls": true,
+                "stacking": {
+                  "group": "A",
+                  "mode": "none"
+                },
+                "thresholdsStyle": {
+                  "mode": "off"
+                }
+              },
+              "decimals": 0,
+              "links": [],
+              "mappings": [],
+              "min": 0,
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green"
+                  },
+                  {
+                    "color": "red",
+                    "value": 80
+                  }
+                ]
+              },
+              "unit": "%"
+            },
+            "overrides": [
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "Load 1m"
+                },
+                "properties": [
+                  {
+                    "id": "color",
+                    "value": {
+                      "fixedColor": "light-blue",
+                      "mode": "fixed"
+                    }
+                  },
+                  {
+                    "id": "custom.fillOpacity",
+                    "value": 100
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "Load 5m"
+                },
+                "properties": [
+                  {
+                    "id": "color",
+                    "value": {
+                      "fixedColor": "yellow",
+                      "mode": "fixed"
+                    }
+                  },
+                  {
+                    "id": "custom.fillOpacity",
+                    "value": 50
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "Load 15m"
+                },
+                "properties": [
+                  {
+                    "id": "color",
+                    "value": {
+                      "fixedColor": "#C4162A",
+                      "mode": "fixed"
+                    }
+                  },
+                  {
+                    "id": "custom.fillOpacity",
+                    "value": 100
+                  }
+                ]
+              }
+            ]
+          },
+          "gridPos": {
+            "h": 9,
+            "w": 8,
+            "x": 8,
+            "y": 17
+          },
+          "id": 176,
+          "links": [],
+          "options": {
+            "legend": {
+              "calcs": [
+                "min",
+                "mean",
+                "max",
+                "lastNotNull"
+              ],
+              "displayMode": "table",
+              "placement": "bottom",
+              "showLegend": true
+            },
+            "tooltip": {
+              "mode": "single",
+              "sort": "none"
+            }
+          },
+          "pluginVersion": "8.1.2",
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "${DS_PROMETHEUS}"
+              },
+              "exemplar": true,
+              "expr": "node_load1{hostname=\"relay-eu\"}*100",
+              "format": "time_series",
+              "interval": "",
+              "intervalFactor": 4,
+              "legendFormat": "Load 1m",
+              "refId": "A",
+              "step": 480
+            },
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "${DS_PROMETHEUS}"
+              },
+              "exemplar": true,
+              "expr": "node_load5{hostname=\"relay-eu\"}*100",
+              "format": "time_series",
+              "interval": "",
+              "intervalFactor": 4,
+              "legendFormat": "Load 5m",
+              "refId": "B",
+              "step": 480
+            },
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "${DS_PROMETHEUS}"
+              },
+              "exemplar": true,
+              "expr": "node_load15{hostname=\"relay-eu\"}*100",
+              "format": "time_series",
+              "interval": "",
+              "intervalFactor": 4,
+              "legendFormat": "Load 15m",
+              "refId": "C",
+              "step": 480
+            }
+          ],
+          "title": "System Load (relay-eu node)",
+          "type": "timeseries"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${DS_PROMETHEUS}"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "palette-classic"
+              },
+              "custom": {
+                "axisCenteredZero": false,
+                "axisColorMode": "text",
+                "axisLabel": "Load",
+                "axisPlacement": "auto",
+                "barAlignment": 0,
+                "drawStyle": "line",
+                "fillOpacity": 20,
+                "gradientMode": "opacity",
+                "hideFrom": {
+                  "legend": false,
+                  "tooltip": false,
+                  "viz": false
+                },
+                "insertNulls": false,
+                "lineInterpolation": "linear",
+                "lineWidth": 1,
+                "pointSize": 5,
+                "scaleDistribution": {
+                  "type": "linear"
+                },
+                "showPoints": "never",
+                "spanNulls": true,
+                "stacking": {
+                  "group": "A",
+                  "mode": "none"
+                },
+                "thresholdsStyle": {
+                  "mode": "off"
+                }
+              },
+              "decimals": 0,
+              "links": [],
+              "mappings": [],
+              "min": 0,
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green"
+                  },
+                  {
+                    "color": "red",
+                    "value": 80
+                  }
+                ]
+              },
+              "unit": "%"
+            },
+            "overrides": [
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "Load 1m"
+                },
+                "properties": [
+                  {
+                    "id": "color",
+                    "value": {
+                      "fixedColor": "#8AB8FF",
+                      "mode": "fixed"
+                    }
+                  },
+                  {
+                    "id": "custom.fillOpacity",
+                    "value": 100
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "Load 5m"
+                },
+                "properties": [
+                  {
+                    "id": "color",
+                    "value": {
+                      "fixedColor": "#FFEE52",
+                      "mode": "fixed"
+                    }
+                  },
+                  {
+                    "id": "custom.fillOpacity",
+                    "value": 50
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "Load 15m"
+                },
+                "properties": [
+                  {
+                    "id": "color",
+                    "value": {
+                      "fixedColor": "#C4162A",
+                      "mode": "fixed"
+                    }
+                  },
+                  {
+                    "id": "custom.fillOpacity",
+                    "value": 50
+                  }
+                ]
+              }
+            ]
+          },
+          "gridPos": {
+            "h": 9,
+            "w": 8,
+            "x": 16,
+            "y": 17
+          },
+          "id": 90,
+          "links": [],
+          "options": {
+            "legend": {
+              "calcs": [
+                "min",
+                "mean",
+                "max",
+                "lastNotNull"
+              ],
+              "displayMode": "table",
+              "placement": "bottom",
+              "showLegend": true
+            },
+            "tooltip": {
+              "mode": "single",
+              "sort": "none"
+            }
+          },
+          "pluginVersion": "8.1.2",
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "${DS_PROMETHEUS}"
+              },
+              "exemplar": true,
+              "expr": "node_load1{hostname=\"relay-ru\"}*100",
+              "format": "time_series",
+              "interval": "",
+              "intervalFactor": 4,
+              "legendFormat": "Load 1m",
+              "refId": "A",
+              "step": 480
+            },
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "${DS_PROMETHEUS}"
+              },
+              "exemplar": true,
+              "expr": "node_load5{hostname=\"relay-ru\"}*100",
+              "format": "time_series",
+              "interval": "",
+              "intervalFactor": 4,
+              "legendFormat": "Load 5m",
+              "refId": "B",
+              "step": 480
+            },
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "${DS_PROMETHEUS}"
+              },
+              "exemplar": true,
+              "expr": "node_load15{hostname=\"relay-ru\"}*100",
+              "format": "time_series",
+              "interval": "",
+              "intervalFactor": 4,
+              "legendFormat": "Load 15m",
+              "refId": "C",
+              "step": 480
+            }
+          ],
+          "title": "System Load (relay-ru node)",
+          "type": "timeseries"
+        },
         {
           "alert": {
             "alertRuleTags": {},
@@ -3059,6 +3162,7 @@
                   "tooltip": false,
                   "viz": false
                 },
+                "insertNulls": false,
                 "lineInterpolation": "linear",
                 "lineWidth": 1,
                 "pointSize": 5,
@@ -3175,7 +3279,7 @@
             "h": 9,
             "w": 8,
             "x": 0,
-            "y": 20
+            "y": 26
           },
           "id": 195,
           "links": [],
@@ -3318,1861 +3422,6 @@
               {
                 "evaluator": {
                   "params": [
-                    90
-                  ],
-                  "type": "gt"
-                },
-                "operator": {
-                  "type": "and"
-                },
-                "query": {
-                  "params": [
-                    "A",
-                    "1m",
-                    "now"
-                  ]
-                },
-                "reducer": {
-                  "params": [],
-                  "type": "avg"
-                },
-                "type": "query"
-              }
-            ],
-            "executionErrorState": "alerting",
-            "for": "5m",
-            "frequency": "1m",
-            "handler": 1,
-            "message": "",
-            "name": "RAM Utilization on Producer node > 90%",
-            "noDataState": "no_data",
-            "notifications": [
-              {
-                "uid": "mKGkrcH7z"
-              }
-            ]
-          },
-          "datasource": {
-            "type": "prometheus",
-            "uid": "${DS_PROMETHEUS}"
-          },
-          "description": "",
-          "fieldConfig": {
-            "defaults": {
-              "color": {
-                "fixedColor": "light-blue",
-                "mode": "fixed"
-              },
-              "custom": {
-                "axisCenteredZero": false,
-                "axisColorMode": "text",
-                "axisLabel": "",
-                "axisPlacement": "auto",
-                "axisSoftMax": 100,
-                "axisSoftMin": 0,
-                "barAlignment": 0,
-                "drawStyle": "line",
-                "fillOpacity": 100,
-                "gradientMode": "opacity",
-                "hideFrom": {
-                  "legend": false,
-                  "tooltip": false,
-                  "viz": false
-                },
-                "lineInterpolation": "linear",
-                "lineWidth": 1,
-                "pointSize": 5,
-                "scaleDistribution": {
-                  "type": "linear"
-                },
-                "showPoints": "never",
-                "spanNulls": true,
-                "stacking": {
-                  "group": "A",
-                  "mode": "none"
-                },
-                "thresholdsStyle": {
-                  "mode": "line+area"
-                }
-              },
-              "decimals": 1,
-              "links": [],
-              "mappings": [],
-              "thresholds": {
-                "mode": "absolute",
-                "steps": [
-                  {
-                    "color": "transparent"
-                  },
-                  {
-                    "color": "red",
-                    "value": 90
-                  }
-                ]
-              },
-              "unit": "%"
-            },
-            "overrides": []
-          },
-          "gridPos": {
-            "h": 9,
-            "w": 8,
-            "x": 8,
-            "y": 20
-          },
-          "id": 24,
-          "interval": "",
-          "options": {
-            "legend": {
-              "calcs": [
-                "min",
-                "mean",
-                "max",
-                "lastNotNull"
-              ],
-              "displayMode": "table",
-              "placement": "bottom",
-              "showLegend": true
-            },
-            "tooltip": {
-              "mode": "single",
-              "sort": "none"
-            }
-          },
-          "pluginVersion": "8.1.2",
-          "targets": [
-            {
-              "datasource": {
-                "type": "prometheus",
-                "uid": "${DS_PROMETHEUS}"
-              },
-              "exemplar": true,
-              "expr": "(1 - (node_memory_MemAvailable_bytes{hostname=\"producer\"} / (node_memory_MemTotal_bytes{hostname=\"producer\"})))* 100",
-              "hide": false,
-              "interval": "",
-              "legendFormat": "RAM Used",
-              "refId": "A"
-            }
-          ],
-          "thresholds": [
-            {
-              "colorMode": "critical",
-              "op": "gt",
-              "value": 90,
-              "visible": true
-            }
-          ],
-          "title": "Memory Utilization (producer node)",
-          "type": "timeseries"
-        },
-        {
-          "alert": {
-            "alertRuleTags": {},
-            "conditions": [
-              {
-                "evaluator": {
-                  "params": [
-                    90
-                  ],
-                  "type": "gt"
-                },
-                "operator": {
-                  "type": "and"
-                },
-                "query": {
-                  "params": [
-                    "A",
-                    "1m",
-                    "now"
-                  ]
-                },
-                "reducer": {
-                  "params": [],
-                  "type": "last"
-                },
-                "type": "query"
-              }
-            ],
-            "executionErrorState": "alerting",
-            "for": "5m",
-            "frequency": "1m",
-            "handler": 1,
-            "name": "Disk Space Utilization on Producer node > 90%",
-            "noDataState": "no_data",
-            "notifications": [
-              {
-                "uid": "mKGkrcH7z"
-              }
-            ]
-          },
-          "datasource": {
-            "type": "prometheus",
-            "uid": "${DS_PROMETHEUS}"
-          },
-          "description": "",
-          "fieldConfig": {
-            "defaults": {
-              "color": {
-                "mode": "palette-classic"
-              },
-              "custom": {
-                "axisCenteredZero": false,
-                "axisColorMode": "text",
-                "axisLabel": "",
-                "axisPlacement": "auto",
-                "axisSoftMax": 100,
-                "axisSoftMin": 0,
-                "barAlignment": 0,
-                "drawStyle": "line",
-                "fillOpacity": 50,
-                "gradientMode": "opacity",
-                "hideFrom": {
-                  "legend": false,
-                  "tooltip": false,
-                  "viz": false
-                },
-                "lineInterpolation": "linear",
-                "lineWidth": 1,
-                "pointSize": 5,
-                "scaleDistribution": {
-                  "type": "linear"
-                },
-                "showPoints": "never",
-                "spanNulls": true,
-                "stacking": {
-                  "group": "A",
-                  "mode": "none"
-                },
-                "thresholdsStyle": {
-                  "mode": "line+area"
-                }
-              },
-              "links": [],
-              "mappings": [],
-              "min": 0,
-              "thresholds": {
-                "mode": "absolute",
-                "steps": [
-                  {
-                    "color": "transparent"
-                  },
-                  {
-                    "color": "red",
-                    "value": 90
-                  }
-                ]
-              },
-              "unit": "percent"
-            },
-            "overrides": []
-          },
-          "gridPos": {
-            "h": 9,
-            "w": 8,
-            "x": 16,
-            "y": 20
-          },
-          "id": 213,
-          "links": [],
-          "options": {
-            "legend": {
-              "calcs": [
-                "mean",
-                "max",
-                "lastNotNull"
-              ],
-              "displayMode": "table",
-              "placement": "bottom",
-              "showLegend": true
-            },
-            "tooltip": {
-              "mode": "single",
-              "sort": "none"
-            }
-          },
-          "pluginVersion": "8.3.0",
-          "targets": [
-            {
-              "datasource": {
-                "type": "prometheus",
-                "uid": "${DS_PROMETHEUS}"
-              },
-              "exemplar": true,
-              "expr": "((node_filesystem_size_bytes{hostname=\"producer\",device!~'rootfs'} - node_filesystem_avail_bytes{hostname=\"producer\",device!~'rootfs'}) / node_filesystem_size_bytes{hostname=\"producer\",device!~'rootfs'}) * 100",
-              "format": "time_series",
-              "interval": "",
-              "intervalFactor": 2,
-              "legendFormat": "{{mountpoint}}",
-              "refId": "A",
-              "step": 240
-            }
-          ],
-          "thresholds": [
-            {
-              "colorMode": "critical",
-              "op": "gt",
-              "value": 90,
-              "visible": true
-            }
-          ],
-          "title": "Disk Space Used (producer node)",
-          "type": "timeseries"
-        },
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "${DS_PROMETHEUS}"
-          },
-          "fieldConfig": {
-            "defaults": {
-              "color": {
-                "mode": "palette-classic"
-              },
-              "custom": {
-                "axisCenteredZero": false,
-                "axisColorMode": "text",
-                "axisLabel": "Load",
-                "axisPlacement": "auto",
-                "barAlignment": 0,
-                "drawStyle": "line",
-                "fillOpacity": 24,
-                "gradientMode": "opacity",
-                "hideFrom": {
-                  "legend": false,
-                  "tooltip": false,
-                  "viz": false
-                },
-                "lineInterpolation": "linear",
-                "lineStyle": {
-                  "fill": "solid"
-                },
-                "lineWidth": 1,
-                "pointSize": 5,
-                "scaleDistribution": {
-                  "type": "linear"
-                },
-                "showPoints": "never",
-                "spanNulls": true,
-                "stacking": {
-                  "group": "A",
-                  "mode": "none"
-                },
-                "thresholdsStyle": {
-                  "mode": "off"
-                }
-              },
-              "decimals": 0,
-              "links": [],
-              "mappings": [],
-              "min": 0,
-              "thresholds": {
-                "mode": "absolute",
-                "steps": [
-                  {
-                    "color": "green"
-                  },
-                  {
-                    "color": "red",
-                    "value": 80
-                  }
-                ]
-              },
-              "unit": "%"
-            },
-            "overrides": [
-              {
-                "matcher": {
-                  "id": "byName",
-                  "options": "Load 1m"
-                },
-                "properties": [
-                  {
-                    "id": "color",
-                    "value": {
-                      "fixedColor": "#8AB8FF",
-                      "mode": "fixed"
-                    }
-                  },
-                  {
-                    "id": "custom.fillOpacity",
-                    "value": 100
-                  }
-                ]
-              },
-              {
-                "matcher": {
-                  "id": "byName",
-                  "options": "Load 5m"
-                },
-                "properties": [
-                  {
-                    "id": "color",
-                    "value": {
-                      "fixedColor": "#FFEE52",
-                      "mode": "fixed"
-                    }
-                  },
-                  {
-                    "id": "custom.fillOpacity",
-                    "value": 100
-                  }
-                ]
-              },
-              {
-                "matcher": {
-                  "id": "byName",
-                  "options": "Load 15m"
-                },
-                "properties": [
-                  {
-                    "id": "color",
-                    "value": {
-                      "fixedColor": "#C4162A",
-                      "mode": "fixed"
-                    }
-                  },
-                  {
-                    "id": "custom.fillOpacity",
-                    "value": 100
-                  }
-                ]
-              }
-            ]
-          },
-          "gridPos": {
-            "h": 9,
-            "w": 8,
-            "x": 0,
-            "y": 29
-          },
-          "id": 51,
-          "links": [],
-          "options": {
-            "legend": {
-              "calcs": [
-                "min",
-                "mean",
-                "max",
-                "lastNotNull"
-              ],
-              "displayMode": "table",
-              "placement": "bottom",
-              "showLegend": true
-            },
-            "tooltip": {
-              "mode": "single",
-              "sort": "none"
-            }
-          },
-          "pluginVersion": "8.1.2",
-          "targets": [
-            {
-              "datasource": {
-                "type": "prometheus",
-                "uid": "${DS_PROMETHEUS}"
-              },
-              "expr": "node_load1{hostname=\"producer\"}*100",
-              "format": "time_series",
-              "interval": "",
-              "intervalFactor": 4,
-              "legendFormat": "Load 1m",
-              "refId": "A",
-              "step": 480
-            },
-            {
-              "datasource": {
-                "type": "prometheus",
-                "uid": "${DS_PROMETHEUS}"
-              },
-              "expr": "node_load5{hostname=\"producer\"}*100",
-              "format": "time_series",
-              "interval": "",
-              "intervalFactor": 4,
-              "legendFormat": "Load 5m",
-              "refId": "B",
-              "step": 480
-            },
-            {
-              "datasource": {
-                "type": "prometheus",
-                "uid": "${DS_PROMETHEUS}"
-              },
-              "expr": "node_load15{hostname=\"producer\"}*100",
-              "format": "time_series",
-              "interval": "",
-              "intervalFactor": 4,
-              "legendFormat": "Load 15m",
-              "refId": "C",
-              "step": 480
-            }
-          ],
-          "title": "System Load (producer node)",
-          "type": "timeseries"
-        },
-        {
-          "aliasColors": {},
-          "bars": false,
-          "dashLength": 10,
-          "dashes": false,
-          "datasource": {
-            "type": "prometheus",
-            "uid": "${DS_PROMETHEUS}"
-          },
-          "description": "Counts only memory that is physically free (from OS, in MBytes)",
-          "fieldConfig": {
-            "defaults": {
-              "links": []
-            },
-            "overrides": []
-          },
-          "fill": 1,
-          "fillGradient": 5,
-          "gridPos": {
-            "h": 9,
-            "w": 8,
-            "x": 8,
-            "y": 29
-          },
-          "hiddenSeries": false,
-          "id": 135,
-          "legend": {
-            "alignAsTable": true,
-            "avg": true,
-            "current": true,
-            "max": true,
-            "min": true,
-            "show": true,
-            "total": false,
-            "values": true
-          },
-          "lines": true,
-          "linewidth": 1,
-          "nullPointMode": "null",
-          "options": {
-            "alertThreshold": true
-          },
-          "percentage": false,
-          "pluginVersion": "9.4.7",
-          "pointradius": 2,
-          "points": false,
-          "renderer": "flot",
-          "seriesOverrides": [],
-          "spaceLength": 10,
-          "stack": false,
-          "steppedLine": false,
-          "targets": [
-            {
-              "datasource": {
-                "type": "prometheus",
-                "uid": "${DS_PROMETHEUS}"
-              },
-              "exemplar": true,
-              "expr": "rts_gc_peak_megabytes_allocated{hostname=\"producer\"}",
-              "interval": "",
-              "legendFormat": "RAM Used",
-              "refId": "A"
-            }
-          ],
-          "thresholds": [],
-          "timeRegions": [],
-          "title": "Peak memory allocated (producer node)",
-          "tooltip": {
-            "shared": true,
-            "sort": 0,
-            "value_type": "individual"
-          },
-          "type": "graph",
-          "xaxis": {
-            "mode": "time",
-            "show": true,
-            "values": []
-          },
-          "yaxes": [
-            {
-              "$$hashKey": "object:441",
-              "decimals": 2,
-              "format": "decmbytes",
-              "logBase": 1,
-              "show": true
-            },
-            {
-              "$$hashKey": "object:442",
-              "format": "short",
-              "logBase": 1,
-              "show": true
-            }
-          ],
-          "yaxis": {
-            "align": false
-          }
-        },
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "${DS_PROMETHEUS}"
-          },
-          "fieldConfig": {
-            "defaults": {
-              "color": {
-                "mode": "palette-classic"
-              },
-              "custom": {
-                "axisCenteredZero": false,
-                "axisColorMode": "text",
-                "axisLabel": "Bytes read (-) / write (+)",
-                "axisPlacement": "auto",
-                "barAlignment": 0,
-                "drawStyle": "line",
-                "fillOpacity": 10,
-                "gradientMode": "none",
-                "hideFrom": {
-                  "legend": false,
-                  "tooltip": false,
-                  "viz": false
-                },
-                "lineInterpolation": "linear",
-                "lineWidth": 1,
-                "pointSize": 5,
-                "scaleDistribution": {
-                  "type": "linear"
-                },
-                "showPoints": "never",
-                "spanNulls": false,
-                "stacking": {
-                  "group": "A",
-                  "mode": "none"
-                },
-                "thresholdsStyle": {
-                  "mode": "off"
-                }
-              },
-              "mappings": [],
-              "thresholds": {
-                "mode": "absolute",
-                "steps": [
-                  {
-                    "color": "green"
-                  },
-                  {
-                    "color": "red",
-                    "value": 80
-                  }
-                ]
-              },
-              "unit": "Bps"
-            },
-            "overrides": [
-              {
-                "matcher": {
-                  "id": "byRegexp",
-                  "options": "/.*read$/"
-                },
-                "properties": [
-                  {
-                    "id": "custom.transform",
-                    "value": "negative-Y"
-                  }
-                ]
-              }
-            ]
-          },
-          "gridPos": {
-            "h": 9,
-            "w": 8,
-            "x": 16,
-            "y": 29
-          },
-          "id": 166,
-          "options": {
-            "legend": {
-              "calcs": [
-                "mean",
-                "lastNotNull",
-                "max"
-              ],
-              "displayMode": "table",
-              "placement": "bottom",
-              "showLegend": true
-            },
-            "tooltip": {
-              "mode": "multi",
-              "sort": "desc"
-            }
-          },
-          "pluginVersion": "9.2.2",
-          "targets": [
-            {
-              "datasource": {
-                "type": "prometheus",
-                "uid": "${DS_PROMETHEUS}"
-              },
-              "exemplar": true,
-              "expr": "irate(node_disk_read_bytes_total{hostname=\"producer\"}[1m])",
-              "interval": "",
-              "legendFormat": "{{device}} read",
-              "refId": "A"
-            },
-            {
-              "datasource": {
-                "type": "prometheus",
-                "uid": "${DS_PROMETHEUS}"
-              },
-              "exemplar": true,
-              "expr": "irate(node_disk_written_bytes_total{hostname=\"producer\"}[1m])",
-              "interval": "",
-              "legendFormat": "{{device}} write",
-              "refId": "B"
-            }
-          ],
-          "title": "Disk usage (producer node)",
-          "type": "timeseries"
-        },
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "${DS_PROMETHEUS}"
-          },
-          "description": "",
-          "fieldConfig": {
-            "defaults": {
-              "color": {
-                "mode": "palette-classic"
-              },
-              "custom": {
-                "axisCenteredZero": false,
-                "axisColorMode": "text",
-                "axisLabel": "transmit（-）/receive（+）",
-                "axisPlacement": "auto",
-                "barAlignment": 0,
-                "drawStyle": "line",
-                "fillOpacity": 10,
-                "gradientMode": "none",
-                "hideFrom": {
-                  "legend": false,
-                  "tooltip": false,
-                  "viz": false
-                },
-                "lineInterpolation": "linear",
-                "lineWidth": 1,
-                "pointSize": 5,
-                "scaleDistribution": {
-                  "type": "linear"
-                },
-                "showPoints": "never",
-                "spanNulls": false,
-                "stacking": {
-                  "group": "A",
-                  "mode": "none"
-                },
-                "thresholdsStyle": {
-                  "mode": "off"
-                }
-              },
-              "mappings": [],
-              "thresholds": {
-                "mode": "absolute",
-                "steps": [
-                  {
-                    "color": "green"
-                  },
-                  {
-                    "color": "red",
-                    "value": 80
-                  }
-                ]
-              },
-              "unit": "bps"
-            },
-            "overrides": [
-              {
-                "matcher": {
-                  "id": "byRegexp",
-                  "options": "/.*transmit$/"
-                },
-                "properties": [
-                  {
-                    "id": "custom.transform",
-                    "value": "negative-Y"
-                  }
-                ]
-              }
-            ]
-          },
-          "gridPos": {
-            "h": 9,
-            "w": 8,
-            "x": 0,
-            "y": 38
-          },
-          "id": 153,
-          "options": {
-            "legend": {
-              "calcs": [
-                "mean",
-                "lastNotNull",
-                "max"
-              ],
-              "displayMode": "table",
-              "placement": "bottom",
-              "showLegend": true
-            },
-            "tooltip": {
-              "mode": "multi",
-              "sort": "desc"
-            }
-          },
-          "pluginVersion": "9.2.2",
-          "targets": [
-            {
-              "datasource": {
-                "type": "prometheus",
-                "uid": "${DS_PROMETHEUS}"
-              },
-              "exemplar": true,
-              "expr": "irate(node_network_receive_bytes_total{hostname=\"producer\", device=~\"e[t,n][h,s][0-9]+\"}[1m])*8",
-              "hide": false,
-              "interval": "",
-              "legendFormat": "{{device}} receive",
-              "refId": "A"
-            },
-            {
-              "datasource": {
-                "type": "prometheus",
-                "uid": "${DS_PROMETHEUS}"
-              },
-              "exemplar": true,
-              "expr": "irate(node_network_transmit_bytes_total{hostname=\"producer\", device=~\"e[t,n][h,s][0-9]+\"}[1m])*8",
-              "hide": false,
-              "interval": "",
-              "legendFormat": "{{device}} transmit",
-              "refId": "B"
-            }
-          ],
-          "title": "Network usage (producer node)",
-          "type": "timeseries"
-        },
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "${DS_PROMETHEUS}"
-          },
-          "description": "",
-          "fieldConfig": {
-            "defaults": {
-              "color": {
-                "mode": "palette-classic"
-              },
-              "custom": {
-                "axisCenteredZero": false,
-                "axisColorMode": "text",
-                "axisLabel": "",
-                "axisPlacement": "auto",
-                "barAlignment": 0,
-                "drawStyle": "line",
-                "fillOpacity": 50,
-                "gradientMode": "opacity",
-                "hideFrom": {
-                  "legend": false,
-                  "tooltip": false,
-                  "viz": false
-                },
-                "lineInterpolation": "linear",
-                "lineWidth": 1,
-                "pointSize": 5,
-                "scaleDistribution": {
-                  "type": "linear"
-                },
-                "showPoints": "never",
-                "spanNulls": false,
-                "stacking": {
-                  "group": "A",
-                  "mode": "none"
-                },
-                "thresholdsStyle": {
-                  "mode": "off"
-                }
-              },
-              "links": [],
-              "mappings": [],
-              "thresholds": {
-                "mode": "absolute",
-                "steps": [
-                  {
-                    "color": "green"
-                  },
-                  {
-                    "color": "red",
-                    "value": 80
-                  }
-                ]
-              },
-              "unit": "none"
-            },
-            "overrides": []
-          },
-          "gridPos": {
-            "h": 9,
-            "w": 8,
-            "x": 8,
-            "y": 38
-          },
-          "id": 64,
-          "interval": "",
-          "options": {
-            "legend": {
-              "calcs": [
-                "lastNotNull"
-              ],
-              "displayMode": "table",
-              "placement": "bottom",
-              "showLegend": true
-            },
-            "tooltip": {
-              "mode": "multi",
-              "sort": "none"
-            }
-          },
-          "pluginVersion": "9.2.2",
-          "targets": [
-            {
-              "datasource": {
-                "type": "prometheus",
-                "uid": "${DS_PROMETHEUS}"
-              },
-              "editorMode": "code",
-              "expr": "node_filefd_allocated{hostname=\"producer\"}",
-              "interval": "",
-              "legendFormat": "{{name}}",
-              "range": true,
-              "refId": "A"
-            }
-          ],
-          "title": "File Descriptors (producer node)",
-          "type": "timeseries"
-        }
-      ],
-      "targets": [
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "b0C184DVk"
-          },
-          "refId": "A"
-        }
-      ],
-      "title": "Basic CPU / Mem / Net / Disk (Producer)",
-      "type": "row"
-    },
-    {
-      "collapsed": true,
-      "datasource": {
-        "type": "prometheus",
-        "uid": "b0C184DVk"
-      },
-      "gridPos": {
-        "h": 1,
-        "w": 24,
-        "x": 0,
-        "y": 20
-      },
-      "id": 204,
-      "panels": [
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "${DS_PROMETHEUS}"
-          },
-          "fieldConfig": {
-            "defaults": {
-              "color": {
-                "mode": "palette-classic"
-              },
-              "custom": {
-                "axisCenteredZero": false,
-                "axisColorMode": "text",
-                "axisLabel": "Load",
-                "axisPlacement": "auto",
-                "barAlignment": 0,
-                "drawStyle": "line",
-                "fillOpacity": 20,
-                "gradientMode": "opacity",
-                "hideFrom": {
-                  "legend": false,
-                  "tooltip": false,
-                  "viz": false
-                },
-                "lineInterpolation": "linear",
-                "lineWidth": 1,
-                "pointSize": 5,
-                "scaleDistribution": {
-                  "type": "linear"
-                },
-                "showPoints": "never",
-                "spanNulls": true,
-                "stacking": {
-                  "group": "A",
-                  "mode": "none"
-                },
-                "thresholdsStyle": {
-                  "mode": "off"
-                }
-              },
-              "decimals": 0,
-              "links": [],
-              "mappings": [],
-              "min": 0,
-              "thresholds": {
-                "mode": "absolute",
-                "steps": [
-                  {
-                    "color": "green"
-                  },
-                  {
-                    "color": "red",
-                    "value": 80
-                  }
-                ]
-              },
-              "unit": "%"
-            },
-            "overrides": [
-              {
-                "matcher": {
-                  "id": "byName",
-                  "options": "Load 1m"
-                },
-                "properties": [
-                  {
-                    "id": "color",
-                    "value": {
-                      "fixedColor": "#8AB8FF",
-                      "mode": "fixed"
-                    }
-                  },
-                  {
-                    "id": "custom.fillOpacity",
-                    "value": 100
-                  }
-                ]
-              },
-              {
-                "matcher": {
-                  "id": "byName",
-                  "options": "Load 5m"
-                },
-                "properties": [
-                  {
-                    "id": "color",
-                    "value": {
-                      "fixedColor": "#FFEE52",
-                      "mode": "fixed"
-                    }
-                  },
-                  {
-                    "id": "custom.fillOpacity",
-                    "value": 50
-                  }
-                ]
-              },
-              {
-                "matcher": {
-                  "id": "byName",
-                  "options": "Load 15m"
-                },
-                "properties": [
-                  {
-                    "id": "color",
-                    "value": {
-                      "fixedColor": "#C4162A",
-                      "mode": "fixed"
-                    }
-                  },
-                  {
-                    "id": "custom.fillOpacity",
-                    "value": 50
-                  }
-                ]
-              }
-            ]
-          },
-          "gridPos": {
-            "h": 9,
-            "w": 8,
-            "x": 0,
-            "y": 21
-          },
-          "id": 90,
-          "links": [],
-          "options": {
-            "legend": {
-              "calcs": [
-                "min",
-                "mean",
-                "max",
-                "lastNotNull"
-              ],
-              "displayMode": "table",
-              "placement": "bottom",
-              "showLegend": true
-            },
-            "tooltip": {
-              "mode": "single",
-              "sort": "none"
-            }
-          },
-          "pluginVersion": "8.1.2",
-          "targets": [
-            {
-              "datasource": {
-                "type": "prometheus",
-                "uid": "${DS_PROMETHEUS}"
-              },
-              "exemplar": true,
-              "expr": "node_load1{hostname=\"relay-ru\"}*100",
-              "format": "time_series",
-              "interval": "",
-              "intervalFactor": 4,
-              "legendFormat": "Load 1m",
-              "refId": "A",
-              "step": 480
-            },
-            {
-              "datasource": {
-                "type": "prometheus",
-                "uid": "${DS_PROMETHEUS}"
-              },
-              "exemplar": true,
-              "expr": "node_load5{hostname=\"relay-ru\"}*100",
-              "format": "time_series",
-              "interval": "",
-              "intervalFactor": 4,
-              "legendFormat": "Load 5m",
-              "refId": "B",
-              "step": 480
-            },
-            {
-              "datasource": {
-                "type": "prometheus",
-                "uid": "${DS_PROMETHEUS}"
-              },
-              "exemplar": true,
-              "expr": "node_load15{hostname=\"relay-ru\"}*100",
-              "format": "time_series",
-              "interval": "",
-              "intervalFactor": 4,
-              "legendFormat": "Load 15m",
-              "refId": "C",
-              "step": 480
-            }
-          ],
-          "title": "System Load (relay-ru node)",
-          "type": "timeseries"
-        },
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "${DS_PROMETHEUS}"
-          },
-          "fieldConfig": {
-            "defaults": {
-              "color": {
-                "mode": "palette-classic"
-              },
-              "custom": {
-                "axisCenteredZero": false,
-                "axisColorMode": "text",
-                "axisLabel": "Load",
-                "axisPlacement": "auto",
-                "barAlignment": 0,
-                "drawStyle": "line",
-                "fillOpacity": 100,
-                "gradientMode": "opacity",
-                "hideFrom": {
-                  "legend": false,
-                  "tooltip": false,
-                  "viz": false
-                },
-                "lineInterpolation": "linear",
-                "lineWidth": 1,
-                "pointSize": 5,
-                "scaleDistribution": {
-                  "type": "linear"
-                },
-                "showPoints": "never",
-                "spanNulls": true,
-                "stacking": {
-                  "group": "A",
-                  "mode": "none"
-                },
-                "thresholdsStyle": {
-                  "mode": "off"
-                }
-              },
-              "decimals": 0,
-              "links": [],
-              "mappings": [],
-              "min": 0,
-              "thresholds": {
-                "mode": "absolute",
-                "steps": [
-                  {
-                    "color": "green"
-                  },
-                  {
-                    "color": "red",
-                    "value": 80
-                  }
-                ]
-              },
-              "unit": "%"
-            },
-            "overrides": [
-              {
-                "matcher": {
-                  "id": "byName",
-                  "options": "Load 1m"
-                },
-                "properties": [
-                  {
-                    "id": "color",
-                    "value": {
-                      "fixedColor": "light-blue",
-                      "mode": "fixed"
-                    }
-                  },
-                  {
-                    "id": "custom.fillOpacity",
-                    "value": 100
-                  }
-                ]
-              },
-              {
-                "matcher": {
-                  "id": "byName",
-                  "options": "Load 5m"
-                },
-                "properties": [
-                  {
-                    "id": "color",
-                    "value": {
-                      "fixedColor": "yellow",
-                      "mode": "fixed"
-                    }
-                  },
-                  {
-                    "id": "custom.fillOpacity",
-                    "value": 50
-                  }
-                ]
-              },
-              {
-                "matcher": {
-                  "id": "byName",
-                  "options": "Load 15m"
-                },
-                "properties": [
-                  {
-                    "id": "color",
-                    "value": {
-                      "fixedColor": "#C4162A",
-                      "mode": "fixed"
-                    }
-                  },
-                  {
-                    "id": "custom.fillOpacity",
-                    "value": 100
-                  }
-                ]
-              }
-            ]
-          },
-          "gridPos": {
-            "h": 9,
-            "w": 8,
-            "x": 8,
-            "y": 21
-          },
-          "id": 176,
-          "links": [],
-          "options": {
-            "legend": {
-              "calcs": [
-                "min",
-                "mean",
-                "max",
-                "lastNotNull"
-              ],
-              "displayMode": "table",
-              "placement": "bottom",
-              "showLegend": true
-            },
-            "tooltip": {
-              "mode": "single",
-              "sort": "none"
-            }
-          },
-          "pluginVersion": "8.1.2",
-          "targets": [
-            {
-              "datasource": {
-                "type": "prometheus",
-                "uid": "${DS_PROMETHEUS}"
-              },
-              "exemplar": true,
-              "expr": "node_load1{hostname=\"relay-eu\"}*100",
-              "format": "time_series",
-              "interval": "",
-              "intervalFactor": 4,
-              "legendFormat": "Load 1m",
-              "refId": "A",
-              "step": 480
-            },
-            {
-              "datasource": {
-                "type": "prometheus",
-                "uid": "${DS_PROMETHEUS}"
-              },
-              "exemplar": true,
-              "expr": "node_load5{hostname=\"relay-eu\"}*100",
-              "format": "time_series",
-              "interval": "",
-              "intervalFactor": 4,
-              "legendFormat": "Load 5m",
-              "refId": "B",
-              "step": 480
-            },
-            {
-              "datasource": {
-                "type": "prometheus",
-                "uid": "${DS_PROMETHEUS}"
-              },
-              "exemplar": true,
-              "expr": "node_load15{hostname=\"relay-eu\"}*100",
-              "format": "time_series",
-              "interval": "",
-              "intervalFactor": 4,
-              "legendFormat": "Load 15m",
-              "refId": "C",
-              "step": 480
-            }
-          ],
-          "title": "System Load (relay-eu node)",
-          "type": "timeseries"
-        },
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "${DS_PROMETHEUS}"
-          },
-          "fieldConfig": {
-            "defaults": {
-              "color": {
-                "mode": "palette-classic"
-              },
-              "custom": {
-                "axisCenteredZero": false,
-                "axisColorMode": "text",
-                "axisLabel": "Load",
-                "axisPlacement": "auto",
-                "barAlignment": 0,
-                "drawStyle": "line",
-                "fillOpacity": 20,
-                "gradientMode": "opacity",
-                "hideFrom": {
-                  "legend": false,
-                  "tooltip": false,
-                  "viz": false
-                },
-                "lineInterpolation": "linear",
-                "lineWidth": 1,
-                "pointSize": 5,
-                "scaleDistribution": {
-                  "type": "linear"
-                },
-                "showPoints": "never",
-                "spanNulls": true,
-                "stacking": {
-                  "group": "A",
-                  "mode": "none"
-                },
-                "thresholdsStyle": {
-                  "mode": "off"
-                }
-              },
-              "decimals": 0,
-              "links": [],
-              "mappings": [],
-              "min": 0,
-              "thresholds": {
-                "mode": "absolute",
-                "steps": [
-                  {
-                    "color": "green"
-                  },
-                  {
-                    "color": "red",
-                    "value": 80
-                  }
-                ]
-              },
-              "unit": "%"
-            },
-            "overrides": [
-              {
-                "matcher": {
-                  "id": "byName",
-                  "options": "Load 1m"
-                },
-                "properties": [
-                  {
-                    "id": "color",
-                    "value": {
-                      "fixedColor": "#8AB8FF",
-                      "mode": "fixed"
-                    }
-                  },
-                  {
-                    "id": "custom.fillOpacity",
-                    "value": 100
-                  }
-                ]
-              },
-              {
-                "matcher": {
-                  "id": "byName",
-                  "options": "Load 5m"
-                },
-                "properties": [
-                  {
-                    "id": "color",
-                    "value": {
-                      "fixedColor": "#FFEE52",
-                      "mode": "fixed"
-                    }
-                  },
-                  {
-                    "id": "custom.fillOpacity",
-                    "value": 50
-                  }
-                ]
-              },
-              {
-                "matcher": {
-                  "id": "byName",
-                  "options": "Load 15m"
-                },
-                "properties": [
-                  {
-                    "id": "color",
-                    "value": {
-                      "fixedColor": "#C4162A",
-                      "mode": "fixed"
-                    }
-                  },
-                  {
-                    "id": "custom.fillOpacity",
-                    "value": 50
-                  }
-                ]
-              }
-            ]
-          },
-          "gridPos": {
-            "h": 9,
-            "w": 8,
-            "x": 16,
-            "y": 21
-          },
-          "id": 225,
-          "links": [],
-          "options": {
-            "legend": {
-              "calcs": [
-                "min",
-                "mean",
-                "max",
-                "lastNotNull"
-              ],
-              "displayMode": "table",
-              "placement": "bottom",
-              "showLegend": true
-            },
-            "tooltip": {
-              "mode": "single",
-              "sort": "none"
-            }
-          },
-          "pluginVersion": "8.1.2",
-          "targets": [
-            {
-              "datasource": {
-                "type": "prometheus",
-                "uid": "${DS_PROMETHEUS}"
-              },
-              "exemplar": true,
-              "expr": "node_load1{hostname=\"relay-us\"}*100",
-              "format": "time_series",
-              "interval": "",
-              "intervalFactor": 4,
-              "legendFormat": "Load 1m",
-              "refId": "A",
-              "step": 480
-            },
-            {
-              "datasource": {
-                "type": "prometheus",
-                "uid": "${DS_PROMETHEUS}"
-              },
-              "exemplar": true,
-              "expr": "node_load5{hostname=\"relay-us\"}*100",
-              "format": "time_series",
-              "interval": "",
-              "intervalFactor": 4,
-              "legendFormat": "Load 5m",
-              "refId": "B",
-              "step": 480
-            },
-            {
-              "datasource": {
-                "type": "prometheus",
-                "uid": "${DS_PROMETHEUS}"
-              },
-              "exemplar": true,
-              "expr": "node_load15{hostname=\"relay-us\"}*100",
-              "format": "time_series",
-              "interval": "",
-              "intervalFactor": 4,
-              "legendFormat": "Load 15m",
-              "refId": "C",
-              "step": 480
-            }
-          ],
-          "title": "System Load (relay-us node)",
-          "type": "timeseries"
-        },
-        {
-          "alert": {
-            "alertRuleTags": {},
-            "conditions": [
-              {
-                "evaluator": {
-                  "params": [
-                    10
-                  ],
-                  "type": "lt"
-                },
-                "operator": {
-                  "type": "and"
-                },
-                "query": {
-                  "params": [
-                    "F",
-                    "10m",
-                    "now"
-                  ]
-                },
-                "reducer": {
-                  "params": [],
-                  "type": "avg"
-                },
-                "type": "query"
-              }
-            ],
-            "executionErrorState": "alerting",
-            "for": "5m",
-            "frequency": "1m",
-            "handler": 1,
-            "name": "CPU Utilization on Relay-RU node > 90%",
-            "noDataState": "no_data",
-            "notifications": [
-              {
-                "uid": "mKGkrcH7z"
-              }
-            ]
-          },
-          "datasource": {
-            "type": "prometheus",
-            "uid": "${DS_PROMETHEUS}"
-          },
-          "description": "Basic CPU info",
-          "fieldConfig": {
-            "defaults": {
-              "color": {
-                "mode": "palette-classic"
-              },
-              "custom": {
-                "axisCenteredZero": false,
-                "axisColorMode": "text",
-                "axisLabel": "",
-                "axisPlacement": "auto",
-                "barAlignment": 0,
-                "drawStyle": "line",
-                "fillOpacity": 100,
-                "gradientMode": "opacity",
-                "hideFrom": {
-                  "legend": false,
-                  "tooltip": false,
-                  "viz": false
-                },
-                "lineInterpolation": "linear",
-                "lineWidth": 1,
-                "pointSize": 5,
-                "scaleDistribution": {
-                  "type": "linear"
-                },
-                "showPoints": "never",
-                "spanNulls": true,
-                "stacking": {
-                  "group": "A",
-                  "mode": "none"
-                },
-                "thresholdsStyle": {
-                  "mode": "off"
-                }
-              },
-              "links": [],
-              "mappings": [],
-              "max": 100,
-              "min": 0,
-              "thresholds": {
-                "mode": "absolute",
-                "steps": [
-                  {
-                    "color": "green"
-                  },
-                  {
-                    "color": "red",
-                    "value": 80
-                  }
-                ]
-              },
-              "unit": "percent"
-            },
-            "overrides": [
-              {
-                "matcher": {
-                  "id": "byName",
-                  "options": "Idle"
-                },
-                "properties": [
-                  {
-                    "id": "color",
-                    "value": {
-                      "fixedColor": "light-blue",
-                      "mode": "fixed"
-                    }
-                  }
-                ]
-              },
-              {
-                "matcher": {
-                  "id": "byName",
-                  "options": "Busy Other"
-                },
-                "properties": [
-                  {
-                    "id": "color",
-                    "value": {
-                      "fixedColor": "purple",
-                      "mode": "fixed"
-                    }
-                  }
-                ]
-              },
-              {
-                "matcher": {
-                  "id": "byName",
-                  "options": "Busy System"
-                },
-                "properties": [
-                  {
-                    "id": "color",
-                    "value": {
-                      "fixedColor": "red",
-                      "mode": "fixed"
-                    }
-                  }
-                ]
-              },
-              {
-                "matcher": {
-                  "id": "byName",
-                  "options": "Busy User"
-                },
-                "properties": [
-                  {
-                    "id": "color",
-                    "value": {
-                      "fixedColor": "yellow",
-                      "mode": "fixed"
-                    }
-                  }
-                ]
-              },
-              {
-                "matcher": {
-                  "id": "byName",
-                  "options": "Busy Iowait"
-                },
-                "properties": [
-                  {
-                    "id": "color",
-                    "value": {
-                      "fixedColor": "#5794F2",
-                      "mode": "fixed"
-                    }
-                  }
-                ]
-              }
-            ]
-          },
-          "gridPos": {
-            "h": 9,
-            "w": 8,
-            "x": 0,
-            "y": 30
-          },
-          "id": 193,
-          "links": [],
-          "options": {
-            "legend": {
-              "calcs": [
-                "min",
-                "mean",
-                "max"
-              ],
-              "displayMode": "table",
-              "placement": "bottom",
-              "showLegend": true
-            },
-            "tooltip": {
-              "mode": "single",
-              "sort": "none"
-            }
-          },
-          "pluginVersion": "8.1.2",
-          "targets": [
-            {
-              "datasource": {
-                "type": "prometheus",
-                "uid": "${DS_PROMETHEUS}"
-              },
-              "editorMode": "code",
-              "exemplar": true,
-              "expr": "avg(rate(node_cpu_seconds_total{hostname=\"relay-ru\",mode=\"system\"}[$__rate_interval])) * 100",
-              "format": "time_series",
-              "hide": false,
-              "interval": "",
-              "intervalFactor": 2,
-              "legendFormat": "Busy System",
-              "range": true,
-              "refId": "A",
-              "step": 240
-            },
-            {
-              "datasource": {
-                "type": "prometheus",
-                "uid": "${DS_PROMETHEUS}"
-              },
-              "editorMode": "code",
-              "exemplar": true,
-              "expr": "avg(rate(node_cpu_seconds_total{hostname=\"relay-ru\",mode=\"user\"}[$__rate_interval])) * 100",
-              "format": "time_series",
-              "hide": false,
-              "interval": "",
-              "intervalFactor": 2,
-              "legendFormat": "Busy User",
-              "range": true,
-              "refId": "B",
-              "step": 240
-            },
-            {
-              "datasource": {
-                "type": "prometheus",
-                "uid": "${DS_PROMETHEUS}"
-              },
-              "editorMode": "code",
-              "exemplar": true,
-              "expr": "avg(rate(node_cpu_seconds_total{hostname=\"relay-ru\",mode=\"iowait\"}[$__rate_interval])) * 100",
-              "format": "time_series",
-              "hide": false,
-              "interval": "",
-              "intervalFactor": 2,
-              "legendFormat": "Busy Iowait",
-              "range": true,
-              "refId": "C",
-              "step": 240
-            },
-            {
-              "datasource": {
-                "type": "prometheus",
-                "uid": "${DS_PROMETHEUS}"
-              },
-              "editorMode": "code",
-              "exemplar": true,
-              "expr": "avg(rate(node_cpu_seconds_total{hostname=\"relay-ru\",mode=~\".*irq\"}[$__rate_interval])) * 100",
-              "format": "time_series",
-              "hide": false,
-              "interval": "",
-              "intervalFactor": 2,
-              "legendFormat": "Busy IRQs",
-              "range": true,
-              "refId": "D",
-              "step": 240
-            },
-            {
-              "datasource": {
-                "type": "prometheus",
-                "uid": "${DS_PROMETHEUS}"
-              },
-              "editorMode": "code",
-              "exemplar": true,
-              "expr": "avg(rate(node_cpu_seconds_total{hostname=\"relay-ru\",mode!=\"idle\",mode!=\"user\",mode!=\"system\",mode!=\"iowait\",mode!=\"irq\",mode!=\"softirq\"}[$__rate_interval])) * 100",
-              "format": "time_series",
-              "hide": false,
-              "interval": "",
-              "intervalFactor": 2,
-              "legendFormat": "Busy Other",
-              "range": true,
-              "refId": "E",
-              "step": 240
-            },
-            {
-              "datasource": {
-                "type": "prometheus",
-                "uid": "${DS_PROMETHEUS}"
-              },
-              "editorMode": "code",
-              "exemplar": true,
-              "expr": "avg(rate(node_cpu_seconds_total{hostname=\"relay-ru\",mode=\"idle\"}[$__rate_interval])) * 100",
-              "format": "time_series",
-              "hide": false,
-              "interval": "",
-              "intervalFactor": 2,
-              "legendFormat": "Idle",
-              "range": true,
-              "refId": "F",
-              "step": 240
-            }
-          ],
-          "thresholds": [
-            {
-              "colorMode": "critical",
-              "op": "lt",
-              "value": 10,
-              "visible": true
-            }
-          ],
-          "title": "CPU Utilization (relay-ru node)",
-          "type": "timeseries"
-        },
-        {
-          "alert": {
-            "alertRuleTags": {},
-            "conditions": [
-              {
-                "evaluator": {
-                  "params": [
                     10
                   ],
                   "type": "lt"
@@ -5230,6 +3479,7 @@
                   "tooltip": false,
                   "viz": false
                 },
+                "insertNulls": false,
                 "lineInterpolation": "linear",
                 "lineWidth": 1,
                 "pointSize": 5,
@@ -5346,7 +3596,7 @@
             "h": 9,
             "w": 8,
             "x": 8,
-            "y": 30
+            "y": 26
           },
           "id": 196,
           "links": [],
@@ -5499,7 +3749,7 @@
                 "query": {
                   "params": [
                     "F",
-                    "1m",
+                    "10m",
                     "now"
                   ]
                 },
@@ -5514,7 +3764,7 @@
             "for": "5m",
             "frequency": "1m",
             "handler": 1,
-            "name": "CPU Utilization on Relay-US node > 90%",
+            "name": "CPU Utilization on Relay-RU node > 90%",
             "noDataState": "no_data",
             "notifications": [
               {
@@ -5546,6 +3796,7 @@
                   "tooltip": false,
                   "viz": false
                 },
+                "insertNulls": false,
                 "lineInterpolation": "linear",
                 "lineWidth": 1,
                 "pointSize": 5,
@@ -5662,9 +3913,9 @@
             "h": 9,
             "w": 8,
             "x": 16,
-            "y": 30
+            "y": 26
           },
-          "id": 226,
+          "id": 193,
           "links": [],
           "options": {
             "legend": {
@@ -5691,7 +3942,7 @@
               },
               "editorMode": "code",
               "exemplar": true,
-              "expr": "avg(rate(node_cpu_seconds_total{hostname=\"relay-us\",mode=\"system\"}[$__rate_interval])) * 100",
+              "expr": "avg(rate(node_cpu_seconds_total{hostname=\"relay-ru\",mode=\"system\"}[$__rate_interval])) * 100",
               "format": "time_series",
               "hide": false,
               "interval": "",
@@ -5708,7 +3959,7 @@
               },
               "editorMode": "code",
               "exemplar": true,
-              "expr": "avg(rate(node_cpu_seconds_total{hostname=\"relay-us\",mode=\"user\"}[$__rate_interval])) * 100",
+              "expr": "avg(rate(node_cpu_seconds_total{hostname=\"relay-ru\",mode=\"user\"}[$__rate_interval])) * 100",
               "format": "time_series",
               "hide": false,
               "interval": "",
@@ -5725,7 +3976,7 @@
               },
               "editorMode": "code",
               "exemplar": true,
-              "expr": "avg(rate(node_cpu_seconds_total{hostname=\"relay-us\",mode=\"iowait\"}[$__rate_interval])) * 100",
+              "expr": "avg(rate(node_cpu_seconds_total{hostname=\"relay-ru\",mode=\"iowait\"}[$__rate_interval])) * 100",
               "format": "time_series",
               "hide": false,
               "interval": "",
@@ -5742,7 +3993,7 @@
               },
               "editorMode": "code",
               "exemplar": true,
-              "expr": "avg(rate(node_cpu_seconds_total{hostname=\"relay-us\",mode=~\".*irq\"}[$__rate_interval])) * 100",
+              "expr": "avg(rate(node_cpu_seconds_total{hostname=\"relay-ru\",mode=~\".*irq\"}[$__rate_interval])) * 100",
               "format": "time_series",
               "hide": false,
               "interval": "",
@@ -5759,7 +4010,7 @@
               },
               "editorMode": "code",
               "exemplar": true,
-              "expr": "avg(rate(node_cpu_seconds_total{hostname=\"relay-us\",mode!=\"idle\",mode!=\"user\",mode!=\"system\",mode!=\"iowait\",mode!=\"irq\",mode!=\"softirq\"}[$__rate_interval])) * 100",
+              "expr": "avg(rate(node_cpu_seconds_total{hostname=\"relay-ru\",mode!=\"idle\",mode!=\"user\",mode!=\"system\",mode!=\"iowait\",mode!=\"irq\",mode!=\"softirq\"}[$__rate_interval])) * 100",
               "format": "time_series",
               "hide": false,
               "interval": "",
@@ -5776,7 +4027,7 @@
               },
               "editorMode": "code",
               "exemplar": true,
-              "expr": "avg(rate(node_cpu_seconds_total{hostname=\"relay-us\",mode=\"idle\"}[$__rate_interval])) * 100",
+              "expr": "avg(rate(node_cpu_seconds_total{hostname=\"relay-ru\",mode=\"idle\"}[$__rate_interval])) * 100",
               "format": "time_series",
               "hide": false,
               "interval": "",
@@ -5795,7 +4046,7 @@
               "visible": true
             }
           ],
-          "title": "CPU Utilization (relay-us node)",
+          "title": "CPU Utilization (relay-ru node)",
           "type": "timeseries"
         },
         {
@@ -5831,7 +4082,7 @@
             "frequency": "1m",
             "handler": 1,
             "message": "",
-            "name": "RAM Utilization on Relay-RU node > 90%",
+            "name": "RAM Utilization on Producer node > 90%",
             "noDataState": "no_data",
             "notifications": [
               {
@@ -5866,6 +4117,7 @@
                   "tooltip": false,
                   "viz": false
                 },
+                "insertNulls": false,
                 "lineInterpolation": "linear",
                 "lineWidth": 1,
                 "pointSize": 5,
@@ -5905,17 +4157,17 @@
             "h": 9,
             "w": 8,
             "x": 0,
-            "y": 39
+            "y": 35
           },
-          "id": 61,
+          "id": 24,
           "interval": "",
           "options": {
             "legend": {
               "calcs": [
+                "min",
                 "mean",
-                "lastNotNull",
                 "max",
-                "min"
+                "lastNotNull"
               ],
               "displayMode": "table",
               "placement": "bottom",
@@ -5934,7 +4186,7 @@
                 "uid": "${DS_PROMETHEUS}"
               },
               "exemplar": true,
-              "expr": "(1 - (node_memory_MemAvailable_bytes{hostname=\"relay-ru\"} / (node_memory_MemTotal_bytes{hostname=\"relay-ru\"})))* 100",
+              "expr": "(1 - (node_memory_MemAvailable_bytes{hostname=\"producer\"} / (node_memory_MemTotal_bytes{hostname=\"producer\"})))* 100",
               "hide": false,
               "interval": "",
               "legendFormat": "RAM Used",
@@ -5949,7 +4201,7 @@
               "visible": true
             }
           ],
-          "title": "Memory Utilization (relay-ru node)",
+          "title": "Memory Utilization (producer node)",
           "type": "timeseries"
         },
         {
@@ -6020,6 +4272,7 @@
                   "tooltip": false,
                   "viz": false
                 },
+                "insertNulls": false,
                 "lineInterpolation": "linear",
                 "lineWidth": 1,
                 "pointSize": 5,
@@ -6059,7 +4312,7 @@
             "h": 9,
             "w": 8,
             "x": 8,
-            "y": 39
+            "y": 35
           },
           "id": 177,
           "interval": "",
@@ -6138,7 +4391,8 @@
             "for": "5m",
             "frequency": "1m",
             "handler": 1,
-            "name": "RAM Utilization on Relay-EU node > 90%",
+            "message": "",
+            "name": "RAM Utilization on Relay-RU node > 90%",
             "noDataState": "no_data",
             "notifications": [
               {
@@ -6173,6 +4427,7 @@
                   "tooltip": false,
                   "viz": false
                 },
+                "insertNulls": false,
                 "lineInterpolation": "linear",
                 "lineWidth": 1,
                 "pointSize": 5,
@@ -6212,17 +4467,17 @@
             "h": 9,
             "w": 8,
             "x": 16,
-            "y": 39
+            "y": 35
           },
-          "id": 227,
+          "id": 61,
           "interval": "",
           "options": {
             "legend": {
               "calcs": [
-                "min",
                 "mean",
+                "lastNotNull",
                 "max",
-                "lastNotNull"
+                "min"
               ],
               "displayMode": "table",
               "placement": "bottom",
@@ -6241,7 +4496,7 @@
                 "uid": "${DS_PROMETHEUS}"
               },
               "exemplar": true,
-              "expr": "(1 - (node_memory_MemAvailable_bytes{hostname=\"relay-us\"} / (node_memory_MemTotal_bytes{hostname=\"relay-us\"})))* 100",
+              "expr": "(1 - (node_memory_MemAvailable_bytes{hostname=\"relay-ru\"} / (node_memory_MemTotal_bytes{hostname=\"relay-ru\"})))* 100",
               "hide": false,
               "interval": "",
               "legendFormat": "RAM Used",
@@ -6256,10 +4511,14 @@
               "visible": true
             }
           ],
-          "title": "Memory Utilization (relay-us node)",
+          "title": "Memory Utilization (relay-ru node)",
           "type": "timeseries"
         },
         {
+          "aliasColors": {},
+          "bars": false,
+          "dashLength": 10,
+          "dashes": false,
           "datasource": {
             "type": "prometheus",
             "uid": "${DS_PROMETHEUS}"
@@ -6267,83 +4526,45 @@
           "description": "Counts only memory that is physically free (from OS, in MBytes)",
           "fieldConfig": {
             "defaults": {
-              "color": {
-                "mode": "palette-classic"
-              },
-              "custom": {
-                "axisCenteredZero": false,
-                "axisColorMode": "text",
-                "axisLabel": "",
-                "axisPlacement": "auto",
-                "barAlignment": 0,
-                "drawStyle": "line",
-                "fillOpacity": 50,
-                "gradientMode": "opacity",
-                "hideFrom": {
-                  "legend": false,
-                  "tooltip": false,
-                  "viz": false
-                },
-                "lineInterpolation": "linear",
-                "lineWidth": 1,
-                "pointSize": 5,
-                "scaleDistribution": {
-                  "type": "linear"
-                },
-                "showPoints": "never",
-                "spanNulls": false,
-                "stacking": {
-                  "group": "A",
-                  "mode": "none"
-                },
-                "thresholdsStyle": {
-                  "mode": "off"
-                }
-              },
-              "decimals": 2,
-              "links": [],
-              "mappings": [],
-              "thresholds": {
-                "mode": "absolute",
-                "steps": [
-                  {
-                    "color": "green"
-                  },
-                  {
-                    "color": "red",
-                    "value": 80
-                  }
-                ]
-              },
-              "unit": "decmbytes"
+              "links": []
             },
             "overrides": []
           },
+          "fill": 1,
+          "fillGradient": 5,
           "gridPos": {
             "h": 9,
             "w": 8,
             "x": 0,
-            "y": 48
+            "y": 44
           },
-          "id": 66,
+          "hiddenSeries": false,
+          "id": 135,
+          "legend": {
+            "alignAsTable": true,
+            "avg": true,
+            "current": true,
+            "max": true,
+            "min": true,
+            "show": true,
+            "total": false,
+            "values": true
+          },
+          "lines": true,
+          "linewidth": 1,
+          "nullPointMode": "null",
           "options": {
-            "legend": {
-              "calcs": [
-                "mean",
-                "lastNotNull",
-                "max",
-                "min"
-              ],
-              "displayMode": "table",
-              "placement": "bottom",
-              "showLegend": true
-            },
-            "tooltip": {
-              "mode": "multi",
-              "sort": "none"
-            }
+            "alertThreshold": true
           },
-          "pluginVersion": "9.2.2",
+          "percentage": false,
+          "pluginVersion": "10.1.1",
+          "pointradius": 2,
+          "points": false,
+          "renderer": "flot",
+          "seriesOverrides": [],
+          "spaceLength": 10,
+          "stack": false,
+          "steppedLine": false,
           "targets": [
             {
               "datasource": {
@@ -6351,14 +4572,44 @@
                 "uid": "${DS_PROMETHEUS}"
               },
               "exemplar": true,
-              "expr": "rts_gc_peak_megabytes_allocated{hostname=\"relay-ru\"}",
+              "expr": "rts_gc_peak_megabytes_allocated{hostname=\"producer\"}",
               "interval": "",
               "legendFormat": "RAM Used",
               "refId": "A"
             }
           ],
-          "title": "Peak memory allocated (relay-ru node)",
-          "type": "timeseries"
+          "thresholds": [],
+          "timeRegions": [],
+          "title": "Peak memory allocated (producer node)",
+          "tooltip": {
+            "shared": true,
+            "sort": 0,
+            "value_type": "individual"
+          },
+          "type": "graph",
+          "xaxis": {
+            "mode": "time",
+            "show": true,
+            "values": []
+          },
+          "yaxes": [
+            {
+              "$$hashKey": "object:441",
+              "decimals": 2,
+              "format": "decmbytes",
+              "logBase": 1,
+              "show": true
+            },
+            {
+              "$$hashKey": "object:442",
+              "format": "short",
+              "logBase": 1,
+              "show": true
+            }
+          ],
+          "yaxis": {
+            "align": false
+          }
         },
         {
           "datasource": {
@@ -6385,6 +4636,7 @@
                   "tooltip": false,
                   "viz": false
                 },
+                "insertNulls": false,
                 "lineInterpolation": "linear",
                 "lineWidth": 1,
                 "pointSize": 5,
@@ -6424,7 +4676,7 @@
             "h": 9,
             "w": 8,
             "x": 8,
-            "y": 48
+            "y": 44
           },
           "id": 178,
           "options": {
@@ -6486,6 +4738,7 @@
                   "tooltip": false,
                   "viz": false
                 },
+                "insertNulls": false,
                 "lineInterpolation": "linear",
                 "lineWidth": 1,
                 "pointSize": 5,
@@ -6525,9 +4778,9 @@
             "h": 9,
             "w": 8,
             "x": 16,
-            "y": 48
+            "y": 44
           },
-          "id": 228,
+          "id": 66,
           "options": {
             "legend": {
               "calcs": [
@@ -6553,13 +4806,13 @@
                 "uid": "${DS_PROMETHEUS}"
               },
               "exemplar": true,
-              "expr": "rts_gc_peak_megabytes_allocated{hostname=\"relay-us\"}",
+              "expr": "rts_gc_peak_megabytes_allocated{hostname=\"relay-ru\"}",
               "interval": "",
               "legendFormat": "RAM Used",
               "refId": "A"
             }
           ],
-          "title": "Peak memory allocated (relay-us node)",
+          "title": "Peak memory allocated (relay-ru node)",
           "type": "timeseries"
         },
         {
@@ -6587,6 +4840,7 @@
                   "tooltip": false,
                   "viz": false
                 },
+                "insertNulls": false,
                 "lineInterpolation": "linear",
                 "lineWidth": 1,
                 "pointSize": 5,
@@ -6637,9 +4891,9 @@
             "h": 9,
             "w": 8,
             "x": 0,
-            "y": 57
+            "y": 53
           },
-          "id": 154,
+          "id": 153,
           "options": {
             "legend": {
               "calcs": [
@@ -6664,7 +4918,7 @@
                 "uid": "${DS_PROMETHEUS}"
               },
               "exemplar": true,
-              "expr": "irate(node_network_receive_bytes_total{hostname=\"relay-ru\", device=~\"e[t,n][h,s][0-9]+\"}[1m])*8",
+              "expr": "irate(node_network_receive_bytes_total{hostname=\"producer\", device=~\"e[t,n][h,s][0-9]+\"}[1m])*8",
               "hide": false,
               "interval": "",
               "legendFormat": "{{device}} receive",
@@ -6676,14 +4930,14 @@
                 "uid": "${DS_PROMETHEUS}"
               },
               "exemplar": true,
-              "expr": "irate(node_network_transmit_bytes_total{hostname=\"relay-ru\", device=~\"e[t,n][h,s][0-9]+\"}[1m])*8",
+              "expr": "irate(node_network_transmit_bytes_total{hostname=\"producer\", device=~\"e[t,n][h,s][0-9]+\"}[1m])*8",
               "hide": false,
               "interval": "",
               "legendFormat": "{{device}} transmit",
               "refId": "B"
             }
           ],
-          "title": "Network usage (relay-ru node)",
+          "title": "Network usage (producer node)",
           "type": "timeseries"
         },
         {
@@ -6711,6 +4965,7 @@
                   "tooltip": false,
                   "viz": false
                 },
+                "insertNulls": false,
                 "lineInterpolation": "linear",
                 "lineWidth": 1,
                 "pointSize": 5,
@@ -6761,7 +5016,7 @@
             "h": 9,
             "w": 8,
             "x": 8,
-            "y": 57
+            "y": 53
           },
           "id": 179,
           "options": {
@@ -6835,6 +5090,7 @@
                   "tooltip": false,
                   "viz": false
                 },
+                "insertNulls": false,
                 "lineInterpolation": "linear",
                 "lineWidth": 1,
                 "pointSize": 5,
@@ -6885,9 +5141,9 @@
             "h": 9,
             "w": 8,
             "x": 16,
-            "y": 57
+            "y": 53
           },
-          "id": 229,
+          "id": 154,
           "options": {
             "legend": {
               "calcs": [
@@ -6912,7 +5168,7 @@
                 "uid": "${DS_PROMETHEUS}"
               },
               "exemplar": true,
-              "expr": "irate(node_network_receive_bytes_total{hostname=\"relay-us\", device=~\"e[t,n][h,s][0-9]+\"}[1m])*8",
+              "expr": "irate(node_network_receive_bytes_total{hostname=\"relay-ru\", device=~\"e[t,n][h,s][0-9]+\"}[1m])*8",
               "hide": false,
               "interval": "",
               "legendFormat": "{{device}} receive",
@@ -6924,14 +5180,14 @@
                 "uid": "${DS_PROMETHEUS}"
               },
               "exemplar": true,
-              "expr": "irate(node_network_transmit_bytes_total{hostname=\"relay-us\", device=~\"e[t,n][h,s][0-9]+\"}[1m])*8",
+              "expr": "irate(node_network_transmit_bytes_total{hostname=\"relay-ru\", device=~\"e[t,n][h,s][0-9]+\"}[1m])*8",
               "hide": false,
               "interval": "",
               "legendFormat": "{{device}} transmit",
               "refId": "B"
             }
           ],
-          "title": "Network usage (relay-us node)",
+          "title": "Network usage (relay-ru node)",
           "type": "timeseries"
         },
         {
@@ -6966,7 +5222,7 @@
             "for": "5m",
             "frequency": "1m",
             "handler": 1,
-            "name": "Disk Space Utilization on Relay-RU node > 90%",
+            "name": "Disk Space Utilization on Producer node > 90%",
             "noDataState": "no_data",
             "notifications": [
               {
@@ -7000,10 +5256,8 @@
                   "tooltip": false,
                   "viz": false
                 },
+                "insertNulls": false,
                 "lineInterpolation": "linear",
-                "lineStyle": {
-                  "fill": "solid"
-                },
                 "lineWidth": 1,
                 "pointSize": 5,
                 "scaleDistribution": {
@@ -7042,9 +5296,9 @@
             "h": 9,
             "w": 8,
             "x": 0,
-            "y": 66
+            "y": 62
           },
-          "id": 214,
+          "id": 213,
           "links": [],
           "options": {
             "legend": {
@@ -7070,7 +5324,7 @@
                 "uid": "${DS_PROMETHEUS}"
               },
               "exemplar": true,
-              "expr": "((node_filesystem_size_bytes{hostname=\"relay-ru\",device!~'rootfs'} - node_filesystem_avail_bytes{hostname=\"relay-ru\",device!~'rootfs'}) / node_filesystem_size_bytes{hostname=\"relay-ru\",device!~'rootfs'}) * 100",
+              "expr": "((node_filesystem_size_bytes{hostname=\"producer\",device!~'rootfs'} - node_filesystem_avail_bytes{hostname=\"producer\",device!~'rootfs'}) / node_filesystem_size_bytes{hostname=\"producer\",device!~'rootfs'}) * 100",
               "format": "time_series",
               "interval": "",
               "intervalFactor": 2,
@@ -7087,7 +5341,7 @@
               "visible": true
             }
           ],
-          "title": "Disk Space Used (relay-ru node)",
+          "title": "Disk Space Used (producer node)",
           "type": "timeseries"
         },
         {
@@ -7156,6 +5410,7 @@
                   "tooltip": false,
                   "viz": false
                 },
+                "insertNulls": false,
                 "lineInterpolation": "linear",
                 "lineWidth": 1,
                 "pointSize": 5,
@@ -7195,7 +5450,7 @@
             "h": 9,
             "w": 8,
             "x": 8,
-            "y": 66
+            "y": 62
           },
           "id": 215,
           "links": [],
@@ -7266,7 +5521,7 @@
                 },
                 "reducer": {
                   "params": [],
-                  "type": "avg"
+                  "type": "last"
                 },
                 "type": "query"
               }
@@ -7275,7 +5530,7 @@
             "for": "5m",
             "frequency": "1m",
             "handler": 1,
-            "name": "Disk Space Utilization on Relay-EU node > 90%",
+            "name": "Disk Space Utilization on Relay-RU node > 90%",
             "noDataState": "no_data",
             "notifications": [
               {
@@ -7296,7 +5551,7 @@
               "custom": {
                 "axisCenteredZero": false,
                 "axisColorMode": "text",
-                "axisLabel": "bytes",
+                "axisLabel": "",
                 "axisPlacement": "auto",
                 "axisSoftMax": 100,
                 "axisSoftMin": 0,
@@ -7309,7 +5564,11 @@
                   "tooltip": false,
                   "viz": false
                 },
+                "insertNulls": false,
                 "lineInterpolation": "linear",
+                "lineStyle": {
+                  "fill": "solid"
+                },
                 "lineWidth": 1,
                 "pointSize": 5,
                 "scaleDistribution": {
@@ -7348,9 +5607,9 @@
             "h": 9,
             "w": 8,
             "x": 16,
-            "y": 66
+            "y": 62
           },
-          "id": 230,
+          "id": 214,
           "links": [],
           "options": {
             "legend": {
@@ -7376,7 +5635,7 @@
                 "uid": "${DS_PROMETHEUS}"
               },
               "exemplar": true,
-              "expr": "((node_filesystem_size_bytes{hostname=\"relay-us\",device!~'rootfs'} - node_filesystem_avail_bytes{hostname=\"relay-us\",device!~'rootfs'}) / node_filesystem_size_bytes{hostname=\"relay-us\",device!~'rootfs'}) * 100",
+              "expr": "((node_filesystem_size_bytes{hostname=\"relay-ru\",device!~'rootfs'} - node_filesystem_avail_bytes{hostname=\"relay-ru\",device!~'rootfs'}) / node_filesystem_size_bytes{hostname=\"relay-ru\",device!~'rootfs'}) * 100",
               "format": "time_series",
               "interval": "",
               "intervalFactor": 2,
@@ -7393,7 +5652,7 @@
               "visible": true
             }
           ],
-          "title": "Disk Space Used (relay-us node)",
+          "title": "Disk Space Used (relay-ru node)",
           "type": "timeseries"
         },
         {
@@ -7420,6 +5679,7 @@
                   "tooltip": false,
                   "viz": false
                 },
+                "insertNulls": false,
                 "lineInterpolation": "linear",
                 "lineWidth": 1,
                 "pointSize": 5,
@@ -7470,9 +5730,9 @@
             "h": 9,
             "w": 8,
             "x": 0,
-            "y": 75
+            "y": 71
           },
-          "id": 167,
+          "id": 166,
           "options": {
             "legend": {
               "calcs": [
@@ -7497,7 +5757,7 @@
                 "uid": "${DS_PROMETHEUS}"
               },
               "exemplar": true,
-              "expr": "irate(node_disk_read_bytes_total{hostname=\"relay-ru\",device!~\"dm-[0-9]\"}[1m])",
+              "expr": "irate(node_disk_read_bytes_total{hostname=\"producer\"}[1m])",
               "interval": "",
               "legendFormat": "{{device}} read",
               "refId": "A"
@@ -7508,14 +5768,13 @@
                 "uid": "${DS_PROMETHEUS}"
               },
               "exemplar": true,
-              "expr": "irate(node_disk_written_bytes_total{hostname=\"relay-ru\",device!~\"dm-[0-9]\"}[1m])",
-              "hide": false,
+              "expr": "irate(node_disk_written_bytes_total{hostname=\"producer\"}[1m])",
               "interval": "",
               "legendFormat": "{{device}} write",
               "refId": "B"
             }
           ],
-          "title": "Disk usage (relay-ru node)",
+          "title": "Disk usage (producer node)",
           "type": "timeseries"
         },
         {
@@ -7542,6 +5801,7 @@
                   "tooltip": false,
                   "viz": false
                 },
+                "insertNulls": false,
                 "lineInterpolation": "linear",
                 "lineWidth": 1,
                 "pointSize": 5,
@@ -7592,7 +5852,7 @@
             "h": 9,
             "w": 8,
             "x": 8,
-            "y": 75
+            "y": 71
           },
           "id": 180,
           "options": {
@@ -7663,6 +5923,7 @@
                   "tooltip": false,
                   "viz": false
                 },
+                "insertNulls": false,
                 "lineInterpolation": "linear",
                 "lineWidth": 1,
                 "pointSize": 5,
@@ -7713,9 +5974,9 @@
             "h": 9,
             "w": 8,
             "x": 16,
-            "y": 75
+            "y": 71
           },
-          "id": 231,
+          "id": 167,
           "options": {
             "legend": {
               "calcs": [
@@ -7740,7 +6001,7 @@
                 "uid": "${DS_PROMETHEUS}"
               },
               "exemplar": true,
-              "expr": "irate(node_disk_read_bytes_total{hostname=\"relay-us\",device!~\"dm-[0-9]\"}[1m])",
+              "expr": "irate(node_disk_read_bytes_total{hostname=\"relay-ru\",device!~\"dm-[0-9]\"}[1m])",
               "interval": "",
               "legendFormat": "{{device}} read",
               "refId": "A"
@@ -7751,13 +6012,14 @@
                 "uid": "${DS_PROMETHEUS}"
               },
               "exemplar": true,
-              "expr": "irate(node_disk_written_bytes_total{hostname=\"relay-us\",device!~\"dm-[0-9]\"}[1m])",
+              "expr": "irate(node_disk_written_bytes_total{hostname=\"relay-ru\",device!~\"dm-[0-9]\"}[1m])",
+              "hide": false,
               "interval": "",
               "legendFormat": "{{device}} write",
               "refId": "B"
             }
           ],
-          "title": "Disk usage (relay-us node)",
+          "title": "Disk usage (relay-ru node)",
           "type": "timeseries"
         },
         {
@@ -7785,6 +6047,7 @@
                   "tooltip": false,
                   "viz": false
                 },
+                "insertNulls": false,
                 "lineInterpolation": "linear",
                 "lineWidth": 1,
                 "pointSize": 5,
@@ -7823,15 +6086,14 @@
             "h": 9,
             "w": 8,
             "x": 0,
-            "y": 84
+            "y": 80
           },
-          "id": 137,
+          "id": 64,
           "interval": "",
           "options": {
             "legend": {
               "calcs": [
-                "lastNotNull",
-                "max"
+                "lastNotNull"
               ],
               "displayMode": "table",
               "placement": "bottom",
@@ -7850,15 +6112,14 @@
                 "uid": "${DS_PROMETHEUS}"
               },
               "editorMode": "code",
-              "exemplar": true,
-              "expr": "node_filefd_allocated{hostname=\"relay-ru\"}",
+              "expr": "node_filefd_allocated{hostname=\"producer\"}",
               "interval": "",
               "legendFormat": "{{name}}",
               "range": true,
               "refId": "A"
             }
           ],
-          "title": "File Descriptors (relay-ru node)",
+          "title": "File Descriptors (producer node)",
           "type": "timeseries"
         },
         {
@@ -7886,6 +6147,7 @@
                   "tooltip": false,
                   "viz": false
                 },
+                "insertNulls": false,
                 "lineInterpolation": "linear",
                 "lineWidth": 1,
                 "pointSize": 5,
@@ -7924,7 +6186,7 @@
             "h": 9,
             "w": 8,
             "x": 8,
-            "y": 84
+            "y": 80
           },
           "id": 181,
           "interval": "",
@@ -7987,6 +6249,7 @@
                   "tooltip": false,
                   "viz": false
                 },
+                "insertNulls": false,
                 "lineInterpolation": "linear",
                 "lineWidth": 1,
                 "pointSize": 5,
@@ -8025,9 +6288,9 @@
             "h": 9,
             "w": 8,
             "x": 16,
-            "y": 84
+            "y": 80
           },
-          "id": 232,
+          "id": 137,
           "interval": "",
           "options": {
             "legend": {
@@ -8053,14 +6316,14 @@
               },
               "editorMode": "code",
               "exemplar": true,
-              "expr": "node_filefd_allocated{hostname=\"relay-us\"}",
+              "expr": "node_filefd_allocated{hostname=\"relay-ru\"}",
               "interval": "",
               "legendFormat": "{{name}}",
               "range": true,
               "refId": "A"
             }
           ],
-          "title": "File Descriptors (relay-us node)",
+          "title": "File Descriptors (relay-ru node)",
           "type": "timeseries"
         }
       ],
@@ -8086,7 +6349,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 21
+        "y": 17
       },
       "id": 157,
       "panels": [
@@ -8115,6 +6378,7 @@
                   "tooltip": false,
                   "viz": false
                 },
+                "insertNulls": false,
                 "lineInterpolation": "linear",
                 "lineWidth": 1,
                 "pointSize": 5,
@@ -8218,6 +6482,7 @@
                   "tooltip": false,
                   "viz": false
                 },
+                "insertNulls": false,
                 "lineInterpolation": "linear",
                 "lineWidth": 1,
                 "pointSize": 5,
@@ -8321,6 +6586,7 @@
                   "tooltip": false,
                   "viz": false
                 },
+                "insertNulls": false,
                 "lineInterpolation": "linear",
                 "lineWidth": 1,
                 "pointSize": 5,
@@ -8424,6 +6690,7 @@
                   "tooltip": false,
                   "viz": false
                 },
+                "insertNulls": false,
                 "lineInterpolation": "linear",
                 "lineWidth": 1,
                 "pointSize": 5,
@@ -8525,6 +6792,7 @@
                   "tooltip": false,
                   "viz": false
                 },
+                "insertNulls": false,
                 "lineInterpolation": "linear",
                 "lineWidth": 1,
                 "pointSize": 5,
@@ -8627,6 +6895,7 @@
                   "tooltip": false,
                   "viz": false
                 },
+                "insertNulls": false,
                 "lineInterpolation": "linear",
                 "lineWidth": 1,
                 "pointSize": 5,
@@ -11152,7 +9421,6 @@
   "refresh": "30s",
   "revision": 1,
   "schemaVersion": 38,
-  "style": "dark",
   "tags": [],
   "templating": {
     "list": []
@@ -11188,6 +9456,6 @@
   "timezone": "",
   "title": "Cardano Staking Monitoring",
   "uid": "Jjgz-MNnk",
-  "version": 25,
+  "version": 28,
   "weekStart": ""
 }

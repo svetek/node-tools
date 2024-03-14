@@ -22,7 +22,7 @@
       "type": "grafana",
       "id": "grafana",
       "name": "Grafana",
-      "version": "10.0.1"
+      "version": "10.2.2"
     },
     {
       "type": "datasource",
@@ -2058,9 +2058,10 @@
           "values": false
         },
         "text": {},
-        "textMode": "auto"
+        "textMode": "auto",
+        "wideLayout": true
       },
-      "pluginVersion": "10.0.1",
+      "pluginVersion": "10.2.2",
       "targets": [
         {
           "datasource": {
@@ -2128,9 +2129,10 @@
           "values": false
         },
         "text": {},
-        "textMode": "auto"
+        "textMode": "auto",
+        "wideLayout": true
       },
-      "pluginVersion": "10.0.1",
+      "pluginVersion": "10.2.2",
       "targets": [
         {
           "datasource": {
@@ -2213,9 +2215,10 @@
           "values": false
         },
         "text": {},
-        "textMode": "auto"
+        "textMode": "auto",
+        "wideLayout": true
       },
-      "pluginVersion": "10.0.1",
+      "pluginVersion": "10.2.2",
       "targets": [
         {
           "datasource": {
@@ -2305,9 +2308,10 @@
           "values": false
         },
         "text": {},
-        "textMode": "auto"
+        "textMode": "auto",
+        "wideLayout": true
       },
-      "pluginVersion": "10.0.1",
+      "pluginVersion": "10.2.2",
       "targets": [
         {
           "datasource": {
@@ -2436,7 +2440,7 @@
           }
         ]
       },
-      "pluginVersion": "10.0.1",
+      "pluginVersion": "10.2.2",
       "targets": [
         {
           "datasource": {
@@ -2551,9 +2555,10 @@
           "values": false
         },
         "text": {},
-        "textMode": "auto"
+        "textMode": "auto",
+        "wideLayout": true
       },
-      "pluginVersion": "10.0.1",
+      "pluginVersion": "10.2.2",
       "targets": [
         {
           "datasource": {
@@ -2639,9 +2644,10 @@
           "values": false
         },
         "text": {},
-        "textMode": "auto"
+        "textMode": "auto",
+        "wideLayout": true
       },
-      "pluginVersion": "10.0.1",
+      "pluginVersion": "10.2.2",
       "targets": [
         {
           "datasource": {
@@ -2724,9 +2730,10 @@
           "values": false
         },
         "text": {},
-        "textMode": "auto"
+        "textMode": "auto",
+        "wideLayout": true
       },
-      "pluginVersion": "10.0.1",
+      "pluginVersion": "10.2.2",
       "targets": [
         {
           "datasource": {
@@ -2816,9 +2823,10 @@
           "values": false
         },
         "text": {},
-        "textMode": "auto"
+        "textMode": "auto",
+        "wideLayout": true
       },
-      "pluginVersion": "10.0.1",
+      "pluginVersion": "10.2.2",
       "targets": [
         {
           "datasource": {
@@ -2901,9 +2909,10 @@
           "values": false
         },
         "text": {},
-        "textMode": "auto"
+        "textMode": "auto",
+        "wideLayout": true
       },
-      "pluginVersion": "10.0.1",
+      "pluginVersion": "10.2.2",
       "targets": [
         {
           "datasource": {
@@ -2981,9 +2990,10 @@
           "values": false
         },
         "text": {},
-        "textMode": "auto"
+        "textMode": "auto",
+        "wideLayout": true
       },
-      "pluginVersion": "10.0.1",
+      "pluginVersion": "10.2.2",
       "targets": [
         {
           "datasource": {
@@ -3069,9 +3079,10 @@
           "values": false
         },
         "text": {},
-        "textMode": "auto"
+        "textMode": "auto",
+        "wideLayout": true
       },
-      "pluginVersion": "10.0.1",
+      "pluginVersion": "10.2.2",
       "targets": [
         {
           "datasource": {
@@ -3104,6 +3115,7 @@
             "mode": "palette-classic"
           },
           "custom": {
+            "axisBorderShow": false,
             "axisCenteredZero": false,
             "axisColorMode": "text",
             "axisLabel": "",
@@ -3117,6 +3129,7 @@
               "tooltip": false,
               "viz": false
             },
+            "insertNulls": false,
             "lineInterpolation": "linear",
             "lineWidth": 2,
             "pointSize": 5,
@@ -3258,9 +3271,10 @@
           "values": false
         },
         "text": {},
-        "textMode": "auto"
+        "textMode": "auto",
+        "wideLayout": true
       },
-      "pluginVersion": "10.0.1",
+      "pluginVersion": "10.2.2",
       "targets": [
         {
           "datasource": {
@@ -3294,6 +3308,7 @@
             "mode": "palette-classic"
           },
           "custom": {
+            "axisBorderShow": false,
             "axisCenteredZero": false,
             "axisColorMode": "text",
             "axisLabel": "",
@@ -3307,6 +3322,7 @@
               "tooltip": false,
               "viz": false
             },
+            "insertNulls": false,
             "lineInterpolation": "linear",
             "lineStyle": {
               "fill": "solid"
@@ -3390,7 +3406,6 @@
   "refresh": "",
   "revision": 1,
   "schemaVersion": 38,
-  "style": "dark",
   "tags": [
     "cosmos",
     "blockchain",

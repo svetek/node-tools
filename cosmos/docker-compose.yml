@@ -2,7 +2,7 @@
 version: '3.9'
 services:
   node:
-    image: svetekllc/cosmos:v14.2.0
+    image: svetekllc/cosmos:v15.1.0
     labels:
       network: mainnet
     env_file:

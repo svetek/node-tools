@@ -1,13 +1,18 @@
 http:
   routers:
     ethereum_impulse_impulse_expert:
+      rule: Host(`ethereum.impulse.impulse.expert`)
       entryPoints:
         - web
         - websecure
+      middlewares: ratelimit_1000
       service: ethereum_impulse_impulse_expert
-      rule: Host(`ethereum.impulse.impulse.expert`)
       tls:
         certResolver: letsencrypt
+  middlewares:
+    ratelimit_1000:
+      rateLimit:
+        average: 500
   services:
     ethereum_impulse_impulse_expert:
       loadBalancer:

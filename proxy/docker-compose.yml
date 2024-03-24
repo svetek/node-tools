@@ -29,6 +29,7 @@ services:
       - haqq
       - lava
       - mantra
+      - nibiru
       - juneo
       - traefik
     restart: unless-stopped
@@ -51,6 +52,9 @@ networks:
       external: true
     mantra:
       name: mantra
+      external: true
+    nibiru:
+      name: nibiru
       external: true
     juneo:
       name: juneo

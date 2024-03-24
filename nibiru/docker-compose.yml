@@ -2,7 +2,7 @@
 version: '3.9'
 services:
   node:
-    image: svetekllc/nibiru:v1.0.2
+    image: svetekllc/nibiru:v1.0.3
     labels:
       network: mainnet
     env_file:
@@ -20,8 +20,8 @@ services:
     deploy:
       resources:
         limits:
-          cpus: '4'
-          memory: '16gb'
+          cpus: '8'
+          memory: '24gb'
     networks:
       - nibiru
     restart: unless-stopped
@@ -29,6 +29,8 @@ services:
   pricefeeder:
     image: pricefeeder
     build: ./pricefeeder
+    labels:
+      network: mainnet
     env_file:
       - pricefeeder.env
     networks:

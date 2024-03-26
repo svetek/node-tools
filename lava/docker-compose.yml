@@ -2,7 +2,7 @@
 version: '3.9'
 services:
   cache:
-    image: svetekllc/lava:v1.0.0-cache
+    image: svetekllc/lava:v1.0.3-cache
     labels:
       network: testnet
     env_file:
@@ -42,14 +42,14 @@ services:
     deploy:
       resources:
         limits:
-          cpus: '4'
+          cpus: '8'
           memory: '16gb'
     networks:
       - lava
     restart: unless-stopped
 
   provider:
-    image: svetekllc/lava:v1.0.0-provider
+    image: svetekllc/lava:v1.0.3-provider
     labels:
       network: testnet
     env_file:

@@ -9,13 +9,17 @@ init_node() {
   # Set keyring-backend and chain-id configuration
   $BIN config chain-id $CHAIN_ID --home $CONFIG_PATH
   $BIN config keyring-backend $KEYRING --home $CONFIG_PATH
+  $BIN config node http://0.0.0.0:$RPC_PORT --home $CONFIG_PATH
 
-  # Download genesis and addrbook files
-  wget -O $CONFIG_PATH/config/genesis.json $GENESIS_URL
-
+  # Download addrbook and genesis files
   if [[ -n $ADDRBOOK_URL ]]
   then
     wget -O $CONFIG_PATH/config/addrbook.json $ADDRBOOK_URL
+  fi
+
+  if [[ -n $GENESIS_URL ]]
+  then
+    wget -O $CONFIG_PATH/config/genesis.json $GENESIS_URL
   fi
 
   sed -i \
@@ -85,7 +89,18 @@ state_sync() {
 
 create_account() {
   echo -e "\n\e[32m### Create account ###\e[0m"
-  $BIN keys add $KEY --keyring-backend $KEYRING --home $CONFIG_PATH
+  expect -c "
+      #!/usr/bin/expect -f
+      set timeout -1
+
+      spawn $BIN keys add $WALLET --keyring-backend $KEYRING --home $CONFIG_PATH
+      exp_internal 0
+      expect \"Enter keyring passphrase*:\"
+      send   \"$WALLET_PASS\n\"
+      expect \"Re-enter keyring passphrase*:\"
+      send   \"$WALLET_PASS\n\"
+      expect eof
+  "
 }
 
 create_endpoins_conf() {
@@ -123,7 +138,7 @@ start_node() {
       [[ ! -f "$CONFIG_PATH/config/rpcprovider.yml" ]] && create_endpoins_conf
       args=(
             "--chain-id $CHAIN_ID" \
-            "--from $KEY" \
+            "--from $WALLET" \
             "--geolocation $GEOLOCATION" \
             "--home $CONFIG_PATH" \
             "--keyring-backend $KEYRING" \
@@ -143,11 +158,11 @@ set_variable() {
   source ~/.bashrc
   if [[ ! $ACC_ADDRESS ]]
   then
-    echo 'export ACC_ADDRESS='$($BIN keys show $KEY --keyring-backend $KEYRING -a) >> $HOME/.bashrc
+    echo 'export ACC_ADDRESS='$(echo $WALLET_PASS | $BIN keys show $WALLET --keyring-backend $KEYRING -a) >> $HOME/.bashrc
   fi
   if [[ ! $VAL_ADDRESS ]]
   then
-    echo 'export VAL_ADDRESS='$($BIN keys show $KEY --keyring-backend $KEYRING --bech val -a) >> $HOME/.bashrc
+    echo 'export VAL_ADDRESS='$(echo $WALLET_PASS | $BIN keys show $WALLET --keyring-backend $KEYRING --bech val -a) >> $HOME/.bashrc
   fi
 }
 
@@ -161,7 +176,7 @@ then
   init_node
 fi
 
-if [[ $NODE_TYPE == "node" || $NODE_TYPE == "provider" ]] && [[ $(find $CONFIG_PATH -maxdepth 2 -type f -name $KEY.info | wc -l) -eq 0 ]]
+if [[ $NODE_TYPE == "node" || $NODE_TYPE == "provider" ]] && [[ $(find $CONFIG_PATH -maxdepth 2 -type f -name $WALLET.info | wc -l) -eq 0 ]]
 then
   create_account
 fi

@@ -1,16 +1,16 @@
 http:
   routers:
-    t-rpc-01_nibiru_impulse_expert:
+    m-rpc-01_nibiru_impulse_expert:
       entryPoints:
         - web
         - websecure
-      service: t-rpc-01_nibiru_impulse_expert
+      service: m-rpc-01_nibiru_impulse_expert
       rule: Host(`m-rpc-01.nibiru.impulse.expert`)
       tls:
         certResolver: letsencrypt
   services:
-    t-rpc-01_nibiru_impulse_expert:
+    m-rpc-01_nibiru_impulse_expert:
       loadBalancer:
         servers:
-          - url: "http://nibiru-node-1:13657"
+          - url: "http://nibiru-node-1:17657"
         passHostHeader: true

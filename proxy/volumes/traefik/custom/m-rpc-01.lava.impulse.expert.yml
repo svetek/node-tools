@@ -1,0 +1,16 @@
+http:
+  routers:
+    m-rpc-01_lava_impulse_expert:
+      entryPoints:
+        - web
+        - websecure
+      service: m-rpc-01_lava_impulse_expert
+      rule: Host(`m-rpc-01.lava.impulse.expert`)
+      tls:
+        certResolver: letsencrypt
+  services:
+    m-rpc-01_lava_impulse_expert:
+      loadBalancer:
+        servers:
+          - url: "http://lava-node-mainnet-1:13657"
+        passHostHeader: true

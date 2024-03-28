@@ -8,8 +8,8 @@ services:
     env_file:
       - node.env
     ports:
-      - '13656:13656'
-      - '13660:13660'
+      - '17656:17656'
+      - '17660:17660'
     volumes:
       - /opt/nvme2n1/nibiru:/root/.nibid
     logging:

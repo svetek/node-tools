@@ -28,7 +28,7 @@ class MetricsCollector:
     def get_chain_status(self):
         metrics = ['# HELP Lava provider chain status.', '# TYPE lava_provider_chain_status gauge']
         statuses = ['provider', 'frozen', 'unstaked']
-        output = json.loads(self.run_command(f"docker exec {self.container} bash -c 'lavap query pairing account-info --from $KEY -o json'"))
+        output = json.loads(self.run_command(f"docker exec {self.container} bash -c 'lavap query pairing account-info --from $WALLET -o json'"))
         for status in statuses:
             for item in output.get(status, []):
                 metrics.append(f'lava_provider_chain_status{{chainID="{item["chain"]}", moniker="{item.get("moniker", "")}", status="{status}"}} 1')

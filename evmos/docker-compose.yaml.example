@@ -1,5 +1,6 @@
 ---
-version: '3.9'
+name: evmos
+
 services:
   node:
     image: svetekllc/evmos:v16.0.3
@@ -7,15 +8,13 @@ services:
       network: mainnet
     env_file:
       - node.env
-    ports:
-      - '11090:11090'
-      - '11317:11317'
-      - '11545:11545'
-      - '11656:11656'
-      - '11657:11657'
-      - '11660:11660'
     volumes:
       - /opt/nvme3n1/evmos:/root/.evmosd
+    ports:
+      - '26656:26656'
+      - '26660:26660'
+    networks:
+      - evmos
     logging:
       driver: "json-file"
       options:
@@ -26,8 +25,6 @@ services:
         limits:
           cpus: '16'
           memory: '32gb'
-    networks:
-      - evmos
     restart: unless-stopped
 
 networks:

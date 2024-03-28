@@ -9,7 +9,7 @@ services:
     env_file:
       - testnet.env
     volumes:
-      - ${T_DATA_PATH}:/root/.near
+      - /opt/testnet/near:/root/.near
     ports:
       - '25030:3030'
     networks:
@@ -22,8 +22,8 @@ services:
     deploy:
       resources:
         limits:
-          cpus: '8'
-          memory: '24gb'
+          cpus: '16'
+          memory: '32gb'
     restart: unless-stopped
 
   node-mainnet:
@@ -33,7 +33,7 @@ services:
     env_file:
       - mainnet.env
     volumes:
-      - ${M_DATA_PATH}:/root/.near
+      - /opt/mainnet/near:/root/.near
     ports:
       - '15030:3030'
     networks:

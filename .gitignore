@@ -1,4 +1,4 @@
 acme.json
-docker-compose.yml
+docker-compose.yaml
 *.env
 monitoring/metrics/*

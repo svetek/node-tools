@@ -31,7 +31,7 @@ services:
     env_file:
       - node.env
     volumes:
-      - /opt/md0/testnet/lava:/root/.lava
+      - /opt/testnet/lava:/root/.lava
     ports:
       - '23656:23656'
       - '23660:23660'
@@ -56,7 +56,7 @@ services:
     env_file:
       - provider.env
     volumes:
-      - /opt/nvme2n1/lava:/root/.lava
+      - /opt/testnet/lava:/root/.lava
     ports:
       - '23001:23001'
     networks:
@@ -64,8 +64,6 @@ services:
       - cosmos
       - evmos
       - lava
-      - near
-      - starknet
     logging:
       driver: "json-file"
       options:
@@ -74,8 +72,8 @@ services:
     deploy:
       resources:
         limits:
-          cpus: '10'
-          memory: '24gb'
+          cpus: '8'
+          memory: '16gb'
     restart: unless-stopped
 
 networks:
@@ -90,9 +88,3 @@ networks:
     external: true
   lava:
     name: lava
-  near:
-    name: near
-    external: true
-  starknet:
-    name: starknet
-    external: true

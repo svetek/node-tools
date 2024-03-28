@@ -1,5 +1,6 @@
 ---
-version: '3.9'
+name: monitoring
+
 services:
   node_exporter:
     image: prom/node-exporter:v1.7.0
@@ -28,23 +29,25 @@ services:
     restart: unless-stopped
 
   cadvisor:
-    image: gcr.io/cadvisor/cadvisor:latest
+    image: gcr.io/cadvisor/cadvisor:v0.49.1
     labels:
       network: mainnet
-    ports:
-    - 18080:8080
     volumes:
     - /:/rootfs:ro
-    - /var/run:/var/run:rw
+    - /var/run:/var/run:ro
     - /sys:/sys:ro
     - /var/lib/docker/:/var/lib/docker:ro
+    - /dev/disk/:/dev/disk:ro
+    privileged: true
+    ports:
+    - 18080:8080
+    networks:
+      - monitoring
     deploy:
       resources:
         limits:
           cpus: '0.25'
           memory: '512M'
-    networks:
-      - monitoring
     restart: unless-stopped
 
   smartctl:
@@ -56,13 +59,13 @@ services:
     user: root
     ports:
     - 9633:9633
+    networks:
+      - monitoring
     deploy:
       resources:
         limits:
           cpus: '0.25'
           memory: '512M'
-    networks:
-      - monitoring
     restart: unless-stopped
 
 networks:

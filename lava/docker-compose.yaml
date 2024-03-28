@@ -1,14 +1,17 @@
 ---
-version: '3.9'
+name: lava
+
 services:
   cache:
-    image: svetekllc/lava:v1.0.3-cache
+    image: svetekllc/lava:v1.0.4-cache
     labels:
       network: testnet
     env_file:
       - cache.env
     ports:
       - '23101:23101'
+    networks:
+      - lava
     logging:
       driver: "json-file"
       options:
@@ -19,8 +22,6 @@ services:
         limits:
           cpus: '4'
           memory: '16gb'
-    networks:
-      - lava
     restart: unless-stopped
 
   node:
@@ -29,11 +30,13 @@ services:
       network: testnet
     env_file:
       - node.env
+    volumes:
+      - /opt/md0/testnet/lava:/root/.lava
     ports:
       - '23656:23656'
       - '23660:23660'
-    volumes:
-      - /opt/nvme2n1/lava:/root/.lava
+    networks:
+      - lava
     logging:
       driver: "json-file"
       options:
@@ -44,20 +47,25 @@ services:
         limits:
           cpus: '8'
           memory: '16gb'
-    networks:
-      - lava
     restart: unless-stopped
 
   provider:
-    image: svetekllc/lava:v1.0.3-provider
+    image: svetekllc/lava:v1.0.4-provider
     labels:
       network: testnet
     env_file:
       - provider.env
-    ports:
-      - '23001:23001'
     volumes:
       - /opt/nvme2n1/lava:/root/.lava
+    ports:
+      - '23001:23001'
+    networks:
+      - canto
+      - cosmos
+      - evmos
+      - lava
+      - near
+      - starknet
     logging:
       driver: "json-file"
       options:
@@ -68,13 +76,6 @@ services:
         limits:
           cpus: '10'
           memory: '24gb'
-    networks:
-      - canto
-      - cosmos
-      - evmos
-      - lava
-      - near
-      - starknet
     restart: unless-stopped
 
 networks:

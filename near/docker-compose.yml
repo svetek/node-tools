@@ -1,5 +1,6 @@
 ---
-version: '3.9'
+name: near
+
 services:
   node-testnet:
     image: svetekllc/near:1.38.0-rc.2
@@ -7,10 +8,12 @@ services:
       network: testnet
     env_file:
       - testnet.env
+    volumes:
+      - ${T_DATA_PATH}:/root/.near
     ports:
       - '25030:3030'
-    volumes:
-      - /opt/nvme2n1/near:/root/.near
+    networks:
+      - near
     logging:
       driver: "json-file"
       options:
@@ -21,8 +24,6 @@ services:
         limits:
           cpus: '8'
           memory: '24gb'
-    networks:
-      - near
     restart: unless-stopped
 
   node-mainnet:
@@ -31,10 +32,12 @@ services:
       network: mainnet
     env_file:
       - mainnet.env
+    volumes:
+      - ${M_DATA_PATH}:/root/.near
     ports:
       - '15030:3030'
-    volumes:
-      - /opt/nvme3n1/near:/root/.near
+    networks:
+      - near
     logging:
       driver: "json-file"
       options:
@@ -45,8 +48,6 @@ services:
         limits:
           cpus: '16'
           memory: '32gb'
-    networks:
-      - near
     restart: unless-stopped
 
 networks:

@@ -1,0 +1,36 @@
+---
+name: traefik
+
+services:
+  proxy:
+    image: traefik:v2.11
+    labels:
+      network: mainnet
+    volumes:
+      - ./volumes/traefik:/etc/traefik
+      - /var/run/docker.sock:/var/run/docker.sock
+    ports:
+      - '80:80'
+      - '443:443'
+      - '28080:8080'
+    networks:
+      - lava
+      - traefik
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "100m"
+        max-file: "1"
+    deploy:
+      resources:
+        limits:
+          cpus: '4'
+          memory: '8gb'
+    restart: unless-stopped
+
+networks:
+    lava:
+      name: lava
+      external: true
+    traefik:
+      name: traefik

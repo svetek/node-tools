@@ -1,0 +1,17 @@
+http:
+  routers:
+    <route name>:
+      entryPoints:
+        - web
+        - websecure
+      service: <sevice name>
+      rule: Host(`<url>`)
+      tls:
+        certResolver: letsencrypt
+  services:
+    <sevice name>:
+      loadBalancer:
+        servers:
+          - url: "h2c://<url>:<port>"
+        passHostHeader: true
+

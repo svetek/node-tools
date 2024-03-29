@@ -2,3 +2,4 @@ acme.json
 docker-compose.yaml
 *.env
 monitoring/metrics/*
+proxy/volumes/traefik/custom/

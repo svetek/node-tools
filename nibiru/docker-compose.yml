@@ -2,7 +2,7 @@
 version: '3.9'
 services:
   node:
-    image: svetekllc/nibiru:v1.0.3
+    image: svetekllc/nibiru:v1.1.0
     labels:
       network: mainnet
     env_file:

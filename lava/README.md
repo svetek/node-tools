@@ -22,25 +22,26 @@ A docker-compose.yml is a YAML-formatted configuration file that defines how Doc
 
 **Build step**:
 ```bash
-michael@u20srv1:~/crypto_node-tools/lava-node$ ./build.sh
+root@host:/opt/node-tools/lava$ ./build.sh
 What node type is required for build?
-1) provider
-2) validator
-Node type selected: 1
+1) cache
+2) provider
+3) validator
+Node type selected: 2
 Enter image name: lava
-Enter release tag: v0.23.5
+Enter release tag: v1.0.4
 Do you want to send the image to DockerHub?
 1) yes
 2) no
 Send the image to DockerHub: 2
 
 ### The build information ###
-Build date:     2023-09-21
-Docker context: /home/michael/crypto_node-tools/lava-node
-Dockerfile:     /home/michael/crypto_node-tools/lava-node/Dockerfile
-Docker Image:   lava:v0.23.5-provider
+Build date:     2024-03-31
+Docker context: /opt/node-tools/lava
+Dockerfile:     /opt/node-tools/lava/Dockerfile
+Docker Image:   lava:v1.0.4-provider
 Node type:      provider
-Version:        v0.23.5
+Version:        v1.0.4
 
 [+] Building 564.3s (10/14)
 => [internal] load .dockerignore
@@ -50,7 +51,7 @@ Version:        v0.23.5
 => [internal] load metadata for docker.io/library/golang:1.20-bullseye
 => [internal] load metadata for docker.io/library/debian:bullseye-slim
 ...
-=> => naming to docker.io/library/lava:v0.23.5-provider
+=> => naming to docker.io/library/lava:v1.0.4-provider
 
 The build is complete!
 ```
@@ -66,24 +67,8 @@ The build is complete!
 
 **Lava Validator**
 ```ini
-docker run --name lava-validator \
-           -e ADDRBOOK_URL="" \
-           -e CHAIN_ID=<set chain_id> \
-           -e CONFIG_PATH='/root/.lava' \
-           -e DIFF_HEIGHT=1000 \
-           -e GENESIS_URL=<set genesis url> \
-           -e KEY=<set key name> \
-           -e KEYRING=<set keyring type> \
-           -e KEYALGO=eth_secp256k1 \
-           -e LOGLEVEL='info' \
-           -e MONIKER=<set moniker name> \
-           -e PEERS=<list peers> \
-           -e RPC=<url lava rpc> \
-           -e PROMETHEUS_PORT=<set prometheus port> \
-           -e P2P_PORT=<set p2p port> \
-           -e SEEDS=<list seeds> \
-           -e STATESYNC='true' \
-           -e TOKEN=lava \
+docker run --name lava-node \
+           --env-file node.env \
            -p 26656:26656 \
            -v ~/.lava/:/root/.lava \
            -d <image:tag>
@@ -93,19 +78,8 @@ docker run --name lava-validator \
 **Lava RPC Provider**
 ```ini
 docker run --name lava-provider \
-           -e CHAIN_ID=<set chain_id> \
-           -e CONFIG_PATH='/root/.lava' \
-           -e GEOLOCATION=<set geolocation> \
-           -e KEY=<set key name> \
-           -e KEYRING='test' \
-           -e KEYALGO=eth_secp256k1 \
-           -e LOGLEVEL='info' \
-           -e MONIKER=<pool name> \
-           -e PROMETHEUS_PORT=<prometheus port> \
-           -e REWARDS_STORAGE_DIR=<set rewards dir> \
-           -e RPC=<url lava rpc> \
-           -e TOTAL_CONNECTIONS=<total connection> \
-           -p 26656:26656 \
+           --env-file node.env \
+           -p 22001:22001 \
            -v ~/.lava/:/root/.lava \
            -d <image:tag>
 ```
@@ -132,15 +106,6 @@ docker compose up -d
 ## Official Chain IDs
 
 Every chain must have a unique identifier or chain-id. Tendermint requires each application to define its own chain-id in the genesis.json fields.
-
->lava-testnet-2
-
-| Version name | Block height |
-|:------------:|:------------:|
-|   v0.21.1.2  |    340778    |
-|   v0.22.0    |    396595    |
-|   v0.23.5    |    435889    |
-
 
 ## Geolocation
 The location of the provider's nodes. (Note that 0 is only assigned via policy/gov proposal)

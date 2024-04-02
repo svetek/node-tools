@@ -27,7 +27,7 @@ services:
     restart: unless-stopped
 
   node-mainnet:
-    image: svetekllc/near:1.38.0
+    image: svetekllc/near:1.38.2
     labels:
       network: mainnet
     env_file:

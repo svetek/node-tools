@@ -1,5 +1,6 @@
 ---
-version: '3.9'
+name: nibiru
+
 services:
   node:
     image: svetekllc/nibiru:v1.1.0
@@ -7,11 +8,13 @@ services:
       network: mainnet
     env_file:
       - node.env
+    volumes:
+      - /opt/nvme2n1/nibiru:/root/.nibid
     ports:
       - '17656:17656'
       - '17660:17660'
-    volumes:
-      - /opt/nvme2n1/nibiru:/root/.nibid
+    networks:
+      - nibiru
     logging:
       driver: "json-file"
       options:
@@ -22,8 +25,6 @@ services:
         limits:
           cpus: '8'
           memory: '24gb'
-    networks:
-      - nibiru
     restart: unless-stopped
 
   pricefeeder:
@@ -35,6 +36,16 @@ services:
       - pricefeeder.env
     networks:
       - nibiru
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "100m"
+        max-file: "1"
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: '2048M'
     restart: unless-stopped
 
 networks:

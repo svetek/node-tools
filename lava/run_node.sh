@@ -1,10 +1,16 @@
 #!/bin/bash
 
+[[ -z $CHAIN_ID ]] && CHAIN_ID="lava-testnet-2"
+[[ -z $CONFIG_PATH ]] && CONFIG_PATH="/root/.lava"
+[[ -z $PUBLIC_RPC ]] && PUBLIC_RPC="https://public-rpc-testnet2.lavanet.xyz:443/rpc/"
+[[ -z $NODE_RPC_PORT ]] && RPC_PORT="26657"
+[[ -z $NODE_P2P_PORT ]] && P2P_PORT="26656"
+
 init_node() {
   echo -e "\e[32m### Initialization node ###\e[0m\n"
 
   # Set moniker and chain-id for Lava (Moniker can be anything, chain-id must be an integer)
-  $BIN init $MONIKER --chain-id $CHAIN_ID --home $CONFIG_PATH
+  $BIN init ${MONIKER:?Moniker is not set. You need to set up a value for the MONIKER variable.} --chain-id $CHAIN_ID --home $CONFIG_PATH
 
   # Set keyring-backend and chain-id configuration
   $BIN config chain-id $CHAIN_ID --home $CONFIG_PATH
@@ -17,10 +23,7 @@ init_node() {
     wget -O $CONFIG_PATH/config/addrbook.json $ADDRBOOK_URL
   fi
 
-  if [[ -n $GENESIS_URL ]]
-  then
-    wget -O $CONFIG_PATH/config/genesis.json $GENESIS_URL
-  fi
+  wget -O $CONFIG_PATH/config/genesis.json ${GENESIS_URL:-https://raw.githubusercontent.com/lavanet/lava-config/main/testnet-2/genesis_json/genesis.json}
 
   sed -i \
     -e 's|^broadcast-mode *=.*|broadcast-mode = "sync"|' \
@@ -55,7 +58,7 @@ init_node() {
     -e "s|^laddr = \"tcp://0.0.0.0:26656\"|laddr = \"tcp://0.0.0.0:$P2P_PORT\"|" \
     -e "s|^external_address *=.*|external_address = \"$(wget -qO- eth0.me):$P2P_PORT\"|" \
     -e "s|^prometheus =.*|prometheus = true|" \
-    -e "s|^prometheus_listen_addr =.*|prometheus_listen_addr = \":$METRICS_PORT\"|" \
+    -e "s|^prometheus_listen_addr =.*|prometheus_listen_addr = \":${METRICS_PORT:-26660}\"|" \
     $CONFIG_PATH/config/config.toml
 
   # Config pruning, snapshots and min price for GAZ
@@ -64,19 +67,19 @@ init_node() {
     -e 's|^pruning =.*|pruning = "custom"|' \
     -e 's|^pruning-keep-recent =.*|pruning-keep-recent = "100"|' \
     -e 's|^pruning-interval =.*|pruning-interval = "10"|' \
-    -e "s|^minimum-gas-prices =.*|minimum-gas-prices = \"0.0025u${TOKEN}\"|" \
+    -e "s|^minimum-gas-prices =.*|minimum-gas-prices = \"0.0025ulava\"|" \
     $CONFIG_PATH/config/app.toml
 }
 
 state_sync() {
   if [[ $STATE_SYNC && $STATE_SYNC == "true" ]]
   then
-    LATEST_HEIGHT=$(curl -s $RPC/block | jq -r .result.block.header.height)
-    SYNC_BLOCK_HEIGHT=$(($LATEST_HEIGHT - $DIFF_HEIGHT))
-    SYNC_BLOCK_HASH=$(curl -s "$RPC/block?height=$SYNC_BLOCK_HEIGHT" | jq -r .result.block_id.hash)
+    LATEST_HEIGHT=$(curl -s $PUBLIC_RPC/block | jq -r .result.block.header.height)
+    SYNC_BLOCK_HEIGHT=$(($LATEST_HEIGHT - ${DIFF_HEIGHT:-1000}))
+    SYNC_BLOCK_HASH=$(curl -s "$PUBLIC_RPC/block?height=$SYNC_BLOCK_HEIGHT" | jq -r .result.block_id.hash)
     sed -i \
       -e 's|^enable =.*|enable = true|' \
-      -e "s|^rpc_servers =.*|rpc_servers = \"$RPC,$RPC\"|" \
+      -e "s|^rpc_servers =.*|rpc_servers = \"$PUBLIC_RPC,$PUBLIC_RPC\"|" \
       -e "s|^trust_height =.*|trust_height = $SYNC_BLOCK_HEIGHT|" \
       -e "s|^trust_hash =.*|trust_hash = \"$SYNC_BLOCK_HASH\"|" \
       $CONFIG_PATH/config/config.toml
@@ -93,10 +96,10 @@ create_account() {
       #!/usr/bin/expect -f
       set timeout -1
 
-      spawn $BIN keys add $WALLET --keyring-backend $KEYRING --home $CONFIG_PATH
+      spawn $BIN keys add $WALLET ${KEYRING:+--keyring-backend $KEYRING} --home $CONFIG_PATH
       exp_internal 0
       expect \"Enter keyring passphrase*:\"
-      send   \"$WALLET_PASS\n\"
+      send   \"${WALLET_PASS:?Wallet password is not set. You need to set a value for the WALLET_PASS variable.}\n\"
       expect \"Re-enter keyring passphrase*:\"
       send   \"$WALLET_PASS\n\"
       expect eof
@@ -130,7 +133,7 @@ start_node() {
     "node")
       echo -e "\n\e[32m### Run Node ###\e[0m\n"
       state_sync
-      $BIN start --home $CONFIG_PATH --log_level $LOGLEVEL
+      $BIN start --home $CONFIG_PATH ${LOGLEVEL:+--log_level $LOGLEVEL}
       ;;
 
     "provider")
@@ -143,8 +146,8 @@ start_node() {
             "--home $CONFIG_PATH" \
             "--keyring-backend $KEYRING" \
             "--log_level $LOGLEVEL" \
-            "--metrics-listen-address $METRICS_LISTEN_ADDRESS:$METRICS_PORT" \
-            "--node $RPC" \
+            "--metrics-listen-address $METRICS_LISTEN_ADDRESS:${METRICS_PORT:-23001}" \
+            "--node $PUBLIC_RPC" \
             "--parallel-connections $TOTAL_CONNECTIONS" \
             "--reward-server-storage $CONFIG_PATH/$REWARDS_STORAGE_DIR" \
       )
@@ -158,30 +161,25 @@ set_variable() {
   source ~/.bashrc
   if [[ ! $ACC_ADDRESS ]]
   then
-    echo 'export ACC_ADDRESS='$(echo $WALLET_PASS | $BIN keys show $WALLET --keyring-backend $KEYRING -a) >> $HOME/.bashrc
+    echo 'export ACC_ADDRESS='$(echo $WALLET_PASS | $BIN keys show $WALLET ${KEYRING:+--keyring-backend $KEYRING} -a) >> $HOME/.bashrc
   fi
   if [[ ! $VAL_ADDRESS ]]
   then
-    echo 'export VAL_ADDRESS='$(echo $WALLET_PASS | $BIN keys show $WALLET --keyring-backend $KEYRING --bech val -a) >> $HOME/.bashrc
+    echo 'export VAL_ADDRESS='$(echo $WALLET_PASS | $BIN keys show $WALLET ${KEYRING:+--keyring-backend $KEYRING} --bech val -a) >> $HOME/.bashrc
   fi
 }
-
-if [[ $LOGLEVEL && $LOGLEVEL == "debug" ]]
-then
-  set -x
-fi
 
 if [[ $NODE_TYPE == "node" ]] && [[ ! -d "$CONFIG_PATH/config" || $(ls -la $CONFIG_PATH/config | grep -cie .*key.json) -eq 0 ]]
 then
   init_node
 fi
 
-if [[ $NODE_TYPE == "node" || $NODE_TYPE == "provider" ]] && [[ $(find $CONFIG_PATH -maxdepth 2 -type f -name $WALLET.info | wc -l) -eq 0 ]]
+if [[ $NODE_TYPE == "node" || $NODE_TYPE == "provider" ]] && [[ -n $WALLET && $(find $CONFIG_PATH -maxdepth 2 -type f -name $WALLET.info | wc -l) -eq 0 ]]
 then
   create_account
 fi
 
-if [[ $NODE_TYPE == "node" || $NODE_TYPE == "provider" ]]
+if [[ $NODE_TYPE == "node" || $NODE_TYPE == "provider" ]] && [[ -n $WALLET ]]
 then
   set_variable
 fi

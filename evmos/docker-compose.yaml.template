@@ -3,7 +3,7 @@ name: evmos
 
 services:
   node:
-    image: svetekllc/evmos:v16.0.3
+    image: svetekllc/evmos:v16.0.4
     labels:
       network: mainnet
     env_file:

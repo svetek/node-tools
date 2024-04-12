@@ -67,7 +67,7 @@ init_node() {
     -e 's|^pruning =.*|pruning = "custom"|' \
     -e 's|^pruning-keep-recent =.*|pruning-keep-recent = "100"|' \
     -e 's|^pruning-interval =.*|pruning-interval = "10"|' \
-    -e "s|^minimum-gas-prices =.*|minimum-gas-prices = \"0.0025ulava\"|" \
+    -e 's|^minimum-gas-prices =.*|minimum-gas-prices = "0.0025ulava"|' \
     $CONFIG_PATH/config/app.toml
 }
 

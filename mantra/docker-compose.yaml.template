@@ -1,5 +1,6 @@
 ---
-version: '3.9'
+name: mantra
+
 services:
   node:
     image: mantra:latest
@@ -7,11 +8,13 @@ services:
       network: testnet
     env_file:
       - node.env
+    volumes:
+      - /opt/nvme2n1/mantra:/root/.mantrachain
     ports:
       - '21656:21656'
       - '21660:21660'
-    volumes:
-      - /opt/nvme2n1/mantra:/root/.mantrachain
+    networks:
+      - mantra
     logging:
       driver: "json-file"
       options:
@@ -22,8 +25,7 @@ services:
         limits:
           cpus: '4'
           memory: '16gb'
-    networks:
-      - mantra
+
     restart: unless-stopped
 
 networks:

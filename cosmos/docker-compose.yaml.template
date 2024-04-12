@@ -1,17 +1,20 @@
 ---
-version: '3.9'
+name: cosmos
+
 services:
   node:
-    image: svetekllc/cosmos:v15.1.0
+    image: svetekllc/cosmos:v15.2.0
     labels:
       network: mainnet
     env_file:
       - node.env
+    volumes:
+      - /opt/nvme2n1/cosmos:/root/.gaia
     ports:
       - '12656:12656'
       - '12660:12660'
-    volumes:
-      - /opt/nvme2n1/cosmos:/root/.gaia
+    networks:
+      - cosmos
     logging:
       driver: "json-file"
       options:
@@ -22,8 +25,6 @@ services:
         limits:
           cpus: '4'
           memory: '24gb'
-    networks:
-      - cosmos
     restart: unless-stopped
 
 networks:

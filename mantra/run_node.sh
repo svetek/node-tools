@@ -15,7 +15,7 @@ init_node() {
   # Set keyring-backend and chain-id configuration
   $BIN config chain-id $CHAIN_ID --home $CONFIG_PATH
   $BIN config keyring-backend $KEYRING --home $CONFIG_PATH
-  $BIN config node http://0.0.0.0:$NODE_RPC_PORT --home $CONFIG_PATH
+  $BIN config node http://localhost:$NODE_RPC_PORT --home $CONFIG_PATH
 
   # Download addrbook and genesis files
   if [[ -n $ADDRBOOK_URL ]]
@@ -23,7 +23,7 @@ init_node() {
     wget -O $CONFIG_PATH/config/addrbook.json $ADDRBOOK_URL
   fi
 
-  wget -O $CONFIG_PATH/config/genesis.json ${GENESIS_URL:-https://raw.githubusercontent.com/lavanet/lava-config/main/testnet-2/genesis_json/genesis.json}
+  wget -O $CONFIG_PATH/config/genesis.json ${GENESIS_URL:-https://raw.githubusercontent.com/MANTRA-Finance/public/main/mantrachain-hongbai/genesis.json}
 
   sed -i \
     -e 's|^broadcast-mode *=.*|broadcast-mode = "sync"|' \
@@ -48,7 +48,7 @@ init_node() {
     -e 's|^timeout_commit =.*|timeout_commit = "3s"|' \
     -e 's|^create_empty_blocks =.*|create_empty_blocks = true|' \
     -e 's|^create_empty_blocks_interval =.*|create_empty_blocks_interval = "15s"|' \
-    -e 's|^timeout_broadcast_tx_commit =.*|timeout_broadcast_tx_commit = "151s"|' \
+    -e 's|^timeout_broadcast_tx_commit =.*|timeout_broadcast_tx_commit = "10s"|' \
     -e 's|^skip_timeout_commit =.*|skip_timeout_commit = false|' \
     $CONFIG_PATH/config/config.toml
 

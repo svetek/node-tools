@@ -3,7 +3,7 @@ name: traefik
 
 services:
   proxy:
-    image: traefik:v2.11
+    image: traefik:v2.11.2
     labels:
       network: mainnet
     volumes:

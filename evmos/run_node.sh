@@ -1,15 +1,21 @@
 #!/bin/bash
 
+[[ -z $CHAIN_ID ]] && CHAIN_ID="evmos_9001-2"
+[[ -z $CONFIG_PATH ]] && CONFIG_PATH="/root/.evmosd"
+[[ -z $PUBLIC_RPC ]] && PUBLIC_RPC="https://rpc-evmos-ia.cosmosia.notional.ventures:443"
+[[ -z $NODE_RPC_PORT ]] && NODE_RPC_PORT="26657"
+[[ -z $NODE_P2P_PORT ]] && NODE_P2P_PORT="26656"
+
 init_node() {
   echo -e "\e[32m### Initialization node ###\e[0m\n"
 
   # Set moniker and chain-id for Lava (Moniker can be anything, chain-id must be an integer)
-  $BIN init $MONIKER --chain-id $CHAIN_ID --home $CONFIG_PATH
+  $BIN init ${MONIKER:?Moniker is not set. You need to set up a value for the MONIKER variable.} --chain-id $CHAIN_ID --home $CONFIG_PATH
 
   # Set keyring-backend and chain-id configuration
   $BIN config chain-id $CHAIN_ID --home $CONFIG_PATH
   $BIN config keyring-backend $KEYRING --home $CONFIG_PATH
-  $BIN config node http://localhost:$RPC_PORT --home $CONFIG_PATH
+  $BIN config node http://localhost:$NODE_RPC_PORT --home $CONFIG_PATH
 
   # Download addrbook and genesis files
   if [[ -n $ADDRBOOK_URL ]]
@@ -17,10 +23,7 @@ init_node() {
     wget -O $CONFIG_PATH/config/addrbook.json $ADDRBOOK_URL
   fi
 
-  if [[ -n $GENESIS_URL ]]
-  then
-    wget -O $CONFIG_PATH/config/genesis.json $GENESIS_URL
-  fi
+  wget -O $CONFIG_PATH/config/genesis.json ${GENESIS_URL:-https://archive.evmos.org/mainnet/genesis.json}
 
   sed -i \
     -e 's|^broadcast-mode *=.*|broadcast-mode = "sync"|' \
@@ -32,29 +35,30 @@ init_node() {
     -e 's|^filter_peers =.*|filter_peers = "true"|' \
     -e "s|^persistent_peers =.*|persistent_peers = \"$PEERS\"|" \
     -e "s|^seeds =.*|seeds = \"$SEEDS\"|" \
-    -e 's|^create_empty_blocks =.*|create_empty_blocks = true|' \
-    -e 's|^create_empty_blocks_interval =.*|create_empty_blocks_interval = "0s"|' \
     $CONFIG_PATH/config/config.toml
 
   # Set timeout
   sed -i \
-    -e 's|^timeout_commit =.*|timeout_commit = "3s"|' \
     -e 's|^timeout_propose =.*|timeout_propose = "3s"|' \
-    -e 's|^timeout_precommit =.*|timeout_precommit = "1s"|' \
-    -e 's|^timeout_precommit_delta =.*|timeout_precommit_delta = "500ms"|' \
+    -e 's|^timeout_propose_delta =.*|timeout_propose_delta = "500ms"|' \
     -e 's|^timeout_prevote =.*|timeout_prevote = "1s"|' \
     -e 's|^timeout_prevote_delta =.*|timeout_prevote_delta = "500ms"|' \
-    -e 's|^timeout_propose_delta =.*|timeout_propose_delta = "500ms"|' \
+    -e 's|^timeout_precommit =.*|timeout_precommit = "1s"|' \
+    -e 's|^timeout_precommit_delta =.*|timeout_precommit_delta = "500ms"|' \
+    -e 's|^timeout_commit =.*|timeout_commit = "3s"|' \
+    -e 's|^create_empty_blocks =.*|create_empty_blocks = true|' \
+    -e 's|^create_empty_blocks_interval =.*|create_empty_blocks_interval = "0s"|' \
+    -e 's|^timeout_broadcast_tx_commit =.*|timeout_broadcast_tx_commit = "10s"|' \
     -e 's|^skip_timeout_commit =.*|skip_timeout_commit = false|' \
     $CONFIG_PATH/config/config.toml
 
   # Set ports P2P and Prometheus
   sed -i \
-    -e "s|^laddr = \"tcp://127.0.0.1:26657\"|laddr = \"tcp://0.0.0.0:$RPC_PORT\"|" \
-    -e "s|^laddr = \"tcp://0.0.0.0:26656\"|laddr = \"tcp://0.0.0.0:$P2P_PORT\"|" \
-    -e "s|^external_address *=.*|external_address = \"$(wget -qO- eth0.me):$P2P_PORT\"|" \
+    -e "s|^laddr = \"tcp://127.0.0.1:26657\"|laddr = \"tcp://0.0.0.0:$NODE_RPC_PORT\"|" \
+    -e "s|^laddr = \"tcp://0.0.0.0:26656\"|laddr = \"tcp://0.0.0.0:$NODE_P2P_PORT\"|" \
+    -e "s|^external_address *=.*|external_address = \"$(wget -qO- eth0.me):$NODE_P2P_PORT\"|" \
     -e "s|^prometheus =.*|prometheus = true|" \
-    -e "s|^prometheus_listen_addr =.*|prometheus_listen_addr = \":$METRICS_PORT\"|" \
+    -e "s|^prometheus_listen_addr =.*|prometheus_listen_addr = \":${METRICS_PORT:-26660}\"|" \
     $CONFIG_PATH/config/config.toml
 
   # Config pruning, snapshots and min price for GAZ
@@ -63,19 +67,19 @@ init_node() {
     -e 's|^pruning =.*|pruning = "custom"|' \
     -e 's|^pruning-keep-recent =.*|pruning-keep-recent = "100"|' \
     -e 's|^pruning-interval =.*|pruning-interval = "10"|' \
-    -e "s|^minimum-gas-prices =.*|minimum-gas-prices = \"0.0025a${TOKEN}\"|" \
+    -e 's|^minimum-gas-prices =.*|minimum-gas-prices = "0.0025aevmos"|' \
     $CONFIG_PATH/config/app.toml
 }
 
 state_sync() {
   if [[ $STATE_SYNC && $STATE_SYNC == "true" ]]
   then
-    LATEST_HEIGHT=$(curl -s $RPC/block | jq -r .result.block.header.height)
-    SYNC_BLOCK_HEIGHT=$(($LATEST_HEIGHT - $DIFF_HEIGHT))
-    SYNC_BLOCK_HASH=$(curl -s "$RPC/block?height=$SYNC_BLOCK_HEIGHT" | jq -r .result.block_id.hash)
+    LATEST_HEIGHT=$(curl -s $PUBLIC_RPC/block | jq -r .result.block.header.height)
+    SYNC_BLOCK_HEIGHT=$(($LATEST_HEIGHT - ${DIFF_HEIGHT:-1000}))
+    SYNC_BLOCK_HASH=$(curl -s "$PUBLIC_RPC/block?height=$SYNC_BLOCK_HEIGHT" | jq -r .result.block_id.hash)
     sed -i \
       -e 's|^enable =.*|enable = true|' \
-      -e "s|^rpc_servers =.*|rpc_servers = \"$RPC,$RPC\"|" \
+      -e "s|^rpc_servers =.*|rpc_servers = \"$PUBLIC_RPC,$PUBLIC_RPC\"|" \
       -e "s|^trust_height =.*|trust_height = $SYNC_BLOCK_HEIGHT|" \
       -e "s|^trust_hash =.*|trust_hash = \"$SYNC_BLOCK_HASH\"|" \
       $CONFIG_PATH/config/config.toml
@@ -92,10 +96,10 @@ create_account() {
       #!/usr/bin/expect -f
       set timeout -1
 
-      spawn $BIN keys add $WALLET --keyring-backend $KEYRING --home $CONFIG_PATH
+      spawn $BIN keys add $WALLET ${KEYRING:+--keyring-backend $KEYRING} --home $CONFIG_PATH
       exp_internal 0
       expect \"Enter keyring passphrase*:\"
-      send   \"$WALLET_PASS\n\"
+      send   \"${WALLET_PASS:?Wallet password is not set. You need to set a value for the WALLET_PASS variable.}\n\"
       expect \"Re-enter keyring passphrase*:\"
       send   \"$WALLET_PASS\n\"
       expect eof
@@ -103,39 +107,34 @@ create_account() {
 }
 
 start_node() {
-  echo -e "\n\e[32m### Run Validator Node ###\e[0m\n"
+  echo -e "\n\e[32m### Run Node ###\e[0m\n"
   state_sync
-  $BIN start --home $CONFIG_PATH --log_level $LOGLEVEL
+  $BIN start --home $CONFIG_PATH ${LOGLEVEL:+--log_level $LOGLEVEL}
 }
 
 set_variable() {
   source ~/.bashrc
   if [[ ! $ACC_ADDRESS ]]
   then
-    echo 'export ACC_ADDRESS='$(echo $WALLET_PASS | $BIN keys show $WALLET --keyring-backend $KEYRING -a) >> $HOME/.bashrc
+    echo 'export ACC_ADDRESS='$(echo $WALLET_PASS | $BIN keys show $WALLET ${KEYRING:+--keyring-backend $KEYRING} -a) >> $HOME/.bashrc
   fi
   if [[ ! $VAL_ADDRESS ]]
   then
-    echo 'export VAL_ADDRESS='$(echo $WALLET_PASS | $BIN keys show $WALLET --keyring-backend $KEYRING --bech val -a) >> $HOME/.bashrc
+    echo 'export VAL_ADDRESS='$(echo $WALLET_PASS | $BIN keys show $WALLET ${KEYRING:+--keyring-backend $KEYRING} --bech val -a) >> $HOME/.bashrc
   fi
 }
-
-if [[ $LOGLEVEL && $LOGLEVEL == "debug" ]]
-then
-  set -x
-fi
 
 if [[ ! -d "$CONFIG_PATH" ]] || [[ ! -d "$CONFIG_PATH/config" || $(ls -la $CONFIG_PATH/config | grep -cie .*key.json) -eq 0 ]]
 then
   init_node
 fi
 
-if [[ $WALLET && $(find $CONFIG_PATH -maxdepth 2 -type f -name $WALLET.info | wc -l) -eq 0 ]]
+if [[ -n $WALLET && $(find $CONFIG_PATH -maxdepth 2 -type f -name $WALLET.info | wc -l) -eq 0 ]]
 then
   create_account
 fi
 
-if [[ $WALLET && $(find $CONFIG_PATH -maxdepth 2 -type f -name $WALLET.info | wc -l) -ne 0 ]]
+if [[ -n $WALLET ]]
 then
   set_variable
 fi

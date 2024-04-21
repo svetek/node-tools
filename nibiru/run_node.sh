@@ -26,8 +26,12 @@ init_node() {
   wget -O $CONFIG_PATH/config/genesis.json ${GENESIS_URL:-https://networks.nibiru.fi/cataclysm-1/genesis}
 
   sed -i \
-    -e 's|^broadcast-mode *=.*|broadcast-mode = "sync"|' \
+    -e 's|^broadcast-mode =.*|broadcast-mode = "sync"|' \
     $CONFIG_PATH/config/client.toml
+
+  sed -i \
+    -e "s|^db_backend =.*|db_backend=\"${DB_BACKEND:-goleveldb}\"|" \
+    $CONFIG_PATH/config/config.toml
 
   # Set seeds/peers
   sed -i \

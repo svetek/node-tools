@@ -18,7 +18,7 @@ RUN apt-get update && apt-get upgrade -y \
 ######
 
 ### For testnet ###
-RUN wget -P /usr/lib https://github.com/CosmWasm/wasmvm/releases/download/v1.3.0/libwasmvm.x86_64.so
+RUN wget -P /usr/lib https://github.com/CosmWasm/wasmvm/releases/download/v1.3.1/libwasmvm.x86_64.so
 COPY ./mantrachaind /usr/bin
 RUN chmod ug+x /usr/bin/$BIN
 ######

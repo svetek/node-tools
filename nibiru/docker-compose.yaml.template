@@ -3,7 +3,7 @@ name: nibiru
 
 services:
   node:
-    image: svetekllc/nibiru:v1.1.0
+    image: svetekllc/nibiru:v1.2.0
     labels:
       network: mainnet
     env_file:
@@ -11,8 +11,8 @@ services:
     volumes:
       - /opt/nvme2n1/nibiru:/root/.nibid
     ports:
-      - '17656:17656'
-      - '17660:17660'
+      - '26656:26656'
+      - '26660:26660'
     networks:
       - nibiru
     logging:
@@ -45,7 +45,7 @@ services:
       resources:
         limits:
           cpus: '1'
-          memory: '2048M'
+          memory: '2gb'
     restart: unless-stopped
 
 networks:

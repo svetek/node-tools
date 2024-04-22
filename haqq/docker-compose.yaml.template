@@ -1,0 +1,32 @@
+---
+name: haqq
+
+services:
+  node:
+    image: svetekllc/haqq:v1.7.3
+    labels:
+      network: mainnet
+    env_file:
+      - node.env
+    volumes:
+      - /opt/haqq:/root/.haqqd
+    ports:
+      - '26656:26656'
+      - '26660:26660'
+    networks:
+      - haqq
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "100m"
+        max-file: "1"
+    deploy:
+      resources:
+        limits:
+          cpus: '4'
+          memory: '8gb'
+    restart: unless-stopped
+
+networks:
+  haqq:
+    name: haqq

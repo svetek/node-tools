@@ -12,7 +12,7 @@ RUN apt-get update && apt-get upgrade -y \
     && apt-get -y purge && apt-get -y clean \
     && apt-get -y autoremove && rm -rf /var/lib/apt/lists/*
 
-RUN wget -qO - "${GIT_REPOSITORY}/releases/download/${IMAGE_TAG}/haqq_${IMAGE_TAG#v}_Linux_x86_64.tar.gz" | tar xz -C /usr --wildcards --no-anchored "*$BIN*"
+RUN wget -qO - "${GIT_REPOSITORY}/releases/download/${IMAGE_TAG}/haqq_${IMAGE_TAG#v}_linux_amd64.tar.gz" | tar xz -C /usr --wildcards --no-anchored "*$BIN*"
 
 COPY ./run_node.sh .
 

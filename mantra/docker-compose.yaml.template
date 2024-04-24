@@ -5,14 +5,14 @@ services:
   node:
     image: mantra:latest
     labels:
-      network: testnet
+      network: mainnet
     env_file:
       - node.env
     volumes:
-      - /opt/nvme2n1/mantra:/root/.mantrachain
+      - /opt/mantra:/root/.mantrachain
     ports:
-      - '21656:21656'
-      - '21660:21660'
+      - '26656:26656'
+      - '26660:26660'
     networks:
       - mantra
     logging:
@@ -24,8 +24,7 @@ services:
       resources:
         limits:
           cpus: '4'
-          memory: '16gb'
-
+          memory: '8gb'
     restart: unless-stopped
 
 networks:

@@ -26,8 +26,12 @@ init_node() {
   wget -O $CONFIG_PATH/config/genesis.json ${GENESIS_URL:-https://raw.githubusercontent.com/MANTRA-Finance/public/main/mantrachain-hongbai/genesis.json}
 
   sed -i \
-    -e 's|^broadcast-mode *=.*|broadcast-mode = "sync"|' \
+    -e 's|^broadcast-mode =.*|broadcast-mode = "sync"|' \
     $CONFIG_PATH/config/client.toml
+
+  sed -i \
+    -e "s|^db_backend =.*|db_backend=\"${DB_BACKEND:-goleveldb}\"|" \
+    $CONFIG_PATH/config/config.toml
 
   # Set seeds/peers
   sed -i \

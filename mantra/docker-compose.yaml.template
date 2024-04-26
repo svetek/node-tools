@@ -3,7 +3,7 @@ name: mantra
 
 services:
   node:
-    image: mantra:latest
+    image: svetekllc/mantra:v3.0.0
     labels:
       network: mainnet
     env_file:

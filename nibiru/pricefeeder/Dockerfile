@@ -6,6 +6,6 @@ RUN apt-get update && apt-get upgrade -y \
     && apt-get -y purge && apt-get -y clean \
     && apt-get -y autoremove && rm -rf /var/lib/apt/lists/*
 
-RUN curl -s https://get.nibiru.fi/pricefeeder@v1.0.0! | bash
+RUN curl -s https://get.nibiru.fi/pricefeeder@v1.0.2! | bash
 
 ENTRYPOINT ["pricefeeder"]

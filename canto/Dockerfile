@@ -22,7 +22,7 @@ RUN apt-get update && apt-get upgrade -y \
     && apt-get -y purge && apt-get -y clean \
     && apt-get -y autoremove && rm -rf /var/lib/apt/lists/*
 
-COPY --from=builder /app/build/$BIN /usr/bin/$BIN
+COPY --from=builder /app/build/${BIN} /usr/bin/${BIN}
 COPY ./run_node.sh .
 
 RUN chmod +x ./run_node.sh

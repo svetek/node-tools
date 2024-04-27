@@ -1,5 +1,6 @@
 ---
-version: '3.9'
+name: canto
+
 services:
   node:
     image: svetekllc/canto:v7.0.0-node
@@ -7,11 +8,13 @@ services:
       network: mainnet
     env_file:
       - node.env
-    ports:
-      - '14656:14656'
-      - '14660:14660'
     volumes:
       - /opt/nvme3n1/canto:/root/.cantod
+    ports:
+      - '26656:26656'
+      - '26660:26660'
+    networks:
+      - canto
     logging:
       driver: "json-file"
       options:
@@ -22,8 +25,6 @@ services:
         limits:
           cpus: '4'
           memory: '16gb'
-    networks:
-      - canto
     restart: unless-stopped
 
 networks:

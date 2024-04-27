@@ -69,9 +69,9 @@ init_node() {
     $CONFIG_PATH/config/config.toml
 
   sed -i \
-    -e "s|^address = \"tcp://localhost:1317\"|address = \"tcp://0.0.0.0:$NODE_API_PORT\"|" \
-    -e "s|^address = \"localhost:9090\"|address = \"0.0.0.0:$NODE_GRPC_PORT\"|" \
-    -e "s|^address = \"127.0.0.1:8545\"|address = \"0.0.0.0:$NODE_JRPC_PORT\"|" \
+    -e "s|^address = \"tcp://0.0.0.0:1317\"|address = \"tcp://0.0.0.0:$NODE_API_PORT\"|" \
+    -e "s|^address = \"0.0.0.0:9090\"|address = \"0.0.0.0:$NODE_GRPC_PORT\"|" \
+    -e "s|^address = \"0.0.0.0:8545\"|address = \"0.0.0.0:$NODE_JRPC_PORT\"|" \
     $CONFIG_PATH/config/app.toml
 
   # Config pruning, snapshots and min price for GAZ

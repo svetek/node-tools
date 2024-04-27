@@ -3,8 +3,11 @@
 [[ -z $CHAIN_ID ]] && CHAIN_ID="cosmoshub-4"
 [[ -z $CONFIG_PATH ]] && CONFIG_PATH="/root/.gaia"
 [[ -z $PUBLIC_RPC ]] && PUBLIC_RPC="https://cosmos-rpc.polkachu.com:443"
-[[ -z $NODE_RPC_PORT ]] && NODE_RPC_PORT="26657"
+[[ -z $NODE_API_PORT ]] && NODE_API_PORT="1317"
+[[ -z $NODE_JRPC_PORT ]] && NODE_JRPC_PORT="8545"
+[[ -z $NODE_GRPC_PORT ]] && NODE_GRPC_PORT="9090"
 [[ -z $NODE_P2P_PORT ]] && NODE_P2P_PORT="26656"
+[[ -z $NODE_RPC_PORT ]] && NODE_RPC_PORT="26657"
 
 init_node() {
   echo -e "\e[32m### Initialization node ###\e[0m\n"
@@ -26,8 +29,12 @@ init_node() {
   wget -O $CONFIG_PATH/config/genesis.json ${GENESIS_URL:-https://ss.cosmos.nodestake.top/genesis.json}
 
   sed -i \
-    -e 's|^broadcast-mode *=.*|broadcast-mode = "sync"|' \
+    -e 's|^broadcast-mode =.*|broadcast-mode = "sync"|' \
     $CONFIG_PATH/config/client.toml
+
+  sed -i \
+    -e "s|^db_backend =.*|db_backend = \"${DB_BACKEND:-goleveldb}\"|" \
+    $CONFIG_PATH/config/config.toml
 
   # Set seeds/peers
   sed -i \
@@ -52,7 +59,7 @@ init_node() {
     -e 's|^skip_timeout_commit =.*|skip_timeout_commit = false|' \
     $CONFIG_PATH/config/config.toml
 
-  # Set ports P2P and Prometheus
+  # Set ports
   sed -i \
     -e "s|^laddr = \"tcp://127.0.0.1:26657\"|laddr = \"tcp://0.0.0.0:$NODE_RPC_PORT\"|" \
     -e "s|^laddr = \"tcp://0.0.0.0:26656\"|laddr = \"tcp://0.0.0.0:$NODE_P2P_PORT\"|" \
@@ -60,6 +67,12 @@ init_node() {
     -e "s|^prometheus =.*|prometheus = true|" \
     -e "s|^prometheus_listen_addr =.*|prometheus_listen_addr = \":${METRICS_PORT:-26660}\"|" \
     $CONFIG_PATH/config/config.toml
+
+  sed -i \
+    -e "s|^address = \"tcp://localhost:1317\"|address = \"tcp://0.0.0.0:$NODE_API_PORT\"|" \
+    -e "s|^address = \"localhost:9090\"|address = \"0.0.0.0:$NODE_GRPC_PORT\"|" \
+    -e "s|^address = \"127.0.0.1:8545\"|address = \"0.0.0.0:$NODE_JRPC_PORT\"|" \
+    $CONFIG_PATH/config/app.toml
 
   # Config pruning, snapshots and min price for GAZ
   sed -i \

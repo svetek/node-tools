@@ -33,7 +33,7 @@ init_node() {
     $CONFIG_PATH/config/client.toml
 
   sed -i \
-    -e "s|^db_backend =.*|db_backend=\"${DB_BACKEND:-goleveldb}\"|" \
+    -e "s|^db_backend =.*|db_backend = \"${DB_BACKEND:-goleveldb}\"|" \
     $CONFIG_PATH/config/config.toml
 
   # Set seeds/peers

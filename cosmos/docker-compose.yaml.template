@@ -11,8 +11,8 @@ services:
     volumes:
       - /opt/nvme2n1/cosmos:/root/.gaia
     ports:
-      - '12656:12656'
-      - '12660:12660'
+      - '26656:12656'
+      - '26660:12660'
     networks:
       - cosmos
     logging:

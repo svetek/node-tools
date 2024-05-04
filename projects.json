@@ -1,6 +1,7 @@
 {
     "node_name": [
         "artela-node",
+        "axelar-node",
         "canto-node",
         "cascadia-node",
         "cosmos-node",
@@ -24,6 +25,13 @@
             "git_repository": "artela-network/artela",
             "node_type": "node",
             "binary": "artelad"
+        },
+        {
+            "node_name": "axelar-node",
+            "project_name": "axelar",
+            "git_repository": "axelarnetwork/axelar-core",
+            "node_type": "node",
+            "binary": "axelard"
         },
         {
             "node_name": "canto-node",

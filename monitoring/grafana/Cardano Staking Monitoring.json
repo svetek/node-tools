@@ -21,7 +21,7 @@
       "type": "grafana",
       "id": "grafana",
       "name": "Grafana",
-      "version": "10.2.2"
+      "version": "11.0.0"
     },
     {
       "type": "panel",
@@ -255,11 +255,12 @@
           "fields": "",
           "values": false
         },
+        "showPercentChange": false,
         "text": {},
         "textMode": "auto",
         "wideLayout": true
       },
-      "pluginVersion": "10.2.2",
+      "pluginVersion": "11.0.0",
       "targets": [
         {
           "datasource": {
@@ -319,11 +320,12 @@
           "fields": "",
           "values": false
         },
+        "showPercentChange": false,
         "text": {},
         "textMode": "auto",
         "wideLayout": true
       },
-      "pluginVersion": "10.2.2",
+      "pluginVersion": "11.0.0",
       "targets": [
         {
           "datasource": {
@@ -372,7 +374,6 @@
         "y": 1
       },
       "id": 56,
-      "links": [],
       "maxDataPoints": 100,
       "options": {
         "colorMode": "background",
@@ -391,11 +392,12 @@
           "fields": "",
           "values": false
         },
+        "showPercentChange": false,
         "text": {},
         "textMode": "value",
         "wideLayout": true
       },
-      "pluginVersion": "10.2.2",
+      "pluginVersion": "11.0.0",
       "targets": [
         {
           "datasource": {
@@ -451,7 +453,6 @@
         "y": 1
       },
       "id": 3,
-      "links": [],
       "maxDataPoints": 100,
       "options": {
         "colorMode": "background",
@@ -470,11 +471,12 @@
           "fields": "",
           "values": false
         },
+        "showPercentChange": false,
         "text": {},
         "textMode": "auto",
         "wideLayout": true
       },
-      "pluginVersion": "10.2.2",
+      "pluginVersion": "11.0.0",
       "targets": [
         {
           "datasource": {
@@ -492,7 +494,6 @@
         }
       ],
       "title": "Epoch",
-      "transformations": [],
       "type": "stat"
     },
     {
@@ -538,10 +539,10 @@
         "y": 1
       },
       "id": 149,
-      "links": [],
       "maxDataPoints": 100,
       "options": {
         "displayMode": "basic",
+        "maxVizHeight": 300,
         "minVizHeight": 10,
         "minVizWidth": 0,
         "namePlacement": "auto",
@@ -554,10 +555,11 @@
           "values": false
         },
         "showUnfilled": true,
+        "sizing": "auto",
         "text": {},
         "valueMode": "color"
       },
-      "pluginVersion": "10.2.2",
+      "pluginVersion": "11.0.0",
       "targets": [
         {
           "datasource": {
@@ -574,7 +576,6 @@
         }
       ],
       "title": "Current Epoch Progress",
-      "transformations": [],
       "type": "bargauge"
     },
     {
@@ -618,11 +619,12 @@
           "fields": "",
           "values": false
         },
+        "showPercentChange": false,
         "text": {},
         "textMode": "auto",
         "wideLayout": true
       },
-      "pluginVersion": "10.2.2",
+      "pluginVersion": "11.0.0",
       "targets": [
         {
           "datasource": {
@@ -680,11 +682,12 @@
           "fields": "",
           "values": false
         },
+        "showPercentChange": false,
         "text": {},
         "textMode": "auto",
         "wideLayout": true
       },
-      "pluginVersion": "10.2.2",
+      "pluginVersion": "11.0.0",
       "targets": [
         {
           "datasource": {
@@ -770,11 +773,12 @@
           "fields": "",
           "values": false
         },
+        "showPercentChange": false,
         "text": {},
         "textMode": "auto",
         "wideLayout": true
       },
-      "pluginVersion": "10.2.2",
+      "pluginVersion": "11.0.0",
       "targets": [
         {
           "datasource": {
@@ -846,10 +850,10 @@
         "y": 5
       },
       "id": 19,
-      "links": [],
       "maxDataPoints": 100,
       "options": {
         "displayMode": "lcd",
+        "maxVizHeight": 300,
         "minVizHeight": 10,
         "minVizWidth": 0,
         "namePlacement": "auto",
@@ -862,10 +866,11 @@
           "values": false
         },
         "showUnfilled": true,
+        "sizing": "auto",
         "text": {},
         "valueMode": "color"
       },
-      "pluginVersion": "10.2.2",
+      "pluginVersion": "11.0.0",
       "targets": [
         {
           "datasource": {
@@ -882,7 +887,6 @@
         }
       ],
       "title": "Remaining KES Periods",
-      "transformations": [],
       "type": "bargauge"
     },
     {
@@ -925,11 +929,12 @@
           "fields": "",
           "values": false
         },
+        "showPercentChange": false,
         "text": {},
         "textMode": "auto",
         "wideLayout": true
       },
-      "pluginVersion": "10.2.2",
+      "pluginVersion": "11.0.0",
       "targets": [
         {
           "datasource": {
@@ -1031,7 +1036,8 @@
       "interval": "",
       "options": {
         "displayMode": "lcd",
-        "minVizHeight": 10,
+        "maxVizHeight": 25,
+        "minVizHeight": 0,
         "minVizWidth": 0,
         "namePlacement": "auto",
         "orientation": "horizontal",
@@ -1043,10 +1049,11 @@
           "values": false
         },
         "showUnfilled": true,
+        "sizing": "manual",
         "text": {},
         "valueMode": "color"
       },
-      "pluginVersion": "10.2.2",
+      "pluginVersion": "11.0.0",
       "targets": [
         {
           "datasource": {
@@ -1150,7 +1157,6 @@
         "y": 7
       },
       "id": 98,
-      "links": [],
       "maxDataPoints": 100,
       "options": {
         "colorMode": "background",
@@ -1164,11 +1170,12 @@
           "fields": "",
           "values": false
         },
+        "showPercentChange": false,
         "text": {},
         "textMode": "auto",
         "wideLayout": true
       },
-      "pluginVersion": "10.2.2",
+      "pluginVersion": "11.0.0",
       "targets": [
         {
           "datasource": {
@@ -1177,7 +1184,7 @@
           },
           "editorMode": "code",
           "exemplar": true,
-          "expr": "cardano_node_metrics_peers_connectedPeers_int{hostname=\"producer\"}",
+          "expr": "cardano_node_metrics_peerSelection_hot{hostname=\"producer\"}",
           "format": "time_series",
           "instant": true,
           "interval": "",
@@ -1230,7 +1237,6 @@
         "y": 7
       },
       "id": 69,
-      "links": [],
       "maxDataPoints": 100,
       "options": {
         "colorMode": "background",
@@ -1249,11 +1255,12 @@
           "fields": "",
           "values": false
         },
+        "showPercentChange": false,
         "text": {},
         "textMode": "auto",
         "wideLayout": true
       },
-      "pluginVersion": "10.2.2",
+      "pluginVersion": "11.0.0",
       "targets": [
         {
           "datasource": {
@@ -1305,7 +1312,6 @@
         "y": 7
       },
       "id": 97,
-      "links": [],
       "options": {
         "colorMode": "background",
         "graphMode": "none",
@@ -1318,11 +1324,12 @@
           "fields": "",
           "values": false
         },
+        "showPercentChange": false,
         "text": {},
         "textMode": "auto",
         "wideLayout": true
       },
-      "pluginVersion": "10.2.2",
+      "pluginVersion": "11.0.0",
       "targets": [
         {
           "datasource": {
@@ -1371,7 +1378,6 @@
         "y": 7
       },
       "id": 80,
-      "links": [],
       "options": {
         "colorMode": "background",
         "graphMode": "none",
@@ -1384,11 +1390,12 @@
           "fields": "",
           "values": false
         },
+        "showPercentChange": false,
         "text": {},
         "textMode": "auto",
         "wideLayout": true
       },
-      "pluginVersion": "10.2.2",
+      "pluginVersion": "11.0.0",
       "targets": [
         {
           "datasource": {
@@ -1448,7 +1455,6 @@
       },
       "hideTimeOverride": true,
       "id": 45,
-      "links": [],
       "maxDataPoints": 100,
       "options": {
         "colorMode": "background",
@@ -1467,11 +1473,12 @@
           "fields": "",
           "values": false
         },
+        "showPercentChange": false,
         "text": {},
         "textMode": "auto",
         "wideLayout": true
       },
-      "pluginVersion": "10.2.2",
+      "pluginVersion": "11.0.0",
       "targets": [
         {
           "datasource": {
@@ -1539,7 +1546,8 @@
       "interval": "",
       "options": {
         "displayMode": "lcd",
-        "minVizHeight": 10,
+        "maxVizHeight": 25,
+        "minVizHeight": 0,
         "minVizWidth": 0,
         "namePlacement": "auto",
         "orientation": "horizontal",
@@ -1551,10 +1559,11 @@
           "values": false
         },
         "showUnfilled": true,
+        "sizing": "manual",
         "text": {},
         "valueMode": "color"
       },
-      "pluginVersion": "10.2.2",
+      "pluginVersion": "11.0.0",
       "targets": [
         {
           "datasource": {
@@ -1659,7 +1668,6 @@
         "y": 10
       },
       "id": 142,
-      "links": [],
       "maxDataPoints": 100,
       "options": {
         "colorMode": "background",
@@ -1673,11 +1681,12 @@
           "fields": "",
           "values": false
         },
+        "showPercentChange": false,
         "text": {},
         "textMode": "auto",
         "wideLayout": true
       },
-      "pluginVersion": "10.2.2",
+      "pluginVersion": "11.0.0",
       "targets": [
         {
           "datasource": {
@@ -1686,7 +1695,7 @@
           },
           "editorMode": "code",
           "exemplar": true,
-          "expr": "cardano_node_metrics_peers_connectedPeers_int{hostname=\"relay-ru\"}",
+          "expr": "cardano_node_metrics_peerSelection_hot{hostname=\"relay-ru\"}",
           "format": "time_series",
           "instant": true,
           "interval": "",
@@ -1738,7 +1747,6 @@
         "y": 10
       },
       "id": 70,
-      "links": [],
       "maxDataPoints": 100,
       "options": {
         "colorMode": "background",
@@ -1757,11 +1765,12 @@
           "fields": "",
           "values": false
         },
+        "showPercentChange": false,
         "text": {},
         "textMode": "auto",
         "wideLayout": true
       },
-      "pluginVersion": "10.2.2",
+      "pluginVersion": "11.0.0",
       "targets": [
         {
           "datasource": {
@@ -1813,7 +1822,6 @@
         "y": 10
       },
       "id": 163,
-      "links": [],
       "options": {
         "colorMode": "background",
         "graphMode": "none",
@@ -1826,11 +1834,12 @@
           "fields": "",
           "values": false
         },
+        "showPercentChange": false,
         "text": {},
         "textMode": "auto",
         "wideLayout": true
       },
-      "pluginVersion": "10.2.2",
+      "pluginVersion": "11.0.0",
       "targets": [
         {
           "datasource": {
@@ -1879,7 +1888,6 @@
         "y": 10
       },
       "id": 164,
-      "links": [],
       "options": {
         "colorMode": "background",
         "graphMode": "none",
@@ -1892,11 +1900,12 @@
           "fields": "",
           "values": false
         },
+        "showPercentChange": false,
         "text": {},
         "textMode": "auto",
         "wideLayout": true
       },
-      "pluginVersion": "10.2.2",
+      "pluginVersion": "11.0.0",
       "targets": [
         {
           "datasource": {
@@ -1956,7 +1965,6 @@
       },
       "hideTimeOverride": true,
       "id": 89,
-      "links": [],
       "maxDataPoints": 100,
       "options": {
         "colorMode": "background",
@@ -1975,11 +1983,12 @@
           "fields": "",
           "values": false
         },
+        "showPercentChange": false,
         "text": {},
         "textMode": "auto",
         "wideLayout": true
       },
-      "pluginVersion": "10.2.2",
+      "pluginVersion": "11.0.0",
       "targets": [
         {
           "datasource": {
@@ -2047,7 +2056,8 @@
       "interval": "",
       "options": {
         "displayMode": "lcd",
-        "minVizHeight": 10,
+        "maxVizHeight": 25,
+        "minVizHeight": 0,
         "minVizWidth": 0,
         "namePlacement": "auto",
         "orientation": "horizontal",
@@ -2059,10 +2069,11 @@
           "values": false
         },
         "showUnfilled": true,
+        "sizing": "manual",
         "text": {},
         "valueMode": "color"
       },
-      "pluginVersion": "10.2.2",
+      "pluginVersion": "11.0.0",
       "targets": [
         {
           "datasource": {
@@ -2166,7 +2177,6 @@
         "y": 13
       },
       "id": 171,
-      "links": [],
       "maxDataPoints": 100,
       "options": {
         "colorMode": "background",
@@ -2180,11 +2190,12 @@
           "fields": "",
           "values": false
         },
+        "showPercentChange": false,
         "text": {},
         "textMode": "auto",
         "wideLayout": true
       },
-      "pluginVersion": "10.2.2",
+      "pluginVersion": "11.0.0",
       "targets": [
         {
           "datasource": {
@@ -2193,7 +2204,7 @@
           },
           "editorMode": "code",
           "exemplar": true,
-          "expr": "cardano_node_metrics_peers_connectedPeers_int{hostname=\"relay-eu\"}",
+          "expr": "cardano_node_metrics_peerSelection_hot{hostname=\"relay-eu\"}",
           "format": "time_series",
           "instant": true,
           "interval": "",
@@ -2245,7 +2256,6 @@
         "y": 13
       },
       "id": 172,
-      "links": [],
       "maxDataPoints": 100,
       "options": {
         "colorMode": "background",
@@ -2264,11 +2274,12 @@
           "fields": "",
           "values": false
         },
+        "showPercentChange": false,
         "text": {},
         "textMode": "auto",
         "wideLayout": true
       },
-      "pluginVersion": "10.2.2",
+      "pluginVersion": "11.0.0",
       "targets": [
         {
           "datasource": {
@@ -2320,7 +2331,6 @@
         "y": 13
       },
       "id": 173,
-      "links": [],
       "options": {
         "colorMode": "background",
         "graphMode": "none",
@@ -2333,11 +2343,12 @@
           "fields": "",
           "values": false
         },
+        "showPercentChange": false,
         "text": {},
         "textMode": "auto",
         "wideLayout": true
       },
-      "pluginVersion": "10.2.2",
+      "pluginVersion": "11.0.0",
       "targets": [
         {
           "datasource": {
@@ -2386,7 +2397,6 @@
         "y": 13
       },
       "id": 174,
-      "links": [],
       "options": {
         "colorMode": "background",
         "graphMode": "none",
@@ -2399,11 +2409,12 @@
           "fields": "",
           "values": false
         },
+        "showPercentChange": false,
         "text": {},
         "textMode": "auto",
         "wideLayout": true
       },
-      "pluginVersion": "10.2.2",
+      "pluginVersion": "11.0.0",
       "targets": [
         {
           "datasource": {
@@ -2463,7 +2474,6 @@
       },
       "hideTimeOverride": true,
       "id": 175,
-      "links": [],
       "maxDataPoints": 100,
       "options": {
         "colorMode": "background",
@@ -2482,11 +2492,12 @@
           "fields": "",
           "values": false
         },
+        "showPercentChange": false,
         "text": {},
         "textMode": "auto",
         "wideLayout": true
       },
-      "pluginVersion": "10.2.2",
+      "pluginVersion": "11.0.0",
       "targets": [
         {
           "datasource": {
@@ -2533,6 +2544,7 @@
                 "mode": "palette-classic"
               },
               "custom": {
+                "axisBorderShow": false,
                 "axisCenteredZero": false,
                 "axisColorMode": "text",
                 "axisLabel": "Load",
@@ -2725,6 +2737,7 @@
                 "mode": "palette-classic"
               },
               "custom": {
+                "axisBorderShow": false,
                 "axisCenteredZero": false,
                 "axisColorMode": "text",
                 "axisLabel": "Load",
@@ -2917,6 +2930,7 @@
                 "mode": "palette-classic"
               },
               "custom": {
+                "axisBorderShow": false,
                 "axisCenteredZero": false,
                 "axisColorMode": "text",
                 "axisLabel": "Load",
@@ -3149,6 +3163,7 @@
                 "mode": "palette-classic"
               },
               "custom": {
+                "axisBorderShow": false,
                 "axisCenteredZero": false,
                 "axisColorMode": "text",
                 "axisLabel": "",
@@ -3466,6 +3481,7 @@
                 "mode": "palette-classic"
               },
               "custom": {
+                "axisBorderShow": false,
                 "axisCenteredZero": false,
                 "axisColorMode": "text",
                 "axisLabel": "",
@@ -3783,6 +3799,7 @@
                 "mode": "palette-classic"
               },
               "custom": {
+                "axisBorderShow": false,
                 "axisCenteredZero": false,
                 "axisColorMode": "text",
                 "axisLabel": "",
@@ -4102,6 +4119,7 @@
                 "mode": "fixed"
               },
               "custom": {
+                "axisBorderShow": false,
                 "axisCenteredZero": false,
                 "axisColorMode": "text",
                 "axisLabel": "",
@@ -4257,6 +4275,7 @@
                 "mode": "fixed"
               },
               "custom": {
+                "axisBorderShow": false,
                 "axisCenteredZero": false,
                 "axisColorMode": "text",
                 "axisLabel": "",
@@ -4412,6 +4431,7 @@
                 "mode": "fixed"
               },
               "custom": {
+                "axisBorderShow": false,
                 "axisCenteredZero": false,
                 "axisColorMode": "text",
                 "axisLabel": "",
@@ -4557,7 +4577,7 @@
             "alertThreshold": true
           },
           "percentage": false,
-          "pluginVersion": "10.1.1",
+          "pluginVersion": "10.2.2",
           "pointradius": 2,
           "points": false,
           "renderer": "flot",
@@ -4623,6 +4643,7 @@
                 "mode": "palette-classic"
               },
               "custom": {
+                "axisBorderShow": false,
                 "axisCenteredZero": false,
                 "axisColorMode": "text",
                 "axisLabel": "",
@@ -4725,6 +4746,7 @@
                 "mode": "palette-classic"
               },
               "custom": {
+                "axisBorderShow": false,
                 "axisCenteredZero": false,
                 "axisColorMode": "text",
                 "axisLabel": "",
@@ -4827,6 +4849,7 @@
                 "mode": "palette-classic"
               },
               "custom": {
+                "axisBorderShow": false,
                 "axisCenteredZero": false,
                 "axisColorMode": "text",
                 "axisLabel": "transmit（-）/receive（+）",
@@ -4952,6 +4975,7 @@
                 "mode": "palette-classic"
               },
               "custom": {
+                "axisBorderShow": false,
                 "axisCenteredZero": false,
                 "axisColorMode": "text",
                 "axisLabel": "transmit（-）/receive（+）",
@@ -5077,6 +5101,7 @@
                 "mode": "palette-classic"
               },
               "custom": {
+                "axisBorderShow": false,
                 "axisCenteredZero": false,
                 "axisColorMode": "text",
                 "axisLabel": "transmit（-）/receive（+）",
@@ -5241,6 +5266,7 @@
                 "mode": "palette-classic"
               },
               "custom": {
+                "axisBorderShow": false,
                 "axisCenteredZero": false,
                 "axisColorMode": "text",
                 "axisLabel": "",
@@ -5395,6 +5421,7 @@
                 "mode": "palette-classic"
               },
               "custom": {
+                "axisBorderShow": false,
                 "axisCenteredZero": false,
                 "axisColorMode": "text",
                 "axisLabel": "bytes",
@@ -5549,6 +5576,7 @@
                 "mode": "palette-classic"
               },
               "custom": {
+                "axisBorderShow": false,
                 "axisCenteredZero": false,
                 "axisColorMode": "text",
                 "axisLabel": "",
@@ -5666,6 +5694,7 @@
                 "mode": "palette-classic"
               },
               "custom": {
+                "axisBorderShow": false,
                 "axisCenteredZero": false,
                 "axisColorMode": "text",
                 "axisLabel": "Bytes read (-) / write (+)",
@@ -5788,6 +5817,7 @@
                 "mode": "palette-classic"
               },
               "custom": {
+                "axisBorderShow": false,
                 "axisCenteredZero": false,
                 "axisColorMode": "text",
                 "axisLabel": "Bytes read (-) / write (+)",
@@ -5910,6 +5940,7 @@
                 "mode": "palette-classic"
               },
               "custom": {
+                "axisBorderShow": false,
                 "axisCenteredZero": false,
                 "axisColorMode": "text",
                 "axisLabel": "Bytes read (-) / write (+)",
@@ -6034,6 +6065,7 @@
                 "mode": "palette-classic"
               },
               "custom": {
+                "axisBorderShow": false,
                 "axisCenteredZero": false,
                 "axisColorMode": "text",
                 "axisLabel": "",
@@ -6134,6 +6166,7 @@
                 "mode": "palette-classic"
               },
               "custom": {
+                "axisBorderShow": false,
                 "axisCenteredZero": false,
                 "axisColorMode": "text",
                 "axisLabel": "",
@@ -6236,6 +6269,7 @@
                 "mode": "palette-classic"
               },
               "custom": {
+                "axisBorderShow": false,
                 "axisCenteredZero": false,
                 "axisColorMode": "text",
                 "axisLabel": "",
@@ -6365,6 +6399,7 @@
                 "mode": "palette-classic"
               },
               "custom": {
+                "axisBorderShow": false,
                 "axisCenteredZero": false,
                 "axisColorMode": "text",
                 "axisLabel": "",
@@ -6418,7 +6453,7 @@
             "h": 9,
             "w": 8,
             "x": 0,
-            "y": 22
+            "y": 18
           },
           "id": 54,
           "links": [],
@@ -6447,7 +6482,7 @@
               },
               "editorMode": "code",
               "exemplar": true,
-              "expr": "cardano_node_metrics_peers_connectedPeers_int{hostname=\"producer\"}",
+              "expr": "cardano_node_metrics_peerSelection_hot{hostname=\"producer\"}",
               "instant": false,
               "interval": "",
               "legendFormat": "{{name}}",
@@ -6469,6 +6504,7 @@
                 "mode": "palette-classic"
               },
               "custom": {
+                "axisBorderShow": false,
                 "axisCenteredZero": false,
                 "axisColorMode": "text",
                 "axisLabel": "",
@@ -6522,7 +6558,7 @@
             "h": 9,
             "w": 8,
             "x": 8,
-            "y": 22
+            "y": 18
           },
           "id": 114,
           "links": [],
@@ -6551,7 +6587,7 @@
               },
               "editorMode": "code",
               "exemplar": true,
-              "expr": "cardano_node_metrics_peers_connectedPeers_int{hostname=\"relay-ru\"}",
+              "expr": "cardano_node_metrics_peerSelection_hot{hostname=\"relay-ru\"}",
               "interval": "",
               "legendFormat": "{{name}}",
               "range": true,
@@ -6573,6 +6609,7 @@
                 "mode": "palette-classic"
               },
               "custom": {
+                "axisBorderShow": false,
                 "axisCenteredZero": false,
                 "axisColorMode": "text",
                 "axisLabel": "",
@@ -6626,7 +6663,7 @@
             "h": 9,
             "w": 8,
             "x": 16,
-            "y": 22
+            "y": 18
           },
           "id": 182,
           "links": [],
@@ -6655,7 +6692,7 @@
               },
               "editorMode": "code",
               "exemplar": true,
-              "expr": "cardano_node_metrics_peers_connectedPeers_int{hostname=\"relay-eu\"}",
+              "expr": "cardano_node_metrics_peerSelection_hot{hostname=\"relay-eu\"}",
               "interval": "",
               "legendFormat": "{{name}}",
               "range": true,
@@ -6677,6 +6714,7 @@
                 "mode": "palette-classic"
               },
               "custom": {
+                "axisBorderShow": false,
                 "axisCenteredZero": false,
                 "axisColorMode": "text",
                 "axisLabel": "",
@@ -6730,7 +6768,7 @@
             "h": 9,
             "w": 8,
             "x": 0,
-            "y": 31
+            "y": 27
           },
           "id": 59,
           "options": {
@@ -6779,6 +6817,7 @@
                 "mode": "palette-classic"
               },
               "custom": {
+                "axisBorderShow": false,
                 "axisCenteredZero": false,
                 "axisColorMode": "text",
                 "axisLabel": "",
@@ -6832,7 +6871,7 @@
             "h": 9,
             "w": 8,
             "x": 8,
-            "y": 31
+            "y": 27
           },
           "id": 67,
           "options": {
@@ -6882,6 +6921,7 @@
                 "mode": "palette-classic"
               },
               "custom": {
+                "axisBorderShow": false,
                 "axisCenteredZero": false,
                 "axisColorMode": "text",
                 "axisLabel": "",
@@ -6935,7 +6975,7 @@
             "h": 9,
             "w": 8,
             "x": 16,
-            "y": 31
+            "y": 27
           },
           "id": 183,
           "options": {
@@ -6985,6 +7025,7 @@
                 "mode": "palette-classic"
               },
               "custom": {
+                "axisBorderShow": false,
                 "axisCenteredZero": false,
                 "axisColorMode": "text",
                 "axisLabel": "",
@@ -6998,6 +7039,7 @@
                   "tooltip": false,
                   "viz": false
                 },
+                "insertNulls": false,
                 "lineInterpolation": "linear",
                 "lineWidth": 1,
                 "pointSize": 5,
@@ -7035,7 +7077,7 @@
             "h": 9,
             "w": 8,
             "x": 0,
-            "y": 40
+            "y": 36
           },
           "id": 161,
           "options": {
@@ -7086,6 +7128,7 @@
                 "mode": "palette-classic"
               },
               "custom": {
+                "axisBorderShow": false,
                 "axisCenteredZero": false,
                 "axisColorMode": "text",
                 "axisLabel": "",
@@ -7099,6 +7142,7 @@
                   "tooltip": false,
                   "viz": false
                 },
+                "insertNulls": false,
                 "lineInterpolation": "linear",
                 "lineWidth": 1,
                 "pointSize": 5,
@@ -7136,7 +7180,7 @@
             "h": 9,
             "w": 8,
             "x": 8,
-            "y": 40
+            "y": 36
           },
           "id": 162,
           "options": {
@@ -7187,6 +7231,7 @@
                 "mode": "palette-classic"
               },
               "custom": {
+                "axisBorderShow": false,
                 "axisCenteredZero": false,
                 "axisColorMode": "text",
                 "axisLabel": "",
@@ -7200,6 +7245,7 @@
                   "tooltip": false,
                   "viz": false
                 },
+                "insertNulls": false,
                 "lineInterpolation": "linear",
                 "lineWidth": 1,
                 "pointSize": 5,
@@ -7237,7 +7283,7 @@
             "h": 9,
             "w": 8,
             "x": 16,
-            "y": 40
+            "y": 36
           },
           "id": 184,
           "options": {
@@ -7288,6 +7334,7 @@
                 "mode": "palette-classic"
               },
               "custom": {
+                "axisBorderShow": false,
                 "axisCenteredZero": false,
                 "axisColorMode": "text",
                 "axisLabel": "Seconds",
@@ -7301,6 +7348,7 @@
                   "tooltip": false,
                   "viz": false
                 },
+                "insertNulls": false,
                 "lineInterpolation": "linear",
                 "lineWidth": 1,
                 "pointSize": 5,
@@ -7412,7 +7460,7 @@
             "h": 9,
             "w": 8,
             "x": 0,
-            "y": 49
+            "y": 45
           },
           "id": 47,
           "links": [],
@@ -7493,6 +7541,7 @@
                 "mode": "palette-classic"
               },
               "custom": {
+                "axisBorderShow": false,
                 "axisCenteredZero": false,
                 "axisColorMode": "text",
                 "axisLabel": "Seconds",
@@ -7506,6 +7555,7 @@
                   "tooltip": false,
                   "viz": false
                 },
+                "insertNulls": false,
                 "lineInterpolation": "linear",
                 "lineWidth": 1,
                 "pointSize": 5,
@@ -7617,7 +7667,7 @@
             "h": 9,
             "w": 8,
             "x": 8,
-            "y": 49
+            "y": 45
           },
           "id": 94,
           "links": [],
@@ -7701,6 +7751,7 @@
                 "mode": "palette-classic"
               },
               "custom": {
+                "axisBorderShow": false,
                 "axisCenteredZero": false,
                 "axisColorMode": "text",
                 "axisLabel": "Seconds",
@@ -7714,6 +7765,7 @@
                   "tooltip": false,
                   "viz": false
                 },
+                "insertNulls": false,
                 "lineInterpolation": "linear",
                 "lineWidth": 1,
                 "pointSize": 5,
@@ -7825,7 +7877,7 @@
             "h": 9,
             "w": 8,
             "x": 16,
-            "y": 49
+            "y": 45
           },
           "id": 185,
           "links": [],
@@ -7909,6 +7961,7 @@
                 "mode": "palette-classic"
               },
               "custom": {
+                "axisBorderShow": false,
                 "axisCenteredZero": false,
                 "axisColorMode": "text",
                 "axisLabel": "",
@@ -7922,6 +7975,7 @@
                   "tooltip": false,
                   "viz": false
                 },
+                "insertNulls": false,
                 "lineInterpolation": "linear",
                 "lineWidth": 1,
                 "pointSize": 5,
@@ -7960,7 +8014,7 @@
             "h": 9,
             "w": 8,
             "x": 0,
-            "y": 58
+            "y": 54
           },
           "id": 37,
           "options": {
@@ -8005,6 +8059,7 @@
                 "mode": "palette-classic"
               },
               "custom": {
+                "axisBorderShow": false,
                 "axisCenteredZero": false,
                 "axisColorMode": "text",
                 "axisLabel": "",
@@ -8018,6 +8073,7 @@
                   "tooltip": false,
                   "viz": false
                 },
+                "insertNulls": false,
                 "lineInterpolation": "linear",
                 "lineWidth": 1,
                 "pointSize": 5,
@@ -8056,7 +8112,7 @@
             "h": 9,
             "w": 8,
             "x": 8,
-            "y": 58
+            "y": 54
           },
           "id": 116,
           "options": {
@@ -8102,6 +8158,7 @@
                 "mode": "palette-classic"
               },
               "custom": {
+                "axisBorderShow": false,
                 "axisCenteredZero": false,
                 "axisColorMode": "text",
                 "axisLabel": "",
@@ -8115,6 +8172,7 @@
                   "tooltip": false,
                   "viz": false
                 },
+                "insertNulls": false,
                 "lineInterpolation": "linear",
                 "lineWidth": 1,
                 "pointSize": 5,
@@ -8153,7 +8211,7 @@
             "h": 9,
             "w": 8,
             "x": 16,
-            "y": 58
+            "y": 54
           },
           "id": 186,
           "options": {
@@ -8198,6 +8256,7 @@
                 "mode": "palette-classic"
               },
               "custom": {
+                "axisBorderShow": false,
                 "axisCenteredZero": false,
                 "axisColorMode": "text",
                 "axisLabel": "",
@@ -8211,6 +8270,7 @@
                   "tooltip": false,
                   "viz": false
                 },
+                "insertNulls": false,
                 "lineInterpolation": "linear",
                 "lineWidth": 1,
                 "pointSize": 5,
@@ -8250,7 +8310,7 @@
             "h": 9,
             "w": 8,
             "x": 0,
-            "y": 67
+            "y": 63
           },
           "id": 28,
           "options": {
@@ -8300,6 +8360,7 @@
                 "mode": "palette-classic"
               },
               "custom": {
+                "axisBorderShow": false,
                 "axisCenteredZero": false,
                 "axisColorMode": "text",
                 "axisLabel": "",
@@ -8313,6 +8374,7 @@
                   "tooltip": false,
                   "viz": false
                 },
+                "insertNulls": false,
                 "lineInterpolation": "linear",
                 "lineWidth": 1,
                 "pointSize": 5,
@@ -8352,7 +8414,7 @@
             "h": 9,
             "w": 8,
             "x": 8,
-            "y": 67
+            "y": 63
           },
           "id": 119,
           "options": {
@@ -8402,6 +8464,7 @@
                 "mode": "palette-classic"
               },
               "custom": {
+                "axisBorderShow": false,
                 "axisCenteredZero": false,
                 "axisColorMode": "text",
                 "axisLabel": "",
@@ -8415,6 +8478,7 @@
                   "tooltip": false,
                   "viz": false
                 },
+                "insertNulls": false,
                 "lineInterpolation": "linear",
                 "lineWidth": 1,
                 "pointSize": 5,
@@ -8454,7 +8518,7 @@
             "h": 9,
             "w": 8,
             "x": 16,
-            "y": 67
+            "y": 63
           },
           "id": 187,
           "options": {
@@ -8505,6 +8569,7 @@
                 "mode": "palette-classic"
               },
               "custom": {
+                "axisBorderShow": false,
                 "axisCenteredZero": false,
                 "axisColorMode": "text",
                 "axisLabel": "",
@@ -8518,6 +8583,7 @@
                   "tooltip": false,
                   "viz": false
                 },
+                "insertNulls": false,
                 "lineInterpolation": "linear",
                 "lineWidth": 1,
                 "pointSize": 5,
@@ -8557,7 +8623,7 @@
             "h": 9,
             "w": 8,
             "x": 0,
-            "y": 76
+            "y": 72
           },
           "id": 63,
           "interval": "",
@@ -8609,6 +8675,7 @@
                 "mode": "palette-classic"
               },
               "custom": {
+                "axisBorderShow": false,
                 "axisCenteredZero": false,
                 "axisColorMode": "text",
                 "axisLabel": "",
@@ -8622,6 +8689,7 @@
                   "tooltip": false,
                   "viz": false
                 },
+                "insertNulls": false,
                 "lineInterpolation": "linear",
                 "lineWidth": 1,
                 "pointSize": 5,
@@ -8661,7 +8729,7 @@
             "h": 9,
             "w": 8,
             "x": 8,
-            "y": 76
+            "y": 72
           },
           "id": 93,
           "interval": "",
@@ -8713,6 +8781,7 @@
                 "mode": "palette-classic"
               },
               "custom": {
+                "axisBorderShow": false,
                 "axisCenteredZero": false,
                 "axisColorMode": "text",
                 "axisLabel": "",
@@ -8726,6 +8795,7 @@
                   "tooltip": false,
                   "viz": false
                 },
+                "insertNulls": false,
                 "lineInterpolation": "linear",
                 "lineWidth": 1,
                 "pointSize": 5,
@@ -8765,7 +8835,7 @@
             "h": 9,
             "w": 8,
             "x": 16,
-            "y": 76
+            "y": 72
           },
           "id": 188,
           "interval": "",
@@ -8817,6 +8887,7 @@
                 "mode": "palette-classic"
               },
               "custom": {
+                "axisBorderShow": false,
                 "axisCenteredZero": false,
                 "axisColorMode": "text",
                 "axisLabel": "",
@@ -8830,6 +8901,7 @@
                   "tooltip": false,
                   "viz": false
                 },
+                "insertNulls": false,
                 "lineInterpolation": "linear",
                 "lineWidth": 1,
                 "pointSize": 5,
@@ -8868,7 +8940,7 @@
             "h": 9,
             "w": 8,
             "x": 0,
-            "y": 85
+            "y": 81
           },
           "id": 32,
           "options": {
@@ -8913,6 +8985,7 @@
                 "mode": "palette-classic"
               },
               "custom": {
+                "axisBorderShow": false,
                 "axisCenteredZero": false,
                 "axisColorMode": "text",
                 "axisLabel": "",
@@ -8926,6 +8999,7 @@
                   "tooltip": false,
                   "viz": false
                 },
+                "insertNulls": false,
                 "lineInterpolation": "linear",
                 "lineWidth": 1,
                 "pointSize": 5,
@@ -8964,7 +9038,7 @@
             "h": 9,
             "w": 8,
             "x": 8,
-            "y": 85
+            "y": 81
           },
           "id": 121,
           "options": {
@@ -9010,6 +9084,7 @@
                 "mode": "palette-classic"
               },
               "custom": {
+                "axisBorderShow": false,
                 "axisCenteredZero": false,
                 "axisColorMode": "text",
                 "axisLabel": "",
@@ -9023,6 +9098,7 @@
                   "tooltip": false,
                   "viz": false
                 },
+                "insertNulls": false,
                 "lineInterpolation": "linear",
                 "lineWidth": 1,
                 "pointSize": 5,
@@ -9061,7 +9137,7 @@
             "h": 9,
             "w": 8,
             "x": 16,
-            "y": 85
+            "y": 81
           },
           "id": 189,
           "options": {
@@ -9106,6 +9182,7 @@
                 "mode": "palette-classic"
               },
               "custom": {
+                "axisBorderShow": false,
                 "axisCenteredZero": false,
                 "axisColorMode": "text",
                 "axisLabel": "",
@@ -9119,6 +9196,7 @@
                   "tooltip": false,
                   "viz": false
                 },
+                "insertNulls": false,
                 "lineInterpolation": "linear",
                 "lineWidth": 1,
                 "pointSize": 5,
@@ -9157,7 +9235,7 @@
             "h": 9,
             "w": 8,
             "x": 0,
-            "y": 94
+            "y": 90
           },
           "id": 18,
           "links": [],
@@ -9209,6 +9287,7 @@
                 "mode": "palette-classic"
               },
               "custom": {
+                "axisBorderShow": false,
                 "axisCenteredZero": false,
                 "axisColorMode": "text",
                 "axisLabel": "",
@@ -9222,6 +9301,7 @@
                   "tooltip": false,
                   "viz": false
                 },
+                "insertNulls": false,
                 "lineInterpolation": "linear",
                 "lineWidth": 1,
                 "pointSize": 5,
@@ -9260,7 +9340,7 @@
             "h": 9,
             "w": 8,
             "x": 8,
-            "y": 94
+            "y": 90
           },
           "id": 155,
           "links": [],
@@ -9312,6 +9392,7 @@
                 "mode": "palette-classic"
               },
               "custom": {
+                "axisBorderShow": false,
                 "axisCenteredZero": false,
                 "axisColorMode": "text",
                 "axisLabel": "",
@@ -9325,6 +9406,7 @@
                   "tooltip": false,
                   "viz": false
                 },
+                "insertNulls": false,
                 "lineInterpolation": "linear",
                 "lineWidth": 1,
                 "pointSize": 5,
@@ -9363,7 +9445,7 @@
             "h": 9,
             "w": 8,
             "x": 16,
-            "y": 94
+            "y": 90
           },
           "id": 190,
           "links": [],
@@ -9420,7 +9502,7 @@
   ],
   "refresh": "30s",
   "revision": 1,
-  "schemaVersion": 38,
+  "schemaVersion": 39,
   "tags": [],
   "templating": {
     "list": []
@@ -9429,6 +9511,7 @@
     "from": "now-1h",
     "to": "now"
   },
+  "timeRangeUpdatedDuringEditOrView": false,
   "timepicker": {
     "refresh_intervals": [
       "10s",
@@ -9456,6 +9539,6 @@
   "timezone": "",
   "title": "Cardano Staking Monitoring",
   "uid": "Jjgz-MNnk",
-  "version": 28,
+  "version": 33,
   "weekStart": ""
 }

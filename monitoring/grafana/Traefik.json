@@ -15,7 +15,7 @@
       "type": "grafana",
       "id": "grafana",
       "name": "Grafana",
-      "version": "10.2.2"
+      "version": "11.0.0"
     },
     {
       "type": "panel",
@@ -177,7 +177,7 @@
           }
         ]
       },
-      "pluginVersion": "10.2.2",
+      "pluginVersion": "11.0.0",
       "targets": [
         {
           "datasource": {
@@ -351,7 +351,7 @@
           }
         ]
       },
-      "pluginVersion": "10.2.2",
+      "pluginVersion": "11.0.0",
       "targets": [
         {
           "datasource": {
@@ -517,7 +517,9 @@
           "value": "Total requests"
         },
         "tooltip": {
-          "show": true,
+          "maxHeight": 600,
+          "mode": "single",
+          "showColorScale": false,
           "yHistogram": false
         },
         "yAxis": {
@@ -526,7 +528,7 @@
           "unit": "short"
         }
       },
-      "pluginVersion": "10.2.2",
+      "pluginVersion": "11.0.0",
       "targets": [
         {
           "datasource": {
@@ -1272,6 +1274,7 @@
           "sortDesc": true
         },
         "tooltip": {
+          "maxHeight": 600,
           "mode": "single",
           "sort": "desc"
         }
@@ -1356,7 +1359,6 @@
         "y": 21
       },
       "id": 3,
-      "links": [],
       "options": {
         "legend": {
           "calcs": [
@@ -1371,6 +1373,7 @@
           "sortDesc": true
         },
         "tooltip": {
+          "maxHeight": 600,
           "mode": "single",
           "sort": "none"
         }
@@ -1538,8 +1541,7 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
-                "value": null
+                "color": "green"
               }
             ]
           },
@@ -1554,7 +1556,6 @@
         "y": 30
       },
       "id": 4,
-      "links": [],
       "maxDataPoints": 100,
       "options": {
         "legend": {
@@ -1641,8 +1642,7 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
-                "value": null
+                "color": "green"
               }
             ]
           },
@@ -1740,8 +1740,7 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
-                "value": null
+                "color": "green"
               }
             ]
           },
@@ -1791,7 +1790,7 @@
     }
   ],
   "refresh": "5m",
-  "schemaVersion": 38,
+  "schemaVersion": 39,
   "tags": [
     "prometheus",
     "traefik"
@@ -1882,6 +1881,7 @@
     "from": "now-1h",
     "to": "now"
   },
+  "timeRangeUpdatedDuringEditOrView": false,
   "timepicker": {
     "refresh_intervals": [
       "5s",

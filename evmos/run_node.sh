@@ -105,18 +105,21 @@ state_sync() {
 
 create_account() {
   echo -e "\n\e[32m### Create account ###\e[0m"
-  expect -c "
-      #!/usr/bin/expect -f
+  if [[ "$KEYRING" == "test" ]]; then
+    $BIN keys add $WALLET --keyring-backend $KEYRING --home $CONFIG_PATH
+  else
+    expect -c "
       set timeout -1
-
-      spawn $BIN keys add $WALLET ${KEYRING:+--keyring-backend $KEYRING} --home $CONFIG_PATH
       exp_internal 0
+
+      spawn $BIN keys add $WALLET --keyring-backend $KEYRING --home $CONFIG_PATH
       expect \"Enter keyring passphrase*:\"
-      send   \"${WALLET_PASS:?Wallet password is not set. You need to set a value for the WALLET_PASS variable.}\n\"
+      send \"$WALLET_PASS\n\"
       expect \"Re-enter keyring passphrase*:\"
-      send   \"$WALLET_PASS\n\"
+      send \"$WALLET_PASS\n\"
       expect eof
-  "
+    "
+  fi
 }
 
 start_node() {
@@ -142,7 +145,7 @@ then
   init_node
 fi
 
-if [[ -n $WALLET && $(find $CONFIG_PATH -maxdepth 2 -type f -name $WALLET.info | wc -l) -eq 0 ]]
+if [[ -n $WALLET && ! -d $CONFIG_PATH/config || $(find $CONFIG_PATH -maxdepth 2 -type f -name $WALLET.info | wc -l) -eq 0 ]]
 then
   create_account
 fi

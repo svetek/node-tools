@@ -138,12 +138,12 @@ set_variable() {
   fi
 }
 
-if [[ ! -d "$CONFIG_PATH" ]] || [[ ! -d "$CONFIG_PATH/config" || $(ls -la $CONFIG_PATH/config | grep -cie .*key.json) -eq 0 ]]
+if [[ ! -d "$CONFIG_PATH" || ! -d "$CONFIG_PATH/config" || $(ls -la $CONFIG_PATH/config | grep -cie .*key.json) -eq 0 ]]
 then
   init_node
 fi
 
-if [[ -n $WALLET && ! -d $CONFIG_PATH/config || $(find $CONFIG_PATH -maxdepth 2 -type f -name $WALLET.info | wc -l) -eq 0 ]]
+if [[ -n $WALLET && $(find $CONFIG_PATH -maxdepth 2 -type f -name $WALLET.info 2>/dev/null | wc -l) -eq 0 ]]
 then
   create_account
 fi

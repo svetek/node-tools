@@ -1,0 +1,42 @@
+---
+name: celestia
+
+services:
+  node:
+    image: svetekllc/celestia:v1.9.0
+    container_name: celestia-mainnet-node
+    labels:
+      network: "mainnet"
+    env_file:
+      - node.env
+    volumes:
+      - data:/root/.celestia-app
+    ports:
+      - "26656:26656"
+      - "26660:26660"
+    networks:
+      - celestia
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "100m"
+        max-file: "1"
+    deploy:
+      resources:
+        limits:
+          cpus: "4"
+          memory: "8gb"
+    restart: unless-stopped
+
+volumes:
+  data:
+    name: celestia-mainnet-node
+    driver: local
+    driver_opts:
+      type: none
+      o: bind
+      device: /opt/celestia-mainnet-node
+
+networks:
+  celestia:
+    name: celestia

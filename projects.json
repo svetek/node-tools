@@ -3,7 +3,7 @@
         "artela-node",
         "axelar-node",
         "canto-node",
-        "cascadia-node",
+        "celestia-node",
         "cosmos-node",
         "evmos-node",
         "haqq-node",
@@ -41,11 +41,11 @@
             "binary": "cantod"
         },
         {
-            "node_name": "cascadia-node",
-            "project_name": "cascadia",
-            "git_repository": "CascadiaFoundation/cascadia",
+            "node_name": "celestia-node",
+            "project_name": "celestia",
+            "git_repository": "celestiaorg/celestia-app",
             "node_type": "node",
-            "binary": "cascadiad"
+            "binary": "celestia-appd"
         },
         {
             "node_name": "cosmos-node",

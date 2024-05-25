@@ -4,6 +4,7 @@
         "axelar-node",
         "canto-node",
         "celestia-app",
+        "celestia-node",
         "cosmos-node",
         "evmos-node",
         "haqq-node",
@@ -46,6 +47,13 @@
             "git_repository": "celestiaorg/celestia-app",
             "node_type": "app",
             "binary": "celestia-appd"
+        },
+        {
+            "node_name": "celestia-node",
+            "project_name": "celestia",
+            "git_repository": "celestiaorg/celestia-node",
+            "node_type": "node",
+            "binary": "celestia"
         },
         {
             "node_name": "cosmos-node",

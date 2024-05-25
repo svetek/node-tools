@@ -4,15 +4,17 @@ FROM debian:bookworm-slim
 ARG BIN
 ARG GIT_REPOSITORY
 ARG IMAGE_TAG
+ARG NODE_TYPE
 
 ENV BIN=$BIN
+ENV NODE_TYPE=$NODE_TYPE
 
 RUN apt-get update && apt-get upgrade -y \
     && apt-get install -y tzdata ca-certificates curl wget jq expect \
     && apt-get -y purge && apt-get -y clean \
     && apt-get -y autoremove && rm -rf /var/lib/apt/lists/*
 
-RUN wget -qO - "${GIT_REPOSITORY}/releases/download/${IMAGE_TAG}/celestia-app_Linux_x86_64.tar.gz" | tar xz -C /usr/bin --wildcards --no-anchored "*$BIN*"
+RUN wget -qO - "${GIT_REPOSITORY}/releases/download/${IMAGE_TAG}/celestia-${NODE_TYPE}_Linux_x86_64.tar.gz" | tar xz -C /usr/bin --wildcards --no-anchored "*$BIN*"
 
 COPY ./run_node.sh .
 

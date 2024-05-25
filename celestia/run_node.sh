@@ -6,6 +6,7 @@
 [[ -z $NODE_GRPC_PORT ]] && NODE_GRPC_PORT="9090"
 [[ -z $NODE_P2P_PORT ]] && NODE_P2P_PORT="26656"
 [[ -z $NODE_RPC_PORT ]] && NODE_RPC_PORT="26657"
+[[ -z $NODE_JRPC_PORT ]] && NODE_JRPC_PORT="26658"
 
 case ${NODE_TYPE,,} in
   "app")
@@ -90,15 +91,25 @@ init_node() {
       ;;
 
     "node")
-      $BIN light init \
-        ${NODE_HOSTNAME:+--core.ip $NODE_HOSTNAME} \
-        ${CORE_RPC_PORT:+--core.rpc.port $CORE_RPC_PORT} \
-        ${CORE_GRPC_PORT:+--core.grpc.port $CORE_GRPC_PORT} \
-        ${WALLET:+--keyring.accname $WALLET} \
-        ${KEYRING_BACKEND:+--keyring.backend $KEYRING_BACKEND} \
-        ${METRICS_ENDPOINT:+--metrics} \
-        ${METRICS_ENDPOINT:+--metrics.endpoint $METRICS_ENDPOINT} \
-        ${CHAIN_ID:+--p2p.network $CHAIN_ID}
+      args=(
+        "${CORE_IP:+--core.ip $CORE_IP}" \
+        "${CORE_RPC_PORT:+--core.rpc.port $CORE_RPC_PORT}" \
+        "${CORE_GRPC_PORT:+--core.grpc.port $CORE_GRPC_PORT}" \
+        "${WALLET:+--keyring.accname $WALLET}" \
+        "${KEYRING_BACKEND:+--keyring.backend $KEYRING_BACKEND}" \
+        "${METRICS_ENDPOINT:+--metrics}" \
+        "${METRICS_ENDPOINT:+--metrics.endpoint $METRICS_ENDPOINT}" \
+        "${CHAIN_ID:+--p2p.network $CHAIN_ID}" \
+        "--rpc.addr 0.0.0.0" \
+        "${NODE_JRPC_PORT:+--rpc.port $NODE_JRPC_PORT}" \
+        "${RPC_SKIP_AUTH:+--rpc.skip-auth}" \
+        )
+      if [ "$KEYRING" = "test" ]; then
+        $BIN light init ${args[@]}
+      else
+        echo -e "$WALLET_PASS\n$WALLET_PASS" | $BIN light init ${args[@]}
+      fi
+
       ;;
   esac
 }
@@ -150,7 +161,7 @@ start_node() {
       $BIN start ${CONFIG_PATH:+--home $CONFIG_PATH} ${LOG_LEVEL:+--log_level $LOG_LEVEL}
       ;;
     "node")
-      $BIN light start ${CONFIG_PATH:+--node.config $CONFIG_PATH} ${LOG_LEVEL:+--log.level $LOG_LEVEL}
+      $BIN light start ${CONFIG_PATH:+--node.config $CONFIG_PATH/config.toml} ${LOG_LEVEL:+--log.level $LOG_LEVEL}
       ;;
   esac
 }

@@ -99,12 +99,14 @@ jobs:
                 -H "Authorization: Bearer ${{ secrets.WORKFLOW_GITHUB_TOKEN }}" \
                 https://api.github.com/repos/svetek/node-tools/actions/workflows/build_image_with_node_type.yaml/dispatches \
                 -d "{\"ref\":\"main\",\"inputs\":{\"project_name\": \"$project_name\",\"tag\": \"$tag\", \"git_repository\": \"$git_repository\", \"bin\": \"$bin\", \"node_type\": \"$node_type\"}}"
+                ;;
               *)
                 curl -L -X POST \
                 -H "Accept: application/vnd.github+json" \
                 -H "Authorization: Bearer ${{ secrets.WORKFLOW_GITHUB_TOKEN }}" \
                 https://api.github.com/repos/svetek/node-tools/actions/workflows/build_image_without_node_type.yaml/dispatches \
                 -d "{\"ref\":\"main\",\"inputs\":{\"project_name\": \"$project_name\",\"tag\": \"$tag\", \"git_repository\": \"$git_repository\", \"bin\": \"$bin\"}}"
+                ;;
             esac
           else
             echo "Versions are the same. Skipping build."

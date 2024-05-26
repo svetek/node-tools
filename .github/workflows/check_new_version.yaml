@@ -31,46 +31,50 @@ jobs:
       - name: 📝 Get last version from the DockerHub registry
         id: get_last_version_from_dockerhub
         run: |
-          if [[ "${{ matrix.project_name }}" == "lava" ]]
-          then
-            last_version_info=$(curl -s -S "https://registry.hub.docker.com/v2/repositories/svetekllc/${{ matrix.project_name }}/tags/" | jq -r -c '.results[] | select(.name | test("${{ matrix.node_type }}"; "i")) | {name, tag_last_pushed}' | head -n1)
-            version=$(echo $last_version_info | jq -r .name)
-            version_date=$(echo $last_version_info | jq -r .tag_last_pushed)
-            echo "Last version is $version"
-            echo "d_last_version=$version" >> "$GITHUB_OUTPUT"
-            echo "Last version date is $version_date"
-            echo "d_last_version_date=$version_date" >> "$GITHUB_OUTPUT"
-          else
-            last_version_info=$(curl -s -S "https://registry.hub.docker.com/v2/repositories/svetekllc/${{ matrix.project_name }}/tags/" | jq -r -c '.results[] | {name, tag_last_pushed}' | head -n1)
-            version=$(echo $last_version_info | jq -r .name)
-            version_date=$(echo $last_version_info | jq -r .tag_last_pushed)
-            echo "Last version is $version"
-            echo "d_last_version=$version" >> "$GITHUB_OUTPUT"
-            echo "Last version date is $version_date"
-            echo "d_last_version_date=$version_date" >> "$GITHUB_OUTPUT"
-          fi
+          case "${{ matrix.project_name }}" in
+            "lava"|"celestia")
+              last_version_info=$(curl -s -S "https://registry.hub.docker.com/v2/repositories/svetekllc/${{ matrix.project_name }}/tags/" | jq -r -c '.results[] | select(.name | test("${{ matrix.node_type }}"; "i")) | {name, tag_last_pushed}' | head -n1)
+              version=$(echo $last_version_info | jq -r .name)
+              version_date=$(echo $last_version_info | jq -r .tag_last_pushed)
+              echo "Last version is $version"
+              echo "d_last_version=$version" >> "$GITHUB_OUTPUT"
+              echo "Last version date is $version_date"
+              echo "d_last_version_date=$version_date" >> "$GITHUB_OUTPUT"
+              ;;
+            *)
+              last_version_info=$(curl -s -S "https://registry.hub.docker.com/v2/repositories/svetekllc/${{ matrix.project_name }}/tags/" | jq -r -c '.results[] | {name, tag_last_pushed}' | head -n1)
+              version=$(echo $last_version_info | jq -r .name)
+              version_date=$(echo $last_version_info | jq -r .tag_last_pushed)
+              echo "Last version is $version"
+              echo "d_last_version=$version" >> "$GITHUB_OUTPUT"
+              echo "Last version date is $version_date"
+              echo "d_last_version_date=$version_date" >> "$GITHUB_OUTPUT"
+              ;;
+          esac
 
       - name: 📝 Get last version from the GitHub repository
         id: get_last_version_from_github
         run: |
-          if [[ "${{ matrix.project_name }}" == "lava" ]]
-          then
-            last_version_info=$(curl -s -S "${{ matrix.git_api_url}}/${{ matrix.git_repository}}/releases" | jq -r -c --arg BINARY "${{ matrix.binary }}" 'first(.[] | select(.assets[]?.name | test("^" + $BINARY + "-.*$")) | {tag_name, published_at})')
-            version=$(echo $last_version_info | jq -r .tag_name)
-            version_date=$(echo $last_version_info | jq -r .published_at)
-            echo "Last version is $version"
-            echo "g_last_version=$version" >> "$GITHUB_OUTPUT"
-            echo "Last version date is $version_date"
-            echo "g_last_version_date=$version_date" >> "$GITHUB_OUTPUT"
-          else
-            last_version_info=$(curl -s -S "${{ matrix.git_api_url}}/${{ matrix.git_repository}}/releases" | jq -r -c '.[] | {tag_name, published_at}' | head -n1)
-            version=$(echo $last_version_info | jq -r .tag_name)
-            version_date=$(echo $last_version_info | jq -r .published_at)
-            echo "Last version is $version"
-            echo "g_last_version=$version" >> "$GITHUB_OUTPUT"
-            echo "Last version date is $version_date"
-            echo "g_last_version_date=$version_date" >> "$GITHUB_OUTPUT"
-          fi
+          case "${{ matrix.project_name }}" in
+            "lava")
+              last_version_info=$(curl -s -S "${{ matrix.git_api_url}}/${{ matrix.git_repository}}/releases" | jq -r -c --arg BINARY "${{ matrix.binary }}" 'first(.[] | select(.assets[]?.name | test("^" + $BINARY + "-.*$")) | {tag_name, published_at})')
+              version=$(echo $last_version_info | jq -r .tag_name)
+              version_date=$(echo $last_version_info | jq -r .published_at)
+              echo "Last version is $version"
+              echo "g_last_version=$version" >> "$GITHUB_OUTPUT"
+              echo "Last version date is $version_date"
+              echo "g_last_version_date=$version_date" >> "$GITHUB_OUTPUT"
+              ;;
+            *)
+              last_version_info=$(curl -s -S "${{ matrix.git_api_url}}/${{ matrix.git_repository}}/releases" | jq -r -c '.[] | {tag_name, published_at}' | head -n1)
+              version=$(echo $last_version_info | jq -r .tag_name)
+              version_date=$(echo $last_version_info | jq -r .published_at)
+              echo "Last version is $version"
+              echo "g_last_version=$version" >> "$GITHUB_OUTPUT"
+              echo "Last version date is $version_date"
+              echo "g_last_version_date=$version_date" >> "$GITHUB_OUTPUT"
+              ;;
+          esac
 
       - name: 🆚 Compare versions
         id: compare_versions
@@ -88,20 +92,20 @@ jobs:
           if [[ "${version_from_docker//-$node_type}" != "$version_from_git" ]] || [[ "${version_date_from_docker}" -lt "${version_date_from_git}" ]]
           then
             echo "Versions are different. Running build."
-            if [[ "${project_name}" == "lava" ]]
-            then
-              curl -L -X POST \
-              -H "Accept: application/vnd.github+json" \
-              -H "Authorization: Bearer ${{ secrets.WORKFLOW_GITHUB_TOKEN }}" \
-              https://api.github.com/repos/svetek/node-tools/actions/workflows/lava_build_image.yaml/dispatches \
-              -d "{\"ref\":\"main\",\"inputs\":{\"project_name\": \"$project_name\",\"tag\": \"$tag\", \"git_repository\": \"$git_repository\", \"bin\": \"$bin\", \"node_type\": \"$node_type\"}}"
-            else
-              curl -L -X POST \
-              -H "Accept: application/vnd.github+json" \
-              -H "Authorization: Bearer ${{ secrets.WORKFLOW_GITHUB_TOKEN }}" \
-              https://api.github.com/repos/svetek/node-tools/actions/workflows/build_docker_image.yaml/dispatches \
-              -d "{\"ref\":\"main\",\"inputs\":{\"project_name\": \"$project_name\",\"tag\": \"$tag\", \"git_repository\": \"$git_repository\", \"bin\": \"$bin\"}}"
-            fi
+            case "${{ project_name }}" in
+              "lava"|"celestia")
+                curl -L -X POST \
+                -H "Accept: application/vnd.github+json" \
+                -H "Authorization: Bearer ${{ secrets.WORKFLOW_GITHUB_TOKEN }}" \
+                https://api.github.com/repos/svetek/node-tools/actions/workflows/build_image_with_node_type.yaml/dispatches \
+                -d "{\"ref\":\"main\",\"inputs\":{\"project_name\": \"$project_name\",\"tag\": \"$tag\", \"git_repository\": \"$git_repository\", \"bin\": \"$bin\", \"node_type\": \"$node_type\"}}"
+              *)
+                curl -L -X POST \
+                -H "Accept: application/vnd.github+json" \
+                -H "Authorization: Bearer ${{ secrets.WORKFLOW_GITHUB_TOKEN }}" \
+                https://api.github.com/repos/svetek/node-tools/actions/workflows/build_image_without_node_type.yaml/dispatches \
+                -d "{\"ref\":\"main\",\"inputs\":{\"project_name\": \"$project_name\",\"tag\": \"$tag\", \"git_repository\": \"$git_repository\", \"bin\": \"$bin\"}}"
+            esac
           else
             echo "Versions are the same. Skipping build."
           fi

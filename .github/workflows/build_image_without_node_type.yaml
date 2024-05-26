@@ -1,5 +1,5 @@
-name: Lava
-run-name: ${{ inputs.project_name }} ${{ inputs.node_type }} build image ${{ inputs.tag }}
+name: Build an image without a node type
+run-name: ${{ inputs.project_name }} node build image ${{ inputs.tag }}
 on: 
   workflow_dispatch:
     inputs:
@@ -11,15 +11,6 @@ on:
         description: 'Git repository'
         required: true
         type: string
-      node_type:
-        description: 'Node type'
-        required: true
-        default: 'node'
-        type: choice
-        options:
-          - cache
-          - node
-          - provider
       project_name:
         description: 'Image name'
         type: string
@@ -45,7 +36,6 @@ jobs:
             IMAGE_TAG=${{ inputs.tag }}
             GIT_REPOSITORY=${{ inputs.git_repository }}
             BIN=${{ inputs.bin }}
-            NODE_TYPE=${{ inputs.node_type }}
           context: "{{ defaultContext }}:${{ inputs.project_name }}"
-          tags: "svetekllc/${{ inputs.project_name }}:${{ inputs.tag }}-${{ inputs.node_type }}"
+          tags: "svetekllc/${{ inputs.project_name }}:${{ inputs.tag }}"
           push: true

@@ -92,7 +92,7 @@ jobs:
           if [[ "${version_from_docker//-$node_type}" != "$version_from_git" ]] || [[ "${version_date_from_docker}" -lt "${version_date_from_git}" ]]
           then
             echo "Versions are different. Running build."
-            case "${{ project_name }}" in
+            case "${project_name}" in
               "lava"|"celestia")
                 curl -L -X POST \
                 -H "Accept: application/vnd.github+json" \

@@ -20,10 +20,7 @@ init_node() {
   $BIN config node http://localhost:$NODE_RPC_PORT --home $CONFIG_PATH
 
   # Download addrbook and genesis files
-  if [[ -n $ADDRBOOK_URL ]]
-  then
-    wget -O $CONFIG_PATH/config/addrbook.json $ADDRBOOK_URL
-  fi
+  [[ -n $ADDRBOOK_URL ]] && wget -O $CONFIG_PATH/config/addrbook.json $ADDRBOOK_URL
 
   wget -O $CONFIG_PATH/config/genesis.json ${GENESIS_URL:-https://raw.githubusercontent.com/lavanet/lava-config/main/testnet-2/genesis_json/genesis.json}
 
@@ -113,7 +110,7 @@ create_account() {
       spawn $BIN keys add $WALLET --keyring-backend $KEYRING_BACKEND --home $CONFIG_PATH
       expect \"Enter keyring passphrase*:\"
       send \"$WALLET_PASS\n\"
-      expect \"Re-enter keyring passphrase\"
+      expect \"Re-enter keyring passphrase*:\"
       send \"$WALLET_PASS\n\"
       expect eof
     "

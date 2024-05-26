@@ -5,14 +5,14 @@ services:
   node:
     image: svetekllc/evmos:v18.0.0
     labels:
-      network: mainnet
+      network: "mainnet"
     env_file:
       - node.env
     volumes:
-      - /opt/nvme3n1/evmos:/root/.evmosd
+      - /opt/evmos:/root/.evmosd
     ports:
-      - '26656:26656'
-      - '26660:26660'
+      - "26656:26656"
+      - "26660:26660"
     networks:
       - evmos
     logging:
@@ -23,8 +23,8 @@ services:
     deploy:
       resources:
         limits:
-          cpus: '16'
-          memory: '32gb'
+          cpus: "16"
+          memory: "32gb"
     restart: unless-stopped
 
 networks:

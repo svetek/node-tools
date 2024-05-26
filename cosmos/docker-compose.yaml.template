@@ -5,14 +5,14 @@ services:
   node:
     image: svetekllc/cosmos:v15.2.0
     labels:
-      network: mainnet
+      network: "mainnet"
     env_file:
       - node.env
     volumes:
-      - /opt/nvme2n1/cosmos:/root/.gaia
+      - /opt/cosmos:/root/.gaia
     ports:
-      - '26656:12656'
-      - '26660:12660'
+      - "26656:26656"
+      - "26660:26660"
     networks:
       - cosmos
     logging:
@@ -23,8 +23,8 @@ services:
     deploy:
       resources:
         limits:
-          cpus: '4'
-          memory: '24gb'
+          cpus: "4"
+          memory: "24gb"
     restart: unless-stopped
 
 networks:

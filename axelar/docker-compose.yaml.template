@@ -5,14 +5,14 @@ services:
   node:
     image: svetekllc/axelar:v0.35.5
     labels:
-      network: mainnet
+      network: "mainnet"
     env_file:
       - node.env
     volumes:
-      - /opt/nvme2n1/axelar:/root/.axelar
+      - /opt/axelar:/root/.axelar
     ports:
-      - '26656:26656'
-      - '26660:26660'
+      - "26656:26656"
+      - "26660:26660"
     networks:
       - axelar
     logging:
@@ -23,8 +23,8 @@ services:
     deploy:
       resources:
         limits:
-          cpus: '8'
-          memory: '32gb'
+          cpus: "8"
+          memory: "32gb"
     restart: unless-stopped
 
 networks:

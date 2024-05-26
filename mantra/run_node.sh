@@ -3,8 +3,10 @@
 [[ -z $CHAIN_ID ]] && CHAIN_ID="mantra-hongbai-1"
 [[ -z $CONFIG_PATH ]] && CONFIG_PATH="/root/.mantrachain"
 [[ -z $PUBLIC_RPC ]] && PUBLIC_RPC="https://public-rpc-testnet2.lavanet.xyz:443/rpc/"
-[[ -z $NODE_RPC_PORT ]] && NODE_RPC_PORT="26657"
+[[ -z $NODE_API_PORT ]] && NODE_API_PORT="1317"
+[[ -z $NODE_GRPC_PORT ]] && NODE_GRPC_PORT="9090"
 [[ -z $NODE_P2P_PORT ]] && NODE_P2P_PORT="26656"
+[[ -z $NODE_RPC_PORT ]] && NODE_RPC_PORT="26657"
 
 init_node() {
   echo -e "\e[32m### Initialization node ###\e[0m\n"
@@ -18,10 +20,7 @@ init_node() {
   $BIN config node http://localhost:$NODE_RPC_PORT --home $CONFIG_PATH
 
   # Download addrbook and genesis files
-  if [[ -n $ADDRBOOK_URL ]]
-  then
-    wget -O $CONFIG_PATH/config/addrbook.json $ADDRBOOK_URL
-  fi
+  [[ -n $ADDRBOOK_URL ]] && wget -O $CONFIG_PATH/config/addrbook.json $ADDRBOOK_URL
 
   wget -O $CONFIG_PATH/config/genesis.json ${GENESIS_URL:-https://raw.githubusercontent.com/MANTRA-Finance/public/main/mantrachain-hongbai/genesis.json}
 
@@ -30,7 +29,7 @@ init_node() {
     $CONFIG_PATH/config/client.toml
 
   sed -i \
-    -e "s|^db_backend =.*|db_backend=\"${DB_BACKEND:-goleveldb}\"|" \
+    -e "s|^db_backend =.*|db_backend = \"${DB_BACKEND:-goleveldb}\"|" \
     $CONFIG_PATH/config/config.toml
 
   # Set seeds/peers
@@ -56,7 +55,7 @@ init_node() {
     -e 's|^skip_timeout_commit =.*|skip_timeout_commit = false|' \
     $CONFIG_PATH/config/config.toml
 
-  # Set ports P2P and Prometheus
+  # Set ports
   sed -i \
     -e "s|^laddr = \"tcp://127.0.0.1:26657\"|laddr = \"tcp://0.0.0.0:$NODE_RPC_PORT\"|" \
     -e "s|^laddr = \"tcp://0.0.0.0:26656\"|laddr = \"tcp://0.0.0.0:$NODE_P2P_PORT\"|" \
@@ -64,6 +63,11 @@ init_node() {
     -e "s|^prometheus =.*|prometheus = true|" \
     -e "s|^prometheus_listen_addr =.*|prometheus_listen_addr = \":${METRICS_PORT:-26660}\"|" \
     $CONFIG_PATH/config/config.toml
+
+  sed -i \
+    -e "s|^address = \"tcp://localhost:1317\"|address = \"tcp://0.0.0.0:$NODE_API_PORT\"|" \
+    -e "s|^address = \"localhost:9090\"|address = \"0.0.0.0:$NODE_GRPC_PORT\"|" \
+    $CONFIG_PATH/config/app.toml
 
   # Config pruning, snapshots and min price for GAZ
   sed -i \
@@ -96,18 +100,21 @@ state_sync() {
 
 create_account() {
   echo -e "\n\e[32m### Create account ###\e[0m"
-  expect -c "
-      #!/usr/bin/expect -f
+  if [[ "$KEYRING_BACKEND" == "test" ]]; then
+    $BIN keys add $WALLET --keyring-backend $KEYRING_BACKEND --home $CONFIG_PATH
+  else
+    expect -c "
       set timeout -1
-
-      spawn $BIN keys add $WALLET ${KEYRING_BACKEND:+--keyring-backend $KEYRING_BACKEND} --home $CONFIG_PATH
       exp_internal 0
+
+      spawn $BIN keys add $WALLET --keyring-backend $KEYRING_BACKEND --home $CONFIG_PATH
       expect \"Enter keyring passphrase*:\"
-      send   \"${WALLET_PASS:?Wallet password is not set. You need to set a value for the WALLET_PASS variable.}\n\"
+      send \"$WALLET_PASS\n\"
       expect \"Re-enter keyring passphrase*:\"
-      send   \"$WALLET_PASS\n\"
+      send \"$WALLET_PASS\n\"
       expect eof
-  "
+    "
+  fi
 }
 
 start_node() {
@@ -133,7 +140,7 @@ then
   init_node
 fi
 
-if [[ -n $WALLET && $(find $CONFIG_PATH -maxdepth 2 -type f -name $WALLET.info | wc -l) -eq 0 ]]
+if [[ -n $WALLET && $(find $CONFIG_PATH -maxdepth 2 -type f -name $WALLET.info 2>/dev/null| wc -l) -eq 0 ]]
 then
   create_account
 fi

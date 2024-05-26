@@ -5,14 +5,14 @@ services:
   node:
     image: svetekllc/canto:v7.0.0-node
     labels:
-      network: mainnet
+      network: "mainnet"
     env_file:
       - node.env
     volumes:
-      - /opt/nvme3n1/canto:/root/.cantod
+      - /opt/canto:/root/.cantod
     ports:
-      - '26656:26656'
-      - '26660:26660'
+      - "26656:26656"
+      - "26660:26660"
     networks:
       - canto
     logging:
@@ -23,8 +23,8 @@ services:
     deploy:
       resources:
         limits:
-          cpus: '4'
-          memory: '16gb'
+          cpus: "4"
+          memory: "16gb"
     restart: unless-stopped
 
 networks:

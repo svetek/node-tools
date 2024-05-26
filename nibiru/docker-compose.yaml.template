@@ -5,14 +5,14 @@ services:
   node:
     image: svetekllc/nibiru:v1.2.0
     labels:
-      network: mainnet
+      network: "mainnet"
     env_file:
       - node.env
     volumes:
-      - /opt/nvme2n1/nibiru:/root/.nibid
+      - /opt/nibiru:/root/.nibid
     ports:
-      - '26656:26656'
-      - '26660:26660'
+      - "26656:26656"
+      - "26660:26660"
     networks:
       - nibiru
     logging:
@@ -23,15 +23,15 @@ services:
     deploy:
       resources:
         limits:
-          cpus: '8'
-          memory: '24gb'
+          cpus: "8"
+          memory: "24gb"
     restart: unless-stopped
 
   pricefeeder:
     image: pricefeeder
     build: ./pricefeeder
     labels:
-      network: mainnet
+      network: "mainnet"
     env_file:
       - pricefeeder.env
     networks:
@@ -44,8 +44,8 @@ services:
     deploy:
       resources:
         limits:
-          cpus: '1'
-          memory: '2gb'
+          cpus: "1"
+          memory: "2gb"
     restart: unless-stopped
 
 networks:

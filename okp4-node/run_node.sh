@@ -13,10 +13,10 @@ PERSISTENT_PEERS="994c9398e55947b2f1f45f33fbdbffcbcad655db@okp4-testnet.nodejump
 init_node() {
     # Set keyring-backend and chain-id configuration
     okp4d config chain-id $CHAINID --home $CONFIG_PATH
-    okp4d config keyring-backend $KEYRING --home $CONFIG_PATH
+    okp4d config keyring-backend $KEYRING_BACKEND --home $CONFIG_PATH
 
     # if $KEY exists it should be deleted
-    okp4d keys add $KEY --keyring-backend $KEYRING --home $CONFIG_PATH
+    okp4d keys add $KEY --keyring-backend $KEYRING_BACKEND --home $CONFIG_PATH
 
     # Set moniker and chain-id for OKP4 (Moniker can be anything, chain-id must be an integer)
     okp4d init $MONIKER --chain-id $CHAINID --home $CONFIG_PATH
@@ -38,13 +38,13 @@ init_node() {
     sed -i -e "s/^minimum-gas-prices *=.*/minimum-gas-prices = \"$MINIMUM_GAS_PRICES\"/" $CONFIG_PATH/config/app.toml
 
     # Sign genesis transaction
-    okp4d gentx $KEY 1200000uknow --keyring-backend $KEYRING --chain-id $CHAINID --home $CONFIG_PATH &> /dev/null
+    okp4d gentx $KEY 1200000uknow --keyring-backend $KEYRING_BACKEND --chain-id $CHAINID --home $CONFIG_PATH &> /dev/null
 
     # Download genesis file
     wget -O $CONFIG_PATH/config/genesis.json https://raw.githubusercontent.com/okp4/networks/main/chains/nemeton/genesis.json
 
     #Allocate genesis accounts (cosmos formatted addresses)
-    okp4d add-genesis-account $KEY 1200000uknow --keyring-backend $KEYRING --home $CONFIG_PATH &> /dev/null
+    okp4d add-genesis-account $KEY 1200000uknow --keyring-backend $KEYRING_BACKEND --home $CONFIG_PATH &> /dev/null
 
     # Run this to ensure everything worked and that the genesis file is setup correctly
     okp4d validate-genesis --home $CONFIG_PATH

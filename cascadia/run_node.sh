@@ -8,7 +8,7 @@ init_node() {
 
   # Set keyring-backend and chain-id configuration
   $BIN config chain-id $CHAIN_ID --home $CONFIG_PATH
-  $BIN config keyring-backend $KEYRING --home $CONFIG_PATH
+  $BIN config keyring-backend $KEYRING_BACKEND --home $CONFIG_PATH
   $BIN config node http://localhost:$RPC_PORT --home $CONFIG_PATH
 
   # Download addrbook and genesis files
@@ -92,7 +92,7 @@ create_account() {
       #!/usr/bin/expect -f
       set timeout -1
 
-      spawn $BIN keys add $WALLET --keyring-backend $KEYRING --home $CONFIG_PATH
+      spawn $BIN keys add $WALLET --keyring-backend $KEYRING_BACKEND --home $CONFIG_PATH
       exp_internal 0
       expect \"Enter keyring passphrase*:\"
       send   \"$WALLET_PASS\n\"
@@ -112,11 +112,11 @@ set_variable() {
   source ~/.bashrc
   if [[ ! $ACC_ADDRESS ]]
   then
-    echo 'export ACC_ADDRESS='$(echo $WALLET_PASS | $BIN keys show $WALLET --keyring-backend $KEYRING -a) >> $HOME/.bashrc
+    echo 'export ACC_ADDRESS='$(echo $WALLET_PASS | $BIN keys show $WALLET --keyring-backend $KEYRING_BACKEND -a) >> $HOME/.bashrc
   fi
   if [[ ! $VAL_ADDRESS ]]
   then
-    echo 'export VAL_ADDRESS='$(echo $WALLET_PASS | $BIN keys show $WALLET --keyring-backend $KEYRING --bech val -a) >> $HOME/.bashrc
+    echo 'export VAL_ADDRESS='$(echo $WALLET_PASS | $BIN keys show $WALLET --keyring-backend $KEYRING_BACKEND --bech val -a) >> $HOME/.bashrc
   fi
 }
 

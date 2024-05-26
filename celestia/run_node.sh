@@ -104,7 +104,7 @@ init_node() {
         "${NODE_JRPC_PORT:+--rpc.port $NODE_JRPC_PORT}" \
         "${RPC_SKIP_AUTH:+--rpc.skip-auth}" \
         )
-      if [ "$KEYRING" = "test" ]; then
+      if [ "$KEYRING_BACKEND" = "test" ]; then
         $BIN light init ${args[@]}
       else
         echo -e "$WALLET_PASS\n$WALLET_PASS" | $BIN light init ${args[@]}

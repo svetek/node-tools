@@ -8,7 +8,7 @@ services:
     - KEY=okp4_impulse
     - CHAINID=okp4-nemeton
     - MONIKER=Okp4Impulse
-    - KEYRING=test
+    - KEYRING_BACKEND=test
     - KEYALGO=eth_secp256k1
     - LOGLEVEL=info
     - CONFIG_PATH=/root/.okp4d

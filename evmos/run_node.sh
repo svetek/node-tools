@@ -142,7 +142,7 @@ then
   init_node
 fi
 
-if [[ -n $WALLET && $(find $CONFIG_PATH -maxdepth 2 -type f -name $WALLET.info 2>/dev/null| wc -l) -eq 0 ]]
+if [[ -n $WALLET && $(find $CONFIG_PATH -maxdepth 2 -type f -name $WALLET.info 2>/dev/null | wc -l) -eq 0 ]]
 then
   create_account
 fi

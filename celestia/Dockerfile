@@ -1,9 +1,19 @@
+# Builder Image
+FROM golang:1.22-bookworm AS builder
+
+ARG GIT_REPOSITORY
+ARG IMAGE_TAG
+
+WORKDIR /app
+
+RUN apt-get update && apt-get upgrade -y
+RUN git clone --depth 1 --branch $IMAGE_TAG $GIT_REPOSITORY . && make build
+
+
 # Node Image create
 FROM debian:bookworm-slim
 
 ARG BIN
-ARG GIT_REPOSITORY
-ARG IMAGE_TAG
 ARG NODE_TYPE
 
 ENV BIN=$BIN
@@ -14,8 +24,7 @@ RUN apt-get update && apt-get upgrade -y \
     && apt-get -y purge && apt-get -y clean \
     && apt-get -y autoremove && rm -rf /var/lib/apt/lists/*
 
-RUN wget -qO - "${GIT_REPOSITORY}/releases/download/${IMAGE_TAG}/celestia-${NODE_TYPE}_Linux_x86_64.tar.gz" | tar xz -C /usr/bin --wildcards --no-anchored "*$BIN*"
-
+COPY --from=builder /app/build/${BIN} /usr/bin/${BIN}
 COPY ./run_node.sh .
 
 RUN chmod +x ./run_node.sh

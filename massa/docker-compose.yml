@@ -2,7 +2,7 @@
 version: '3.9'
 services:
   node:
-    image: svetekllc/massa:MAIN.2.2
+    image: svetekllc/massa:MAIN.2.3
     labels:
       network: mainnet
     env_file:

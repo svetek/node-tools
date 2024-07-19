@@ -23,6 +23,7 @@ RUN apt-get update && apt-get upgrade -y \
     && apt-get -y autoremove && rm -rf /var/lib/apt/lists/*
 
 COPY --from=builder /app/build/$BIN /usr/bin/$BIN
+COPY ./lib/libaspect_wasm_instrument.so /usr/lib/
 COPY ./run_node.sh .
 
 RUN chmod +x ./run_node.sh

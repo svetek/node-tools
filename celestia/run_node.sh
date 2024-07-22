@@ -92,17 +92,18 @@ init_node() {
 
     "node")
       args=(
+        "${CHAIN_ID:+--p2p.network $CHAIN_ID}" \
+        "${CONFIG_PATH:+--node.store $CONFIG_PATH}" \
         "${CORE_IP:+--core.ip $CORE_IP}" \
         "${CORE_RPC_PORT:+--core.rpc.port $CORE_RPC_PORT}" \
         "${CORE_GRPC_PORT:+--core.grpc.port $CORE_GRPC_PORT}" \
-        "${WALLET:+--keyring.accname $WALLET}" \
         "${KEYRING_BACKEND:+--keyring.backend $KEYRING_BACKEND}" \
         "${METRICS_ENDPOINT:+--metrics}" \
         "${METRICS_ENDPOINT:+--metrics.endpoint $METRICS_ENDPOINT}" \
-        "${CHAIN_ID:+--p2p.network $CHAIN_ID}" \
-        "--rpc.addr 0.0.0.0" \
         "${NODE_JRPC_PORT:+--rpc.port $NODE_JRPC_PORT}" \
         "${RPC_SKIP_AUTH:+--rpc.skip-auth}" \
+        "${WALLET:+--keyring.accname $WALLET}" \
+        "--rpc.addr 0.0.0.0" \
         )
       if [ "$KEYRING_BACKEND" = "test" ]; then
         $BIN light init ${args[@]}
@@ -161,7 +162,7 @@ start_node() {
       $BIN start ${CONFIG_PATH:+--home $CONFIG_PATH} ${LOG_LEVEL:+--log_level $LOG_LEVEL}
       ;;
     "node")
-      $BIN light start ${CONFIG_PATH:+--node.config $CONFIG_PATH/config.toml} ${LOG_LEVEL:+--log.level $LOG_LEVEL}
+      $BIN light start ${CONFIG_PATH:+--node.store $CONFIG_PATH} ${LOG_LEVEL:+--log.level $LOG_LEVEL}
       ;;
   esac
 }

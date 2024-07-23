@@ -162,7 +162,7 @@ start_node() {
       $BIN start ${CONFIG_PATH:+--home $CONFIG_PATH} ${LOG_LEVEL:+--log_level $LOG_LEVEL}
       ;;
     "node")
-      $BIN light start ${CONFIG_PATH:+--node.store $CONFIG_PATH} ${LOG_LEVEL:+--log.level $LOG_LEVEL}
+      $BIN light start ${CHAIN_ID:+--p2p.network $CHAIN_ID} ${CONFIG_PATH:+--node.store $CONFIG_PATH} ${LOG_LEVEL:+--log.level $LOG_LEVEL}
       ;;
   esac
 }

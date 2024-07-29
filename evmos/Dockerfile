@@ -1,5 +1,5 @@
 # Builder Image
-FROM golang:1.21-bookworm AS builder
+FROM golang:1.22-bookworm AS builder
 
 ARG GIT_REPOSITORY
 ARG IMAGE_TAG

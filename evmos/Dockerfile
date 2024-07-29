@@ -7,7 +7,7 @@ ARG IMAGE_TAG
 WORKDIR /app
 
 RUN apt-get update && apt-get upgrade -y
-RUN git clone --depth 1 --branch $IMAGE_TAG $GIT_REPOSITORY . && make build-pebbledb
+RUN git clone --depth 1 --branch $IMAGE_TAG $GIT_REPOSITORY . && make build COSMOS_BUILD_OPTIONS=pebbledb
 
 
 # Node Image create

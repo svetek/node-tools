@@ -1,9 +1,19 @@
+# Builder Image
+FROM golang:1.22-bookworm AS builder
+
+ARG GIT_REPOSITORY
+ARG IMAGE_TAG
+
+WORKDIR /app
+
+RUN apt-get update && apt-get upgrade -y
+RUN git clone --depth 1 --branch $IMAGE_TAG $GIT_REPOSITORY . && make build
+
+
 # Node Image create
 FROM debian:bookworm-slim
 
 ARG BIN
-ARG GIT_REPOSITORY
-ARG IMAGE_TAG
 
 ENV BIN=$BIN
 
@@ -13,9 +23,8 @@ RUN apt-get update && apt-get upgrade -y \
     && apt-get -y autoremove && rm -rf /var/lib/apt/lists/*
 
 RUN wget -P /usr/lib https://github.com/CosmWasm/wasmvm/releases/download/v1.3.1/libwasmvm.x86_64.so
-RUN wget -O /usr/bin/$BIN "${GIT_REPOSITORY}/releases/download/${IMAGE_TAG}/${BIN}-linux-amd64-${IMAGE_TAG}" \
-    && chmod +x /usr/bin/$BIN
 
+COPY --from=builder /app/bin/${BIN} /usr/bin/${BIN}
 COPY ./run_node.sh .
 
 RUN chmod +x ./run_node.sh

@@ -7,7 +7,7 @@ BIN="mantrachaind"
 BUILD_DATE="$(date -u +'%Y-%m-%d')"
 DIR="$( cd "$( dirname "$0" )" && pwd )"
 DOCKERFILE="$DIR/Dockerfile"
-GIT_REPOSITORY=https://github.com/mantra-finance
+GIT_REPOSITORY=https://github.com/MANTRA-Finance/public
 
 read -p "Enter image name: " -r IMAGE_NAME
 read -p "Enter release tag: " -r IMAGE_TAG

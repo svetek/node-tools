@@ -11,6 +11,7 @@
         "lava-node",
         "lava-cache",
         "lava-provider",
+        "mantra-node",
         "massa-node",
         "nibiru-node",
         "near-node"
@@ -96,6 +97,13 @@
             "git_repository": "lavanet/lava",
             "node_type": "provider",
             "binary": "lavap"
+        },
+        {
+            "node_name": "mantra-node",
+            "project_name": "mantra",
+            "git_repository": "mantra-finance/public",
+            "node_type": "node",
+            "binary": "mantrachaind"
         },
         {
             "node_name": "massa-node",

@@ -2,13 +2,14 @@
 version: '3.9'
 services:
   node:
-    image: eqlabs/pathfinder:v0.12.0
+    image: eqlabs/pathfinder:v0.14.2
     labels:
       network: mainnet
     env_file:
       - node.env
     ports:
-      - 19546:19546
+      - "19545:19545"
+      - "19546:19546"
     volumes:
       - /opt/nvme2n1/starknet/data:/usr/share/pathfinder/data
     logging:

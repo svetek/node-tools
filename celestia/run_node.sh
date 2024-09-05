@@ -102,7 +102,7 @@ init_node() {
         "${METRICS_ENDPOINT:+--metrics.endpoint $METRICS_ENDPOINT}" \
         "${NODE_JRPC_PORT:+--rpc.port $NODE_JRPC_PORT}" \
         "${RPC_SKIP_AUTH:+--rpc.skip-auth}" \
-        "${WALLET:+--keyring.accname $WALLET}" \
+        "${WALLET:+--keyring.keyname $WALLET}" \
         "--rpc.addr 0.0.0.0" \
         )
       if [ "$KEYRING_BACKEND" = "test" ]; then

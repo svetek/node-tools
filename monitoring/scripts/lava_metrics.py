@@ -35,8 +35,9 @@ class MetricsCollector:
         output = json.loads(self.run_command(f"docker exec {self.container} bash -c 'lavap query pairing account-info --from $WALLET -o json'"))
         for status in statuses:
             for item in output.get(status, []):
-                jail_end_time=datetime.fromtimestamp(int(item["jail_end_time"])).strftime("%Y-%m-%d %H:%M:%S") if int(item.get("jail_end_time", "0")) > 0 else 0
-                metrics.append(f'lava_provider_chain_status{{network="{self.network}", chainID="{item["chain"]}", status="{status}", jails="{item["jails"]}", jail_end_time="{jail_end_time}" {moniker_label}}} 1')
+                jail = 1 if int(item["jails"]) != 0 and int(item["jails"]) % 3 == 0 else 0
+                jail_end_time = datetime.fromtimestamp(int(item["jail_end_time"])).strftime("%Y-%m-%d %H:%M:%S") if int(item.get("jail_end_time", "0")) > 0 and jail == 1 else 0
+                metrics.append(f'lava_provider_chain_status{{network="{self.network}", chainID="{item["chain"]}", status="{status}", jail="{jail}", jail_end_time="{jail_end_time}" {moniker_label}}} 1')
         self.write_metrics_to_file(metrics, 'lava_provider_chain_status')
 
     def write_metrics_to_file(self, metrics, metric_name):

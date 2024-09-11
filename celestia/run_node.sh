@@ -159,7 +159,7 @@ start_node() {
   case ${NODE_TYPE,,} in
     "app")
       state_sync
-      $BIN start ${CONFIG_PATH:+--home $CONFIG_PATH} ${LOG_LEVEL:+--log_level $LOG_LEVEL}
+      $BIN start ${CONFIG_PATH:+--home $CONFIG_PATH} ${LOG_LEVEL:+--log_level $LOG_LEVEL} ${UPGRADE_HEIGHT:+--v2-upgrade-height $UPGRADE_HEIGHT}
       ;;
     "node")
       $BIN light start ${CHAIN_ID:+--p2p.network $CHAIN_ID} ${CONFIG_PATH:+--node.store $CONFIG_PATH} ${LOG_LEVEL:+--log.level $LOG_LEVEL}

@@ -1,9 +1,19 @@
+# Builder Image
+FROM golang:1.22-bookworm AS builder
+
+ARG GIT_REPOSITORY
+ARG IMAGE_TAG
+
+WORKDIR /app
+
+RUN apt-get update && apt-get upgrade -y
+RUN git clone --depth 1 --branch $IMAGE_TAG $GIT_REPOSITORY . && make build
+
+
 # Node Image create
 FROM debian:bookworm-slim
 
 ARG BIN
-ARG GIT_REPOSITORY
-ARG IMAGE_TAG
 
 ENV BIN=$BIN
 
@@ -12,9 +22,7 @@ RUN apt-get update && apt-get upgrade -y \
     && apt-get -y purge && apt-get -y clean \
     && apt-get -y autoremove && rm -rf /var/lib/apt/lists/*
 
-RUN wget -qO /usr/bin/$BIN "${GIT_REPOSITORY}/releases/download/${IMAGE_TAG}/${BIN}-${IMAGE_TAG}-linux-amd64" \
-    && chmod +x /usr/bin/$BIN
-
+COPY --from=builder /app/build/${BIN} /usr/bin/${BIN}
 COPY ./run_node.sh .
 
 RUN chmod +x ./run_node.sh

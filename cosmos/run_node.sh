@@ -15,20 +15,18 @@ init_node() {
   # Set moniker and chain-id for Lava (Moniker can be anything, chain-id must be an integer)
   $BIN init ${MONIKER:?Moniker is not set. You need to set up a value for the MONIKER variable.} --chain-id $CHAIN_ID --home $CONFIG_PATH
 
-  # Set keyring-backend and chain-id configuration
-  $BIN config chain-id $CHAIN_ID --home $CONFIG_PATH
-  $BIN config keyring-backend $KEYRING_BACKEND --home $CONFIG_PATH
-  $BIN config node http://localhost:$NODE_RPC_PORT --home $CONFIG_PATH
-
   # Download addrbook and genesis files
   [[ -n $ADDRBOOK_URL ]] && wget -O $CONFIG_PATH/config/addrbook.json $ADDRBOOK_URL
 
-  wget -O $CONFIG_PATH/config/genesis.json ${GENESIS_URL:-https://ss.cosmos.nodestake.top/genesis.json}
+  wget -O $CONFIG_PATH/config/genesis.json ${GENESIS_URL:-https://ss.cosmos.nodestake.org/genesis.json}
 
-  sed -i \
-    -e 's|^broadcast-mode =.*|broadcast-mode = "sync"|' \
-    $CONFIG_PATH/config/client.toml
+  # Set client
+  $BIN config set client chain-id "$CHAIN_ID" --home $CONFIG_PATH
+  $BIN config set client keyring-backend "$KEYRING_BACKEND" --home $CONFIG_PATH
+  $BIN config set client node "http://localhost:$NODE_RPC_PORT" --home $CONFIG_PATH
+  $BIN config set client broadcast-mode "sync" --home $CONFIG_PATH
 
+  # Set database backend
   sed -i \
     -e "s|^db_backend =.*|db_backend = \"${DB_BACKEND:-goleveldb}\"|" \
     $CONFIG_PATH/config/config.toml

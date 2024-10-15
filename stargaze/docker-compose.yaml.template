@@ -1,0 +1,32 @@
+---
+name: cosmos
+
+services:
+  node:
+    image: svetekllc/stargaze:v14.0.0
+    labels:
+      network: "mainnet"
+    env_file:
+      - node.env
+    volumes:
+      - /opt/stargaze:/root/.gaia
+    ports:
+      - "26656:26656"
+      - "26660:26660"
+    networks:
+      - stargaze
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "100m"
+        max-file: "1"
+    deploy:
+      resources:
+        limits:
+          cpus: "8"
+          memory: "16gb"
+    restart: unless-stopped
+
+networks:
+  cosmos:
+    name: cosmos

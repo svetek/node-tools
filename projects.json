@@ -14,7 +14,8 @@
         "mantra-node",
         "massa-node",
         "nibiru-node",
-        "near-node"
+        "near-node",
+        "stargaze-node"
     ],
     "include": [
         {
@@ -125,6 +126,13 @@
             "git_repository": "near/nearcore",
             "node_type": "node",
             "binary": "neard"
+        },
+        {
+            "node_name": "stargaze-node",
+            "project_name": "stargaze",
+            "git_repository": "public-awesome/stargaze",
+            "node_type": "node",
+            "binary": "starsd"
         }
     ]
 }

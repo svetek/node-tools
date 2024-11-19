@@ -14,19 +14,11 @@ init_node() {
   # Set moniker and chain-id for Lava (Moniker can be anything, chain-id must be an integer)
   $BIN init ${MONIKER:?Moniker is not set. You need to set up a value for the MONIKER variable.} --chain-id $CHAIN_ID --home $CONFIG_PATH
 
-  # Set keyring-backend and chain-id configuration
-  $BIN config chain-id $CHAIN_ID --home $CONFIG_PATH
-  $BIN config keyring-backend $KEYRING_BACKEND --home $CONFIG_PATH
-  $BIN config node http://localhost:$NODE_RPC_PORT --home $CONFIG_PATH
-
   # Download addrbook and genesis files
   [[ -n $ADDRBOOK_URL ]] && wget -O $CONFIG_PATH/config/addrbook.json $ADDRBOOK_URL
+  [[ -n $SEEDS_URL ]] && wget -O $CONFIG_PATH/config/seeds.toml $SEEDS_URL
 
   wget -O $CONFIG_PATH/config/genesis.json ${GENESIS_URL:-https://raw.githubusercontent.com/axelarnetwork/axelarate-community/main/resources/mainnet/genesis.json}
-
-  sed -i \
-    -e 's|^broadcast-mode =.*|broadcast-mode = "sync"|' \
-    $CONFIG_PATH/config/client.toml
 
   sed -i \
     -e "s|^db_backend =.*|db_backend = \"${DB_BACKEND:-goleveldb}\"|" \
@@ -51,7 +43,7 @@ init_node() {
     -e 's|^timeout_commit =.*|timeout_commit = "5s"|' \
     -e 's|^create_empty_blocks =.*|create_empty_blocks = true|' \
     -e 's|^create_empty_blocks_interval =.*|create_empty_blocks_interval = "0s"|' \
-    -e 's|^timeout_broadcast_tx_commit =.*|timeout_broadcast_tx_commit = "20s"|' \
+    -e 's|^timeout_broadcast_tx_commit =.*|timeout_broadcast_tx_commit = "10s"|' \
     -e 's|^skip_timeout_commit =.*|skip_timeout_commit = false|' \
     $CONFIG_PATH/config/config.toml
 

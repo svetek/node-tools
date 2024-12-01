@@ -20,7 +20,7 @@ ARG BIN
 ENV BIN=$BIN
 
 RUN apt-get update && apt-get upgrade -y \
-    && apt-get install -y tzdata ca-certificates curl wget jq expect \
+    && apt-get install -y tzdata ca-certificates curl wget jq expect procps \
     && apt-get -y purge && apt-get -y clean \
     && apt-get -y autoremove && rm -rf /var/lib/apt/lists/*
  

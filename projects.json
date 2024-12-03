@@ -15,7 +15,8 @@
         "massa-node",
         "nibiru-node",
         "near-node",
-        "stargaze-node"
+        "stargaze-node",
+        "filecoin-node"
     ],
     "include": [
         {

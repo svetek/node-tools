@@ -133,6 +133,13 @@
             "git_repository": "public-awesome/stargaze",
             "node_type": "node",
             "binary": "starsd"
+        },
+        {
+            "node_name": "filecoin-node",
+            "project_name": "filecoin",
+            "git_repository": "filecoin-project/lotus",
+            "node_type": "node",
+            "binary": "lotus"
         }
     ]
 }

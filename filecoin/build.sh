@@ -3,11 +3,11 @@ export DOCKER_BUILDKIT=1
 
 set -e
 
-BIN="axelard"
+BIN="lotus"
 BUILD_DATE="$(date -u +'%Y-%m-%d')"
 DIR="$( cd "$( dirname "$0" )" && pwd )"
 DOCKERFILE="$DIR/Dockerfile"
-GIT_REPOSITORY=https://github.com/axelarnetwork/axelar-core
+GIT_REPOSITORY=https://github.com/filecoin-project/lotus
 
 read -p "Enter image name: " -r IMAGE_NAME
 read -p "Enter release tag: " -r IMAGE_TAG

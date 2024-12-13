@@ -35,8 +35,8 @@ RUN wget -P /usr/lib https://github.com/CosmWasm/wasmvm/releases/download/v1.3.1
 #    && mv lotus* ${BIN} \
 #    && mv ${BIN}/${BIN} /bin/
 
-COPY --from=builder /app/bin/${BIN} /usr/bin/${BIN}
-COPY --from=builder /app/bin/${BIN}* /usr/bin/
+COPY --from=builder /app/${BIN} /usr/bin/${BIN}
+COPY --from=builder /app/${BIN}* /usr/bin/
 RUN chmod +x /bin/${BIN}
 #COPY ./run_node.sh .
 

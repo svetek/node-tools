@@ -46,6 +46,7 @@ docker build -f "$DOCKERFILE" "$DIR" \
      --build-arg IMAGE_TAG="$IMAGE_TAG" \
      --build-arg GIT_REPOSITORY="$GIT_REPOSITORY" \
      --build-arg BIN="$BIN" \
+     --platform linux/arm64 \
      --tag $IMAGE
 
 if [[ "$PUSH_FLAG" == "yes" ]]

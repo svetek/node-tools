@@ -43,4 +43,4 @@ RUN chmod +x /bin/${BIN}
 #RUN chmod +x ./run_node.sh
 
 #ENTRYPOINT [ "./run_node.sh" ]
-ENTRYPOINT [ "/bin/${BIN}" ]
+ENTRYPOINT [ "/bin/lotus" ]

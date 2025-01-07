@@ -22,7 +22,7 @@ RUN apt-get update && apt-get upgrade -y \
     && apt-get -y purge && apt-get -y clean \
     && apt-get -y autoremove && rm -rf /var/lib/apt/lists/*
 
-RUN wget -P /usr/lib https://github.com/CosmWasm/wasmvm/releases/download/v1.5.2/libwasmvm.x86_64.so
+RUN wget -P /usr/lib https://github.com/CosmWasm/wasmvm/releases/download/v2.1.4/libwasmvm.x86_64.so
 
 COPY --from=builder /app/bin/${BIN} /usr/bin/${BIN}
 COPY ./run_node.sh .

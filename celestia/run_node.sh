@@ -95,7 +95,6 @@ init_node() {
         "${CHAIN_ID:+--p2p.network $CHAIN_ID}" \
         "${CONFIG_PATH:+--node.store $CONFIG_PATH}" \
         "${CORE_IP:+--core.ip $CORE_IP}" \
-        "${CORE_RPC_PORT:+--core.rpc.port $CORE_RPC_PORT}" \
         "${CORE_GRPC_PORT:+--core.port $CORE_GRPC_PORT}" \
         "${KEYRING_BACKEND:+--keyring.backend $KEYRING_BACKEND}" \
         "${METRICS_ENDPOINT:+--metrics}" \

@@ -3,12 +3,18 @@ FROM rust:slim-bookworm AS builder
 
 ARG GIT_REPOSITORY
 ARG IMAGE_TAG
+ARG RUST_VERSION=1.84.0
 
 # Set Working Directory is /app
 WORKDIR /app
 
-# Node project build
-RUN apt-get update -qq && apt-get install git cmake clang llvm pkg-config g++ libssl-dev libclang-dev -y
+# Install dependencies
+RUN apt-get update -qq && apt-get install -y git cmake clang llvm pkg-config g++ libssl-dev libclang-dev curl
+
+# Install Rust 1.84.0
+RUN rustup install ${RUST_VERSION} && rustup default ${RUST_VERSION}
+
+# Clone and build the project
 RUN git clone --depth 1 --branch $IMAGE_TAG $GIT_REPOSITORY .
 RUN make release
 

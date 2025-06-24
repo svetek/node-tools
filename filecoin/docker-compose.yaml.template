@@ -1,19 +1,18 @@
 ---
-name: filecoin-node
+name: filecoin-mainnet
 
 services:
   node:
-    image: svetekllc/filecoin:v3.0.2
-    container_name: filecoin-node
+    image: svetekllc/filecoin:v1.33.0
+    container_name: filecoin-mainnet-node
+    pull_policy: always
     labels:
-      network: "mainet"
-    command:  >
+      network: "mainnet"
+    env_file:
+      - node.env
+    command: >
       daemon
       --import-snapshot /root/.lotus/forest_snapshot_mainnet_2024-12-01_height_4491977.forest.car.zst
-    # --import-snapshot /root/.lotus/forest_snapshot_mainnet_2024-12-01_height_4491977.forest.car.zst --halt-after-import
-    # for download snapshot use: aria2c -x5 https://forest-archive.chainsafe.dev/latest/mainnet/
-    # env_file:
-    #   - node.env
     volumes:
       - data:/root/.lotus
     ports:
@@ -29,19 +28,20 @@ services:
       resources:
         limits:
           cpus: "15"
-          memory: "128gb"
-    # restart: unless-stopped
+          memory: "50gb"
+    restart: always
 
 volumes:
   data:
-    name: filecoin-node
+    name: filecoin-mainnet-data
     driver: local
     driver_opts:
       type: none
       o: bind
-      device: /opt/md0/filecoin-node
+      device: /opt/md0/filecoin-mainnet/data
 
 networks:
   filecoin:
     name: filecoin
-    # external: true
+    external: true
+

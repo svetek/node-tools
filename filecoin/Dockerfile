@@ -36,6 +36,8 @@ FROM debian:bookworm-slim AS runtime
 
 ARG BIN
 
+ENV BIN=$BIN
+
 # Install required system dependencies
 RUN apt-get update && apt-get upgrade -y \
     && apt-get install -y tzdata ca-certificates curl wget jq expect libhwloc15 hwloc\

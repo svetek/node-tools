@@ -2,7 +2,7 @@
 version: '3.9'
 services:
   node:
-    image: svetekllc/massa:MAIN.2.5.1
+    image: svetekllc/massa:MAIN.3.0
     labels:
       network: mainnet
     env_file:
@@ -11,7 +11,7 @@ services:
       - '31244:31244'
       - '31245:31245'
     volumes:
-      - /opt/nvme3n1/massa:/app
+      - /opt/nvme2n1/massa:/app
     logging:
       driver: "json-file"
       options:

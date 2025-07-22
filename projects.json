@@ -1,34 +1,19 @@
 {
     "node_name": [
-        "artela-node",
         "axelar-node",
-        "canto-node",
-        "celestia-app",
-        "celestia-node",
         "cosmos-node",
-        "evmos-node",
         "haqq-node",
         "lava-node",
         "lava-cache",
         "lava-provider",
-        "mantra-node",
         "massa-node",
-        "nibiru-node",
         "near-node",
-        "stargaze-node",
         "filecoin-node"
     ],
     "include": [
         {
             "git_url": "https://github.com",
             "git_api_url": "https://api.github.com/repos"
-        },
-        {
-            "node_name": "artela-node",
-            "project_name": "artela",
-            "git_repository": "artela-network/artela",
-            "node_type": "node",
-            "binary": "artelad"
         },
         {
             "node_name": "axelar-node",
@@ -38,39 +23,11 @@
             "binary": "axelard"
         },
         {
-            "node_name": "canto-node",
-            "project_name": "canto",
-            "git_repository": "Canto-Network/Canto",
-            "node_type": "node",
-            "binary": "cantod"
-        },
-        {
-            "node_name": "celestia-app",
-            "project_name": "celestia",
-            "git_repository": "celestiaorg/celestia-app",
-            "node_type": "app",
-            "binary": "celestia-appd"
-        },
-        {
-            "node_name": "celestia-node",
-            "project_name": "celestia",
-            "git_repository": "celestiaorg/celestia-node",
-            "node_type": "node",
-            "binary": "celestia"
-        },
-        {
             "node_name": "cosmos-node",
             "project_name": "cosmos",
             "git_repository": "cosmos/gaia",
             "node_type": "node",
             "binary": "gaiad"
-        },
-        {
-            "node_name": "evmos-node",
-            "project_name": "evmos",
-            "git_repository": "evmos/evmos",
-            "node_type": "node",
-            "binary": "evmosd"
         },
         {
             "node_name": "haqq-node",
@@ -101,13 +58,6 @@
             "binary": "lavap"
         },
         {
-            "node_name": "mantra-node",
-            "project_name": "mantra",
-            "git_repository": "mantra-finance/public",
-            "node_type": "node",
-            "binary": "mantrachaind"
-        },
-        {
             "node_name": "massa-node",
             "project_name": "massa",
             "git_repository": "massalabs/massa",
@@ -115,25 +65,11 @@
             "binary": "massa-node"
         },
         {
-            "node_name": "nibiru-node",
-            "project_name": "nibiru",
-            "git_repository": "NibiruChain/nibiru",
-            "node_type": "node",
-            "binary": "nibid"
-        },
-        {
             "node_name": "near-node",
             "project_name": "near",
             "git_repository": "near/nearcore",
             "node_type": "node",
             "binary": "neard"
-        },
-        {
-            "node_name": "stargaze-node",
-            "project_name": "stargaze",
-            "git_repository": "public-awesome/stargaze",
-            "node_type": "node",
-            "binary": "starsd"
         },
         {
             "node_name": "filecoin-node",

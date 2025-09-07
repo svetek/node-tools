@@ -1,0 +1,30 @@
+---
+name: datagram-mainnet
+
+services:
+  node:
+    container_name: datagram-mainnet-node
+    image: svetekllc/datagram:1.1.4
+    labels:
+      network: mainnet
+    command:
+      - "run"
+      - "--"
+      - "-key ${LICENSE_KEY}"
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "100m"
+        max-file: "1"
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 8gb
+    networks:
+      - datagram
+    restart: unless-stopped
+
+networks:
+  datagram:
+    name: datagram

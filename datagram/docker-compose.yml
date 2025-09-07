@@ -10,7 +10,8 @@ services:
     command:
       - "run"
       - "--"
-      - "-key ${LICENSE_KEY}"
+      - "-key"
+      - "${LICENSE_KEY}"
     logging:
       driver: "json-file"
       options:

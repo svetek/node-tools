@@ -19,7 +19,7 @@ set -euo pipefail
 : "${DIFF_HEIGHT:=1000}"
 : "${LOGLEVEL:=info}"
 : "${MONIKER:=rpc-node}"
-: "${GENESIS_URL:=https://union.build/genesis.json}"
+: "${GENESIS_URL:=https://rpc.union.build/genesis}"
 : "${WALLET:=}"
 # : "${SEEDS:=}" ; : "${PEERS:=}" ; : "${ADDRBOOK_URL:=}"
 
@@ -45,7 +45,7 @@ init_node() {
   if [[ -n "${ADDRBOOK_URL:-}" ]]; then
     curl -fsSL "${ADDRBOOK_URL}" -o "${CONFIG_PATH}/config/addrbook.json"
   fi
-  curl -fsSL "${GENESIS_URL}" -o "${CONFIG_PATH}/config/genesis.json"
+  curl -fsSL "${GENESIS_URL}" | jq '.result.genesis' > "${CONFIG_PATH}/config/genesis.json"
 
   # db backend
   sed -i \

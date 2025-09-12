@@ -2,6 +2,7 @@
     "node_name": [
         "axelar-node",
         "cosmos-node",
+        "datagram-node",
         "haqq-node",
         "lava-node",
         "lava-cache",
@@ -28,6 +29,13 @@
             "git_repository": "cosmos/gaia",
             "node_type": "node",
             "binary": "gaiad"
+        },
+        {
+            "node_name": "datagram-node",
+            "project_name": "datagram",
+            "git_repository": "Datagram-Group/datagram-cli-release",
+            "node_type": "node",
+            "binary": "datagram"
         },
         {
             "node_name": "haqq-node",

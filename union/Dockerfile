@@ -18,14 +18,10 @@ RUN apt-get update \
 RUN curl -fL "${GIT_REPOSITORY}/releases/download/uniond/${IMAGE_TAG}/uniond-release-x86_64-linux" -o "/usr/local/bin/${BIN}" \
  && chmod 0755 "/usr/local/bin/${BIN}"
 
-# Switch to non-root user
-RUN useradd -m -u 1001 -r -s /usr/sbin/nologin appuser
+COPY ./run_node.sh .
 
-COPY --chown=appuser:appuser ./run_node.sh .
 RUN chmod +x ./run_node.sh
 
 EXPOSE 26657 9090 1317
-
-USER appuser
 
 ENTRYPOINT [ "./run_node.sh" ]

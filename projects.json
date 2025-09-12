@@ -9,7 +9,8 @@
         "lava-provider",
         "massa-node",
         "near-node",
-        "filecoin-node"
+        "filecoin-node",
+        "union-node"
     ],
     "include": [
         {
@@ -85,6 +86,13 @@
             "git_repository": "filecoin-project/lotus",
             "node_type": "node",
             "binary": "lotus"
+        },
+        {
+            "node_name": "union-node",
+            "project_name": "union",
+            "git_repository": "unionlabs/union",
+            "node_type": "node",
+            "binary": "uniond"
         }
     ]
 }

@@ -1,0 +1,33 @@
+---
+name: union-mainnet
+
+services:
+  node:
+    container_name: union-mainnet-node
+    image: svetekllc/union:v1.2.2
+    labels:
+      network: "mainnet"
+    env_file:
+      - node.env
+    volumes:
+      - union-mainnet-node:/home/appuser/.union
+    ports:
+      - "26656:26656"
+      - "26660:26660"
+    networks:
+      - union
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "100m"
+        max-file: "1"
+    deploy:
+      resources:
+        limits:
+          cpus: "8"
+          memory: "16gb"
+    restart: unless-stopped
+
+networks:
+  union:
+    name: union

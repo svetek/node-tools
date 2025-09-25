@@ -45,7 +45,13 @@ init_node() {
   if [[ -n "${ADDRBOOK_URL:-}" ]]; then
     curl -fsSL "${ADDRBOOK_URL}" -o "${CONFIG_PATH}/config/addrbook.json"
   fi
-  curl -fsSL "${GENESIS_URL}" | jq '.result.genesis' > "${CONFIG_PATH}/config/genesis.json"
+
+  resp="$(curl -fsSL "${GENESIS_URL}")"
+  if echo "$resp" | jq -e '.result.genesis' >/dev/null 2>&1; then
+    echo "$resp" | jq '.result.genesis' > "${CONFIG_PATH}/config/genesis.json"
+  else
+    echo "$resp" > "${CONFIG_PATH}/config/genesis.json"
+  fi
 
   # db backend
   sed -i \

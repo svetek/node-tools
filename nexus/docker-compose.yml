@@ -1,0 +1,30 @@
+---
+name: nexus-testnet
+
+services:
+  node:
+    container_name: nexus-testnet-node
+    image: svetekllc/nexus:v0.10.14
+    labels:
+      network: testnet
+    command:
+      - "start"
+      - "--node-id"
+      - "${NODE_ID}"
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "100m"
+        max-file: "1"
+    deploy:
+      resources:
+        limits:
+          cpus: 4
+          memory: 16gb
+    networks:
+      - nexus
+    restart: unless-stopped
+
+networks:
+  nexus:
+    name: nexus

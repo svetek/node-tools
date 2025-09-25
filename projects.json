@@ -9,6 +9,7 @@
         "lava-provider",
         "massa-node",
         "near-node",
+        "nexus-node",
         "filecoin-node"
     ],
     "include": [
@@ -78,6 +79,13 @@
             "git_repository": "near/nearcore",
             "node_type": "node",
             "binary": "neard"
+        },
+        {
+            "node_name": "nexus-node",
+            "project_name": "nexus",
+            "git_repository": "nexus-xyz/nexus-cli",
+            "node_type": "node",
+            "binary": "nexus-cli"
         },
         {
             "node_name": "filecoin-node",

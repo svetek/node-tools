@@ -9,6 +9,7 @@ services:
       network: testnet
     command:
       - "start"
+      - "--headless"
       - "--node-id"
       - "${NODE_ID}"
     logging:

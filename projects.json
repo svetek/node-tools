@@ -4,9 +4,6 @@
         "cosmos-node",
         "datagram-node",
         "haqq-node",
-        "lava-node",
-        "lava-cache",
-        "lava-provider",
         "massa-node",
         "near-node",
         "nexus-node",
@@ -44,27 +41,6 @@
             "git_repository": "haqq-network/haqq",
             "node_type": "node",
             "binary": "haqqd"
-        },
-        {
-            "node_name": "lava-node",
-            "project_name": "lava",
-            "git_repository": "lavanet/lava",
-            "node_type": "node",
-            "binary": "lavad"
-        },
-        {
-            "node_name": "lava-cache",
-            "project_name": "lava",
-            "git_repository": "lavanet/lava",
-            "node_type": "cache",
-            "binary": "lavap"
-        },
-        {
-            "node_name": "lava-provider",
-            "project_name": "lava",
-            "git_repository": "lavanet/lava",
-            "node_type": "provider",
-            "binary": "lavap"
         },
         {
             "node_name": "massa-node",

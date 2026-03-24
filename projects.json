@@ -2,10 +2,10 @@
     "node_name": [
         "axelar-node",
         "cosmos-node",
+        "ripple-node",
         "haqq-node",
         "massa-node",
         "near-node",
-        "nexus-node",
         "filecoin-node"
     ],
     "include": [
@@ -28,6 +28,13 @@
             "binary": "gaiad"
         },
         {
+            "node_name": "ripple-node",
+            "project_name": "ripple",
+            "git_repository": "XRPLF/rippled",
+            "node_type": "node",
+            "binary": "rippled"
+        },
+        {
             "node_name": "haqq-node",
             "project_name": "haqq",
             "git_repository": "haqq-network/haqq",
@@ -47,13 +54,6 @@
             "git_repository": "near/nearcore",
             "node_type": "node",
             "binary": "neard"
-        },
-        {
-            "node_name": "nexus-node",
-            "project_name": "nexus",
-            "git_repository": "nexus-xyz/nexus-cli",
-            "node_type": "node",
-            "binary": "nexus-cli"
         },
         {
             "node_name": "filecoin-node",

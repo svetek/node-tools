@@ -86,11 +86,14 @@ class TestService(unittest.TestCase):
         self.assertEqual(snapshot["result"]["local_height"], 150)
         self.assertEqual(snapshot["result"]["remote_height"], 151)
         self.assertEqual(snapshot["consecutive_failures"], 0)
+        self.assertTrue(snapshot["local_rpc"]["up"])
+        self.assertTrue(snapshot["remote_rpc"]["up"])
 
     def test_run_once_preserves_last_success_on_failure(self) -> None:
         config = self._config(max_behind_blocks=0)
         state = SharedState()
         state.update_success(evaluate_heights(200, 200, 0), time.time())
+        state.set_endpoint_urls(config.local_rpc_url, config.remote_rpc_url)
         service = CheckerService(
             config=config,
             state=state,
@@ -115,6 +118,9 @@ class TestService(unittest.TestCase):
         self.assertEqual(snapshot["result"]["local_height"], 200)
         self.assertIn("rpc failed for http://local-rpc", snapshot["last_error"])
         self.assertIn("local rpc failed", snapshot["last_error"])
+        self.assertFalse(snapshot["local_rpc"]["up"])
+        self.assertTrue(snapshot["remote_rpc"]["up"])
+        self.assertIsNotNone(snapshot["local_rpc"]["last_error_at"])
 
     def test_run_once_logs_rpc_failures_as_error_with_url(self) -> None:
         config = self._config(max_behind_blocks=0)
@@ -174,6 +180,9 @@ class TestService(unittest.TestCase):
     def test_ready_state_and_metrics(self) -> None:
         config = self._config(max_behind_blocks=1)
         state = SharedState()
+        state.set_endpoint_urls(config.local_rpc_url, config.remote_rpc_url)
+        state.update_endpoint_success(config.local_rpc_url, time.time())
+        state.update_endpoint_success(config.remote_rpc_url, time.time())
         state.update_success(evaluate_heights(100, 101, 1), time.time())
 
         self.assertTrue(state.is_ready(time.time(), config.state_ttl_seconds))
@@ -181,13 +190,31 @@ class TestService(unittest.TestCase):
         metrics = render_metrics(state.snapshot(), config, time.time())
         self.assertIn("evm_height_checker_ready 1", metrics)
         self.assertIn("evm_height_checker_remote_height 101", metrics)
+        self.assertIn("evm_height_checker_local_rpc_up 1", metrics)
+        self.assertIn("evm_height_checker_remote_rpc_up 1", metrics)
 
     def test_ready_state_turns_false_when_stale(self) -> None:
         config = self._config(max_behind_blocks=1, state_ttl_seconds=5.0)
         state = SharedState()
+        state.set_endpoint_urls(config.local_rpc_url, config.remote_rpc_url)
         state.update_success(evaluate_heights(100, 100, 1), time.time() - 10)
 
         self.assertFalse(state.is_ready(time.time(), config.state_ttl_seconds))
+
+    def test_metrics_show_failed_remote_endpoint(self) -> None:
+        config = self._config(max_behind_blocks=1)
+        state = SharedState()
+        state.set_endpoint_urls(config.local_rpc_url, config.remote_rpc_url)
+        state.update_endpoint_success(config.local_rpc_url, time.time())
+        state.update_endpoint_failure(config.remote_rpc_url, "rpc failed for http://remote-rpc: timeout", time.time())
+        state.update_success(evaluate_heights(100, 100, 1), time.time() - 1)
+
+        metrics = render_metrics(state.snapshot(), config, time.time())
+        snapshot = state.snapshot()
+
+        self.assertIn("evm_height_checker_local_rpc_up 1", metrics)
+        self.assertIn("evm_height_checker_remote_rpc_up 0", metrics)
+        self.assertEqual(snapshot["remote_rpc"]["last_error"], "rpc failed for http://remote-rpc: timeout")
 
     def _config(
         self,

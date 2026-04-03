@@ -37,6 +37,15 @@ class RpcEndpointError(RuntimeError):
         super().__init__(f"rpc failed for {url}: {cause}")
 
 
+@dataclass
+class EndpointState:
+    url: str
+    up: bool = False
+    last_success_at: float | None = None
+    last_error: str | None = None
+    last_error_at: float | None = None
+
+
 def evaluate_heights(local_height: int, remote_height: int, max_behind_blocks: int) -> CheckResult:
     delta_blocks = remote_height - local_height
     healthy = delta_blocks <= max_behind_blocks
@@ -64,6 +73,8 @@ class SharedState:
     last_error: str | None = None
     consecutive_failures: int = 0
     result: CheckResult | None = None
+    local_rpc: EndpointState | None = None
+    remote_rpc: EndpointState | None = None
 
     def snapshot(self) -> dict[str, Any]:
         with self.lock:
@@ -74,7 +85,20 @@ class SharedState:
                 "last_error": self.last_error,
                 "consecutive_failures": self.consecutive_failures,
                 "result": asdict(self.result) if self.result else None,
+                "local_rpc": asdict(self.local_rpc) if self.local_rpc else None,
+                "remote_rpc": asdict(self.remote_rpc) if self.remote_rpc else None,
             }
+
+    def set_endpoint_urls(self, local_url: str, remote_url: str) -> None:
+        with self.lock:
+            if self.local_rpc is None:
+                self.local_rpc = EndpointState(url=local_url)
+            else:
+                self.local_rpc.url = local_url
+            if self.remote_rpc is None:
+                self.remote_rpc = EndpointState(url=remote_url)
+            else:
+                self.remote_rpc.url = remote_url
 
     def update_success(self, result: CheckResult, now: float) -> None:
         with self.lock:
@@ -89,6 +113,28 @@ class SharedState:
             self.last_attempt_at = now
             self.last_error = error
             self.consecutive_failures += 1
+
+    def update_endpoint_success(self, url: str, now: float) -> None:
+        with self.lock:
+            endpoint = self._endpoint_by_url(url)
+            endpoint.up = True
+            endpoint.last_success_at = now
+            endpoint.last_error = None
+            endpoint.last_error_at = None
+
+    def update_endpoint_failure(self, url: str, error: str, now: float) -> None:
+        with self.lock:
+            endpoint = self._endpoint_by_url(url)
+            endpoint.up = False
+            endpoint.last_error = error
+            endpoint.last_error_at = now
+
+    def _endpoint_by_url(self, url: str) -> EndpointState:
+        if self.local_rpc and self.local_rpc.url == url:
+            return self.local_rpc
+        if self.remote_rpc and self.remote_rpc.url == url:
+            return self.remote_rpc
+        raise ValueError(f"unknown endpoint url: {url}")
 
     def is_ready(self, now: float, state_ttl_seconds: float) -> bool:
         with self.lock:
@@ -113,6 +159,7 @@ class CheckerService:
         self.rpc_client = rpc_client
         self.time_fn = time_fn
         self.sleep_fn = sleep_fn
+        self.state.set_endpoint_urls(config.local_rpc_url, config.remote_rpc_url)
 
     def run_once(self) -> CheckResult:
         now = self.time_fn()
@@ -169,7 +216,28 @@ class CheckerService:
             remote_future = executor.submit(
                 self._fetch_with_retries, self.config.remote_rpc_url
             )
-            return local_future.result(), remote_future.result()
+            local_result = self._resolve_future(local_future, self.config.local_rpc_url)
+            remote_result = self._resolve_future(remote_future, self.config.remote_rpc_url)
+
+            errors = [error for error in (local_result[1], remote_result[1]) if error is not None]
+            if errors:
+                raise errors[0]
+
+            return local_result[0], remote_result[0]
+
+    def _resolve_future(
+        self,
+        future: Any,
+        url: str,
+    ) -> tuple[int | None, Exception | None]:
+        now = self.time_fn()
+        try:
+            value = future.result()
+            self.state.update_endpoint_success(url, now)
+            return value, None
+        except Exception as exc:
+            self.state.update_endpoint_failure(url, str(exc), now)
+            return None, exc
 
     def _fetch_with_retries(self, url: str) -> int:
         last_error: Exception | None = None
@@ -256,6 +324,8 @@ class MonitoringHTTPServer(ThreadingHTTPServer):
 
 def render_metrics(snapshot: dict[str, Any], config: Config, now: float) -> str:
     result = snapshot["result"] or {}
+    local_rpc = snapshot["local_rpc"] or {}
+    remote_rpc = snapshot["remote_rpc"] or {}
     ready = False
     if snapshot["last_success_at"] is not None and result:
         ready = (
@@ -269,6 +339,12 @@ def render_metrics(snapshot: dict[str, Any], config: Config, now: float) -> str:
     healthy = 1 if result.get("healthy", False) else 0
     last_success_at = snapshot["last_success_at"] or 0
     last_attempt_at = snapshot["last_attempt_at"] or 0
+    local_rpc_up = 1 if local_rpc.get("up", False) else 0
+    remote_rpc_up = 1 if remote_rpc.get("up", False) else 0
+    local_rpc_last_success_at = local_rpc.get("last_success_at") or 0
+    remote_rpc_last_success_at = remote_rpc.get("last_success_at") or 0
+    local_rpc_last_error_at = local_rpc.get("last_error_at") or 0
+    remote_rpc_last_error_at = remote_rpc.get("last_error_at") or 0
 
     lines = [
         "# HELP evm_height_checker_local_height Latest local node block height.",
@@ -277,6 +353,12 @@ def render_metrics(snapshot: dict[str, Any], config: Config, now: float) -> str:
         "# HELP evm_height_checker_remote_height Latest remote node block height.",
         "# TYPE evm_height_checker_remote_height gauge",
         f"evm_height_checker_remote_height {remote_height}",
+        "# HELP evm_height_checker_local_rpc_up Local RPC endpoint availability from the last check.",
+        "# TYPE evm_height_checker_local_rpc_up gauge",
+        f"evm_height_checker_local_rpc_up {local_rpc_up}",
+        "# HELP evm_height_checker_remote_rpc_up Remote RPC endpoint availability from the last check.",
+        "# TYPE evm_height_checker_remote_rpc_up gauge",
+        f"evm_height_checker_remote_rpc_up {remote_rpc_up}",
         "# HELP evm_height_checker_delta_blocks Remote height minus local height.",
         "# TYPE evm_height_checker_delta_blocks gauge",
         f"evm_height_checker_delta_blocks {delta_blocks}",
@@ -295,5 +377,17 @@ def render_metrics(snapshot: dict[str, Any], config: Config, now: float) -> str:
         "# HELP evm_height_checker_last_attempt_timestamp Unix timestamp of the last attempted check.",
         "# TYPE evm_height_checker_last_attempt_timestamp gauge",
         f"evm_height_checker_last_attempt_timestamp {last_attempt_at}",
+        "# HELP evm_height_checker_local_rpc_last_success_timestamp Unix timestamp of the last successful local RPC call.",
+        "# TYPE evm_height_checker_local_rpc_last_success_timestamp gauge",
+        f"evm_height_checker_local_rpc_last_success_timestamp {local_rpc_last_success_at}",
+        "# HELP evm_height_checker_remote_rpc_last_success_timestamp Unix timestamp of the last successful remote RPC call.",
+        "# TYPE evm_height_checker_remote_rpc_last_success_timestamp gauge",
+        f"evm_height_checker_remote_rpc_last_success_timestamp {remote_rpc_last_success_at}",
+        "# HELP evm_height_checker_local_rpc_last_error_timestamp Unix timestamp of the last failed local RPC call.",
+        "# TYPE evm_height_checker_local_rpc_last_error_timestamp gauge",
+        f"evm_height_checker_local_rpc_last_error_timestamp {local_rpc_last_error_at}",
+        "# HELP evm_height_checker_remote_rpc_last_error_timestamp Unix timestamp of the last failed remote RPC call.",
+        "# TYPE evm_height_checker_remote_rpc_last_error_timestamp gauge",
+        f"evm_height_checker_remote_rpc_last_error_timestamp {remote_rpc_last_error_at}",
     ]
     return "\n".join(lines) + "\n"

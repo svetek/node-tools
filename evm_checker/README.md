@@ -98,7 +98,7 @@ Optional:
 
 - `GET /healthz` - process liveness endpoint.
 - `GET /readyz` - readiness endpoint. Returns success only when the service has a fresh successful comparison and the local node is not behind the threshold.
-- `GET /status` - detailed JSON status with timestamps, errors, and the last comparison result.
+- `GET /status` - detailed JSON status with timestamps, errors, the last comparison result, and per-endpoint RPC state.
 - `GET /metrics` - Prometheus metrics endpoint.
 
 ## Prometheus Metrics
@@ -107,12 +107,20 @@ All exported metrics are `gauge` metrics.
 
 - `evm_height_checker_local_height` - latest block height returned by the local RPC endpoint.
 - `evm_height_checker_remote_height` - latest block height returned by the remote RPC endpoint.
+- `evm_height_checker_local_rpc_up` - local RPC endpoint availability from the last check. `1` means available, `0` means failed.
+- `evm_height_checker_remote_rpc_up` - remote RPC endpoint availability from the last check. `1` means available, `0` means failed.
 - `evm_height_checker_delta_blocks` - block delta calculated as `remote - local`. Negative values mean the local node is ahead of the remote endpoint.
 - `evm_height_checker_healthy` - result of the last successful comparison. `1` means healthy, `0` means unhealthy.
 - `evm_height_checker_ready` - current readiness state with TTL applied. `1` means ready, `0` means not ready.
 - `evm_height_checker_consecutive_failures` - number of failed checks in a row.
 - `evm_height_checker_last_success_timestamp` - Unix timestamp of the last successful check.
 - `evm_height_checker_last_attempt_timestamp` - Unix timestamp of the last check attempt, successful or failed.
+- `evm_height_checker_local_rpc_last_success_timestamp` - Unix timestamp of the last successful local RPC call.
+- `evm_height_checker_remote_rpc_last_success_timestamp` - Unix timestamp of the last successful remote RPC call.
+- `evm_height_checker_local_rpc_last_error_timestamp` - Unix timestamp of the last failed local RPC call.
+- `evm_height_checker_remote_rpc_last_error_timestamp` - Unix timestamp of the last failed remote RPC call.
+
+When one endpoint is down, `evm_height_checker_delta_blocks` keeps the last successful comparison value, while the `*_rpc_up` and `*_rpc_last_error_timestamp` metrics show which endpoint is currently failing.
 
 Example:
 

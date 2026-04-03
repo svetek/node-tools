@@ -5,9 +5,10 @@ import unittest
 from unittest.mock import patch
 
 from evm_height_checker.config import Config
-from evm_height_checker.rpc import RpcClient
+from evm_height_checker.rpc import RpcClient, RpcError
 from evm_height_checker.service import (
     CheckerService,
+    RpcEndpointError,
     SharedState,
     evaluate_heights,
     render_metrics,
@@ -102,13 +103,73 @@ class TestService(unittest.TestCase):
             sleep_fn=lambda _: None,
         )
 
-        with self.assertRaises(RuntimeError):
+        with (
+            self.assertRaises(RpcEndpointError),
+            patch("evm_height_checker.service.LOGGER.error") as logger_error,
+        ):
             service.run_once()
 
         snapshot = state.snapshot()
+        logger_error.assert_called_once()
         self.assertEqual(snapshot["consecutive_failures"], 1)
         self.assertEqual(snapshot["result"]["local_height"], 200)
+        self.assertIn("rpc failed for http://local-rpc", snapshot["last_error"])
         self.assertIn("local rpc failed", snapshot["last_error"])
+
+    def test_run_once_logs_rpc_failures_as_error_with_url(self) -> None:
+        config = self._config(max_behind_blocks=0)
+        state = SharedState()
+        service = CheckerService(
+            config=config,
+            state=state,
+            rpc_client=FakeRpcClient(
+                {
+                    config.local_rpc_url: RpcError("request failed for http://local-rpc: connection refused"),
+                    config.remote_rpc_url: 200,
+                }
+            ),
+            sleep_fn=lambda _: None,
+        )
+
+        with (
+            self.assertRaises(RpcEndpointError),
+            patch("evm_height_checker.service.LOGGER.error") as logger_error,
+            patch("evm_height_checker.service.LOGGER.exception") as logger_exception,
+        ):
+            service.run_once()
+
+        logger_error.assert_called_once()
+        logger_exception.assert_not_called()
+        error_message = logger_error.call_args.args[0]
+        error_extra = logger_error.call_args.kwargs["extra"]
+        self.assertIn("rpc failed for http://local-rpc", error_message)
+        self.assertEqual(error_extra["url"], "http://local-rpc")
+
+    def test_run_once_logs_rpc_failures_as_error_with_remote_url(self) -> None:
+        config = self._config(max_behind_blocks=0)
+        state = SharedState()
+        service = CheckerService(
+            config=config,
+            state=state,
+            rpc_client=FakeRpcClient(
+                {
+                    config.local_rpc_url: 200,
+                    config.remote_rpc_url: RpcError("request failed for http://remote-rpc: timeout"),
+                }
+            ),
+            sleep_fn=lambda _: None,
+        )
+
+        with (
+            self.assertRaises(RpcEndpointError),
+            patch("evm_height_checker.service.LOGGER.error") as logger_error,
+        ):
+            service.run_once()
+
+        error_message = logger_error.call_args.args[0]
+        error_extra = logger_error.call_args.kwargs["extra"]
+        self.assertIn("rpc failed for http://remote-rpc", error_message)
+        self.assertEqual(error_extra["url"], "http://remote-rpc")
 
     def test_ready_state_and_metrics(self) -> None:
         config = self._config(max_behind_blocks=1)

@@ -11,7 +11,7 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from typing import Any, Callable
 
 from .config import Config
-from .rpc import RpcClient
+from .rpc import RpcClient, RpcError
 
 LOGGER = logging.getLogger("evm_height_checker")
 
@@ -28,6 +28,13 @@ class CheckResult:
     max_behind_blocks: int
     healthy: bool
     summary: str
+
+
+class RpcEndpointError(RuntimeError):
+    def __init__(self, url: str, cause: Exception) -> None:
+        self.url = url
+        self.cause = cause
+        super().__init__(f"rpc failed for {url}: {cause}")
 
 
 def evaluate_heights(local_height: int, remote_height: int, max_behind_blocks: int) -> CheckResult:
@@ -130,10 +137,16 @@ class CheckerService:
             return result
         except Exception as exc:
             self.state.update_failure(str(exc), now)
-            LOGGER.exception(
-                "failed to check block heights",
-                extra={"consecutive_failures": self.state.snapshot()["consecutive_failures"]},
-            )
+            extra = {
+                "consecutive_failures": self.state.snapshot()["consecutive_failures"],
+            }
+            if isinstance(exc, RpcEndpointError):
+                extra.update({"url": exc.url})
+                LOGGER.error(f"failed to check block heights: {exc}", extra=extra)
+            elif isinstance(exc, RpcError):
+                LOGGER.error(f"failed to check block heights: {exc}", extra=extra)
+            else:
+                LOGGER.exception("failed to check block heights", extra=extra)
             raise
 
     def run_forever(self, stop_event: threading.Event) -> None:
@@ -170,7 +183,7 @@ class CheckerService:
                     break
                 self.sleep_fn(self.config.retry_delay_seconds)
         assert last_error is not None
-        raise last_error
+        raise RpcEndpointError(url=url, cause=last_error)
 
 
 class StatusHandler(BaseHTTPRequestHandler):

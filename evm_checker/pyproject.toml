@@ -1,5 +1,5 @@
 [project]
 name = "evm-height-checker"
-version = "0.1.2"
+version = "0.1.3"
 description = "Service for comparing local and remote EVM block heights."
 requires-python = ">=3.11"

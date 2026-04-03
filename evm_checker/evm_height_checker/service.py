@@ -20,6 +20,10 @@ def utc_timestamp() -> float:
     return time.time()
 
 
+def prometheus_label_value(value: str) -> str:
+    return value.replace("\\", "\\\\").replace('"', '\\"').replace("\n", "\\n")
+
+
 @dataclass(frozen=True)
 class CheckResult:
     local_height: int
@@ -353,12 +357,10 @@ def render_metrics(snapshot: dict[str, Any], config: Config, now: float) -> str:
         "# HELP evm_height_checker_remote_height Latest remote node block height.",
         "# TYPE evm_height_checker_remote_height gauge",
         f"evm_height_checker_remote_height {remote_height}",
-        "# HELP evm_height_checker_local_rpc_up Local RPC endpoint availability from the last check.",
-        "# TYPE evm_height_checker_local_rpc_up gauge",
-        f"evm_height_checker_local_rpc_up {local_rpc_up}",
-        "# HELP evm_height_checker_remote_rpc_up Remote RPC endpoint availability from the last check.",
-        "# TYPE evm_height_checker_remote_rpc_up gauge",
-        f"evm_height_checker_remote_rpc_up {remote_rpc_up}",
+        "# HELP evm_height_checker_rpc_up RPC endpoint availability from the last check labeled by endpoint.",
+        "# TYPE evm_height_checker_rpc_up gauge",
+        f'evm_height_checker_rpc_up{{endpoint="{prometheus_label_value(local_rpc.get("url", ""))}"}} {local_rpc_up}',
+        f'evm_height_checker_rpc_up{{endpoint="{prometheus_label_value(remote_rpc.get("url", ""))}"}} {remote_rpc_up}',
         "# HELP evm_height_checker_delta_blocks Remote height minus local height.",
         "# TYPE evm_height_checker_delta_blocks gauge",
         f"evm_height_checker_delta_blocks {delta_blocks}",
@@ -377,17 +379,13 @@ def render_metrics(snapshot: dict[str, Any], config: Config, now: float) -> str:
         "# HELP evm_height_checker_last_attempt_timestamp Unix timestamp of the last attempted check.",
         "# TYPE evm_height_checker_last_attempt_timestamp gauge",
         f"evm_height_checker_last_attempt_timestamp {last_attempt_at}",
-        "# HELP evm_height_checker_local_rpc_last_success_timestamp Unix timestamp of the last successful local RPC call.",
-        "# TYPE evm_height_checker_local_rpc_last_success_timestamp gauge",
-        f"evm_height_checker_local_rpc_last_success_timestamp {local_rpc_last_success_at}",
-        "# HELP evm_height_checker_remote_rpc_last_success_timestamp Unix timestamp of the last successful remote RPC call.",
-        "# TYPE evm_height_checker_remote_rpc_last_success_timestamp gauge",
-        f"evm_height_checker_remote_rpc_last_success_timestamp {remote_rpc_last_success_at}",
-        "# HELP evm_height_checker_local_rpc_last_error_timestamp Unix timestamp of the last failed local RPC call.",
-        "# TYPE evm_height_checker_local_rpc_last_error_timestamp gauge",
-        f"evm_height_checker_local_rpc_last_error_timestamp {local_rpc_last_error_at}",
-        "# HELP evm_height_checker_remote_rpc_last_error_timestamp Unix timestamp of the last failed remote RPC call.",
-        "# TYPE evm_height_checker_remote_rpc_last_error_timestamp gauge",
-        f"evm_height_checker_remote_rpc_last_error_timestamp {remote_rpc_last_error_at}",
+        "# HELP evm_height_checker_rpc_last_success_timestamp Unix timestamp of the last successful RPC call labeled by endpoint.",
+        "# TYPE evm_height_checker_rpc_last_success_timestamp gauge",
+        f'evm_height_checker_rpc_last_success_timestamp{{endpoint="{prometheus_label_value(local_rpc.get("url", ""))}"}} {local_rpc_last_success_at}',
+        f'evm_height_checker_rpc_last_success_timestamp{{endpoint="{prometheus_label_value(remote_rpc.get("url", ""))}"}} {remote_rpc_last_success_at}',
+        "# HELP evm_height_checker_rpc_last_error_timestamp Unix timestamp of the last failed RPC call labeled by endpoint.",
+        "# TYPE evm_height_checker_rpc_last_error_timestamp gauge",
+        f'evm_height_checker_rpc_last_error_timestamp{{endpoint="{prometheus_label_value(local_rpc.get("url", ""))}"}} {local_rpc_last_error_at}',
+        f'evm_height_checker_rpc_last_error_timestamp{{endpoint="{prometheus_label_value(remote_rpc.get("url", ""))}"}} {remote_rpc_last_error_at}',
     ]
     return "\n".join(lines) + "\n"

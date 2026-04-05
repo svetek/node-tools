@@ -5,10 +5,11 @@ ARG GIT_REPOSITORY=https://github.com/0xsoniclabs/sonic
 
 ARG UID=10001
 ARG GID=10001
+ARG DATADIR=/sonic
 
 ENV DEBIAN_FRONTEND=noninteractive
 
-WORKDIR /home/appuser
+WORKDIR "${DATADIR}"
 
 RUN set -eux; \
     apt-get update; \
@@ -28,10 +29,9 @@ RUN set -eux; \
     useradd \
       --uid "${UID}" \
       --gid "${GID}" \
-      --home-dir /home/appuser \
       --shell /usr/sbin/nologin \
       appuser; \
-    install -d -m 0755 -o "${UID}" -g "${GID}" /home/appuser
+    install -d -m 0755 -o "${UID}" -g "${GID}" "${DATADIR}"
 
 EXPOSE 18545/tcp 18546/tcp 5050/tcp 5050/udp
 

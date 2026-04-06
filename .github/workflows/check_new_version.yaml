@@ -55,9 +55,23 @@ jobs:
       - name: 📝 Get last version from the GitHub repository
         id: get_last_version_from_github
         run: |
+          github_releases_response=$(curl -s -S \
+            -H "Accept: application/vnd.github+json" \
+            -H "Authorization: Bearer ${{ github.token }}" \
+            -H "X-GitHub-Api-Version: 2022-11-28" \
+            "${{ matrix.git_api_url}}/${{ matrix.git_repository}}/releases")
+
           case "${{ matrix.project_name }}" in
             "lava")
-              last_version_info=$(curl -s -S "${{ matrix.git_api_url}}/${{ matrix.git_repository}}/releases" | jq -r -c --arg BINARY "${{ matrix.binary }}" 'first(.[] | select(.assets[]?.name | test("^" + $BINARY + "-.*$")) | {tag_name, published_at})')
+              last_version_info=$(echo "$github_releases_response" | jq -e -r -c --arg BINARY "${{ matrix.binary }}" '
+                if type == "array" then
+                  first(.[] | select(.assets[]?.name | test("^" + $BINARY + "-.*$")) | {tag_name, published_at})
+                elif type == "object" and .message? then
+                  .message | halt_error(1)
+                else
+                  "Unexpected GitHub API response type: \(type)" | halt_error(1)
+                end
+              ')
               version=$(echo $last_version_info | jq -r .tag_name)
               version_date=$(echo $last_version_info | jq -r .published_at)
               echo "Last version is $version"
@@ -66,7 +80,15 @@ jobs:
               echo "g_last_version_date=$version_date" >> "$GITHUB_OUTPUT"
               ;;
             *)
-              last_version_info=$(curl -s -S "${{ matrix.git_api_url}}/${{ matrix.git_repository}}/releases" | jq -r -c 'first(.[] | select(.prerelease == false and .draft == false) | {tag_name, published_at})')
+              last_version_info=$(echo "$github_releases_response" | jq -e -r -c '
+                if type == "array" then
+                  first(.[] | select(.prerelease == false and .draft == false) | {tag_name, published_at})
+                elif type == "object" and .message? then
+                  .message | halt_error(1)
+                else
+                  "Unexpected GitHub API response type: \(type)" | halt_error(1)
+                end
+              ')
               version=$(echo $last_version_info | jq -r .tag_name)
               version_date=$(echo $last_version_info | jq -r .published_at)
               echo "Last version is $version"

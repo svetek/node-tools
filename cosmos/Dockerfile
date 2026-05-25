@@ -35,6 +35,10 @@ ARG ROCKSDB_VERSION
 WORKDIR /src/rocksdb
 
 RUN git clone --depth 1 --branch "${ROCKSDB_VERSION}" https://github.com/facebook/rocksdb.git . \
+  && { \
+    grep -q '#include <cstdint>' db/blob/blob_file_meta.h \
+      || sed -i '/#include "rocksdb\/rocksdb_namespace.h"/i #include <cstdint>' db/blob/blob_file_meta.h; \
+  } \
   && make -j"$(nproc)" shared_lib PORTABLE=1 USE_RTTI=1 \
   && mkdir -p /usr/local/include /usr/local/lib/pkgconfig \
   && cp -a include/rocksdb /usr/local/include/ \

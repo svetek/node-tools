@@ -2,6 +2,7 @@
 
 ARG ALPINE_VERSION=3.23
 ARG GO_VERSION=1.25.10
+ARG IMAGE_TAG
 ARG GAIA_VERSION
 ARG GIT_REPOSITORY=https://github.com/cosmos/gaia.git
 ARG BIN=gaiad
@@ -60,6 +61,7 @@ RUN git clone --depth 1 --branch "${ROCKSDB_VERSION}" https://github.com/faceboo
 
 FROM build-base AS gaiad-builder
 ARG BUILD_TAGS
+ARG IMAGE_TAG
 ARG GAIA_VERSION
 ARG GIT_REPOSITORY
 ARG BIN
@@ -77,13 +79,14 @@ ENV EXTLDFLAGS="-L/usr/local/lib -lrocksdb -lstdc++ -lm -lz -lbz2 -lsnappy -llz4
 
 WORKDIR /src/gaia
 
-RUN : "${GAIA_VERSION:?GAIA_VERSION build arg is required}" \
-  && git clone --depth 1 --branch "${GAIA_VERSION}" "${GIT_REPOSITORY}" .
+RUN GAIA_RELEASE="${GAIA_VERSION:-${IMAGE_TAG:?IMAGE_TAG build arg is required}}" \
+  && git clone --depth 1 --branch "${GAIA_RELEASE}" "${GIT_REPOSITORY}" .
 
 RUN --mount=type=cache,target=/go/pkg/mod \
     --mount=type=cache,target=/root/.cache/go-build \
     set -euxo pipefail; \
-    APP_VERSION="$(git describe --exact-match 2>/dev/null || echo "${GAIA_VERSION}")"; \
+    GAIA_RELEASE="${GAIA_VERSION:-${IMAGE_TAG:?IMAGE_TAG build arg is required}}"; \
+    APP_VERSION="$(git describe --exact-match 2>/dev/null || echo "${GAIA_RELEASE}")"; \
     COMMIT="$(git rev-parse HEAD)"; \
     TM_VERSION="$(go list -m github.com/cometbft/cometbft | awk '{print $2}')"; \
     WASMVM_VERSION="$(go list -m github.com/CosmWasm/wasmvm/v2 | awk '{print $2}')"; \
@@ -109,6 +112,7 @@ RUN --mount=type=cache,target=/go/pkg/mod \
       "./cmd/${BIN}"
 
 FROM alpine:${ALPINE_VERSION} AS runtime
+ARG IMAGE_TAG
 ARG GAIA_VERSION
 ARG ROCKSDB_VERSION
 ARG ROCKSDB_SO_VERSION
@@ -117,7 +121,7 @@ ARG BIN
 LABEL org.opencontainers.image.title="Cosmos Gaia with RocksDB" \
       org.opencontainers.image.description="Gaia built with RocksDB support for Cosmos Hub nodes" \
       org.opencontainers.image.source="https://github.com/cosmos/gaia" \
-      org.opencontainers.image.version="${GAIA_VERSION}" \
+      org.opencontainers.image.version="${IMAGE_TAG}" \
       org.opencontainers.image.vendor="Impulse Expert" \
       org.opencontainers.image.licenses="Apache-2.0"
 

@@ -45,7 +45,7 @@ echo -e "Release tag: \t$RELEASE_TAG"
 echo -e "Image tag: \t$IMAGE_TAG\n"
 
 docker build -f "$DOCKERFILE" "$DIR" \
-     --build-arg GAIA_VERSION="$RELEASE_TAG" \
+     --build-arg IMAGE_TAG="$IMAGE_TAG" \
      --tag "$IMAGE"
 
 if [[ "$PUSH_FLAG" == "yes" ]]

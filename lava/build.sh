@@ -46,7 +46,7 @@ echo -e "Image tag: \t$IMAGE_TAG"
 echo -e "DB backend: \trocksdb\n"
 
 docker build -f "$DOCKERFILE" "$DIR" \
-     --build-arg LAVA_VERSION="$RELEASE_TAG" \
+     --build-arg IMAGE_TAG="$IMAGE_TAG" \
      --tag "$IMAGE"
 
 if [[ "$PUSH_FLAG" == "yes" ]]

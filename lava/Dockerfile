@@ -3,7 +3,8 @@
 ARG ALPINE_VERSION=3.23
 ARG BUILDER_ALPINE_VERSION=3.20
 ARG GO_VERSION=1.23.3
-ARG LAVA_VERSION=v6.0.0
+ARG IMAGE_TAG
+ARG LAVA_VERSION
 ARG GIT_REPOSITORY=https://github.com/lavanet/lava.git
 ARG BIN=lavad
 ARG ROCKSDB_VERSION=v7.10.2
@@ -63,6 +64,7 @@ RUN git clone --depth 1 --branch "${ROCKSDB_VERSION}" https://github.com/faceboo
   && find /usr/local/lib -maxdepth 1 -type f -name 'librocksdb.so.*' -exec strip --strip-unneeded {} \;
 
 FROM build-base AS lava-builder
+ARG IMAGE_TAG
 ARG LAVA_VERSION
 ARG GIT_REPOSITORY
 ARG BIN
@@ -80,8 +82,8 @@ ENV PKG_CONFIG_PATH="/usr/local/lib/pkgconfig"
 WORKDIR /src/lava
 
 RUN : "${BIN:?BIN build arg is required}" \
-  && : "${LAVA_VERSION:?LAVA_VERSION build arg is required}" \
-  && git clone --depth 1 --branch "${LAVA_VERSION}" "${GIT_REPOSITORY}" .
+  && LAVA_RELEASE="${LAVA_VERSION:-${IMAGE_TAG:?IMAGE_TAG build arg is required}}" \
+  && git clone --depth 1 --branch "${LAVA_RELEASE}" "${GIT_REPOSITORY}" .
 
 RUN --mount=type=cache,target=/go/pkg/mod \
     --mount=type=cache,target=/root/.cache/go-build \
@@ -92,6 +94,7 @@ RUN --mount=type=cache,target=/go/pkg/mod \
       LEDGER_ENABLED=false
 
 FROM alpine:${ALPINE_VERSION} AS runtime
+ARG IMAGE_TAG
 ARG LAVA_VERSION
 ARG ROCKSDB_SO_VERSION
 ARG BIN
@@ -99,7 +102,7 @@ ARG BIN
 LABEL org.opencontainers.image.title="Lava with RocksDB" \
       org.opencontainers.image.description="Lava binary built from source with RocksDB backend support" \
       org.opencontainers.image.source="https://github.com/lavanet/lava" \
-      org.opencontainers.image.version="${LAVA_VERSION}" \
+      org.opencontainers.image.version="${IMAGE_TAG}" \
       org.opencontainers.image.vendor="Impulse Expert" \
       org.opencontainers.image.licenses="Apache-2.0"
 

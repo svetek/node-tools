@@ -17,49 +17,42 @@
             "node_name": "axelar-node",
             "project_name": "axelar",
             "git_repository": "axelarnetwork/axelar-core",
-            "node_type": "node",
             "binary": "axelard"
         },
         {
             "node_name": "cosmos-node",
             "project_name": "cosmos",
             "git_repository": "cosmos/gaia",
-            "node_type": "node",
             "binary": "gaiad"
         },
         {
             "node_name": "lava-node",
             "project_name": "lava",
             "git_repository": "lavanet/lava",
-            "node_type": "node",
             "binary": "lavad"
         },
         {
             "node_name": "ripple-node",
             "project_name": "ripple",
             "git_repository": "XRPLF/rippled",
-            "node_type": "node",
             "binary": "rippled"
         },
         {
             "node_name": "massa-node",
             "project_name": "massa",
             "git_repository": "massalabs/massa",
-            "node_type": "node",
             "binary": "massa-node"
         },
         {
             "node_name": "near-node",
             "project_name": "near",
             "git_repository": "near/nearcore",
-            "node_type": "node",
             "binary": "neard"
         },
         {
             "node_name": "sonic-node",
             "project_name": "sonic",
             "git_repository": "0xsoniclabs/sonic",
-            "node_type": "node",
             "binary": "sonicd"
         }
     ]

@@ -23,6 +23,7 @@ jobs:
     needs: get_projects_config
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix: ${{ fromJson(needs.get_projects_config.outputs.config) }}
     steps:
       - name: 📝 Get last version from the DockerHub registry
@@ -47,42 +48,21 @@ jobs:
             -H "X-GitHub-Api-Version: 2022-11-28" \
             "${{ matrix.git_api_url}}/${{ matrix.git_repository}}/releases")
 
-          case "${{ matrix.project_name }}" in
-            "lava")
-              last_version_info=$(echo "$github_releases_response" | jq -e -r -c --arg BINARY "${{ matrix.binary }}" '
-                if type == "array" then
-                  first(.[] | select(.assets[]?.name | test("^" + $BINARY + "-.*$")) | {tag_name, published_at})
-                elif type == "object" and .message? then
-                  .message | halt_error(1)
-                else
-                  "Unexpected GitHub API response type: \(type)" | halt_error(1)
-                end
-              ')
-              version=$(printf '%s' "$last_version_info" | jq -r .tag_name)
-              version_date=$(printf '%s' "$last_version_info" | jq -r .published_at)
-              echo "Last version is $version"
-              echo "g_last_version=$version" >> "$GITHUB_OUTPUT"
-              echo "Last version date is $version_date"
-              echo "g_last_version_date=$version_date" >> "$GITHUB_OUTPUT"
-              ;;
-            *)
-              last_version_info=$(echo "$github_releases_response" | jq -e -r -c '
-                if type == "array" then
-                  first(.[] | select(.prerelease == false and .draft == false) | {tag_name, published_at})
-                elif type == "object" and .message? then
-                  .message | halt_error(1)
-                else
-                  "Unexpected GitHub API response type: \(type)" | halt_error(1)
-                end
-              ')
-              version=$(printf '%s' "$last_version_info" | jq -r .tag_name)
-              version_date=$(printf '%s' "$last_version_info" | jq -r .published_at)
-              echo "Last version is $version"
-              echo "g_last_version=$version" >> "$GITHUB_OUTPUT"
-              echo "Last version date is $version_date"
-              echo "g_last_version_date=$version_date" >> "$GITHUB_OUTPUT"
-              ;;
-          esac
+          last_version_info=$(echo "$github_releases_response" | jq -e -r -c '
+            if type == "array" then
+              first(.[] | select(.prerelease == false and .draft == false) | {tag_name, published_at})
+            elif type == "object" and .message? then
+              .message | halt_error(1)
+            else
+              "Unexpected GitHub API response type: \(type)" | halt_error(1)
+            end
+          ')
+          version=$(printf '%s' "$last_version_info" | jq -r .tag_name)
+          version_date=$(printf '%s' "$last_version_info" | jq -r .published_at)
+          echo "Last version is $version"
+          echo "g_last_version=$version" >> "$GITHUB_OUTPUT"
+          echo "Last version date is $version_date"
+          echo "g_last_version_date=$version_date" >> "$GITHUB_OUTPUT"
 
       - name: 🆚 Compare versions
         id: compare_versions

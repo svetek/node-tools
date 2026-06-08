@@ -2,11 +2,10 @@
     "node_name": [
         "axelar-node",
         "cosmos-node",
+        "lava-node",
         "ripple-node",
-        "haqq-node",
         "massa-node",
         "near-node",
-        "filecoin-node",
         "sonic-node"
     ],
     "include": [
@@ -29,18 +28,18 @@
             "binary": "gaiad"
         },
         {
+            "node_name": "lava-node",
+            "project_name": "lava",
+            "git_repository": "lavanet/lava",
+            "node_type": "node",
+            "binary": "lavad"
+        },
+        {
             "node_name": "ripple-node",
             "project_name": "ripple",
             "git_repository": "XRPLF/rippled",
             "node_type": "node",
             "binary": "rippled"
-        },
-        {
-            "node_name": "haqq-node",
-            "project_name": "haqq",
-            "git_repository": "haqq-network/haqq",
-            "node_type": "node",
-            "binary": "haqqd"
         },
         {
             "node_name": "massa-node",
@@ -55,13 +54,6 @@
             "git_repository": "near/nearcore",
             "node_type": "node",
             "binary": "neard"
-        },
-        {
-            "node_name": "filecoin-node",
-            "project_name": "filecoin",
-            "git_repository": "filecoin-project/lotus",
-            "node_type": "node",
-            "binary": "lotus"
         },
         {
             "node_name": "sonic-node",

@@ -17,44 +17,30 @@ jobs:
       - name: Convert JSON to String
         id: convert-json
         run: |
-          echo "result=$(cat ./projects.json | jq -c '.')" >> $GITHUB_OUTPUT
+          echo "result=$(jq -c '.' ./projects.json)" >> "$GITHUB_OUTPUT"
   check_new_version:
-    name: Check a new version for ${{ matrix.project_name }} ${{ matrix.node_type }}
+    name: Check a new version for ${{ matrix.project_name }}
     needs: get_projects_config
     runs-on: ubuntu-latest
     strategy:
       matrix: ${{ fromJson(needs.get_projects_config.outputs.config) }}
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
       - name: 📝 Get last version from the DockerHub registry
         id: get_last_version_from_dockerhub
         run: |
-          case "${{ matrix.project_name }}" in
-            "lava"|"celestia")
-              last_version_info=$(curl -s -S "https://registry.hub.docker.com/v2/repositories/svetekllc/${{ matrix.project_name }}/tags/" | jq -r -c '.results[] | select(.name | test("${{ matrix.node_type }}"; "i")) | {name, tag_last_pushed}' | head -n1)
-              version=$(echo $last_version_info | jq -r .name)
-              version_date=$(echo $last_version_info | jq -r .tag_last_pushed)
-              echo "Last version is $version"
-              echo "d_last_version=$version" >> "$GITHUB_OUTPUT"
-              echo "Last version date is $version_date"
-              echo "d_last_version_date=$version_date" >> "$GITHUB_OUTPUT"
-              ;;
-            *)
-              last_version_info=$(curl -s -S "https://registry.hub.docker.com/v2/repositories/svetekllc/${{ matrix.project_name }}/tags/" | jq -r -c '.results[] | {name, tag_last_pushed}' | head -n1)
-              version=$(echo $last_version_info | jq -r .name)
-              version_date=$(echo $last_version_info | jq -r .tag_last_pushed)
-              echo "Last version is $version"
-              echo "d_last_version=$version" >> "$GITHUB_OUTPUT"
-              echo "Last version date is $version_date"
-              echo "d_last_version_date=$version_date" >> "$GITHUB_OUTPUT"
-              ;;
-          esac
+          set -euo pipefail
+          last_version_info=$(curl -s -S "https://registry.hub.docker.com/v2/repositories/svetekllc/${{ matrix.project_name }}/tags/" | jq -r -c 'first(.results[] | {name, tag_last_pushed})')
+          version=$(printf '%s' "$last_version_info" | jq -r .name)
+          version_date=$(printf '%s' "$last_version_info" | jq -r .tag_last_pushed)
+          echo "Last version is $version"
+          echo "d_last_version=$version" >> "$GITHUB_OUTPUT"
+          echo "Last version date is $version_date"
+          echo "d_last_version_date=$version_date" >> "$GITHUB_OUTPUT"
 
       - name: 📝 Get last version from the GitHub repository
         id: get_last_version_from_github
         run: |
+          set -euo pipefail
           github_releases_response=$(curl -s -S \
             -H "Accept: application/vnd.github+json" \
             -H "Authorization: Bearer ${{ github.token }}" \
@@ -72,8 +58,8 @@ jobs:
                   "Unexpected GitHub API response type: \(type)" | halt_error(1)
                 end
               ')
-              version=$(echo $last_version_info | jq -r .tag_name)
-              version_date=$(echo $last_version_info | jq -r .published_at)
+              version=$(printf '%s' "$last_version_info" | jq -r .tag_name)
+              version_date=$(printf '%s' "$last_version_info" | jq -r .published_at)
               echo "Last version is $version"
               echo "g_last_version=$version" >> "$GITHUB_OUTPUT"
               echo "Last version date is $version_date"
@@ -89,8 +75,8 @@ jobs:
                   "Unexpected GitHub API response type: \(type)" | halt_error(1)
                 end
               ')
-              version=$(echo $last_version_info | jq -r .tag_name)
-              version_date=$(echo $last_version_info | jq -r .published_at)
+              version=$(printf '%s' "$last_version_info" | jq -r .tag_name)
+              version_date=$(printf '%s' "$last_version_info" | jq -r .published_at)
               echo "Last version is $version"
               echo "g_last_version=$version" >> "$GITHUB_OUTPUT"
               echo "Last version date is $version_date"
@@ -103,7 +89,6 @@ jobs:
         env:
           bin: ${{ matrix.binary }}
           git_repository: ${{ matrix.git_url }}/${{ matrix.git_repository }}
-          node_type: ${{ matrix.node_type }}
           project_name: ${{ matrix.project_name }}
           tag: ${{ steps.get_last_version_from_github.outputs.g_last_version }}
           version_from_docker: ${{ steps.get_last_version_from_dockerhub.outputs.d_last_version }}
@@ -111,25 +96,15 @@ jobs:
           version_from_git: ${{ steps.get_last_version_from_github.outputs.g_last_version }}
           version_date_from_git: ${{ steps.get_last_version_from_github.outputs.g_last_version_date }}
         run: |
-          if [[ "${version_from_docker//-$node_type}" != "$version_from_git" ]] || [[ "${version_date_from_docker}" -lt "${version_date_from_git}" ]]
+          set -euo pipefail
+          if [[ "${version_from_docker}" != "$version_from_git" ]] || [[ "${version_date_from_docker}" < "${version_date_from_git}" ]]
           then
             echo "Versions are different. Running build."
-            case "${project_name}" in
-              "lava"|"celestia")
-                curl -L -X POST \
-                -H "Accept: application/vnd.github+json" \
-                -H "Authorization: Bearer ${{ secrets.WORKFLOW_GITHUB_TOKEN }}" \
-                https://api.github.com/repos/svetek/node-tools/actions/workflows/build_image_with_node_type.yaml/dispatches \
-                -d "{\"ref\":\"main\",\"inputs\":{\"project_name\": \"$project_name\",\"tag\": \"$tag\", \"git_repository\": \"$git_repository\", \"bin\": \"$bin\", \"node_type\": \"$node_type\"}}"
-                ;;
-              *)
-                curl -L -X POST \
-                -H "Accept: application/vnd.github+json" \
-                -H "Authorization: Bearer ${{ secrets.WORKFLOW_GITHUB_TOKEN }}" \
-                https://api.github.com/repos/svetek/node-tools/actions/workflows/build_image_without_node_type.yaml/dispatches \
-                -d "{\"ref\":\"main\",\"inputs\":{\"project_name\": \"$project_name\",\"tag\": \"$tag\", \"git_repository\": \"$git_repository\", \"bin\": \"$bin\"}}"
-                ;;
-            esac
+            curl -L -X POST \
+            -H "Accept: application/vnd.github+json" \
+            -H "Authorization: Bearer ${{ secrets.WORKFLOW_GITHUB_TOKEN }}" \
+            https://api.github.com/repos/svetek/node-tools/actions/workflows/build_image.yaml/dispatches \
+            -d "{\"ref\":\"main\",\"inputs\":{\"project_name\": \"$project_name\",\"tag\": \"$tag\", \"git_repository\": \"$git_repository\", \"bin\": \"$bin\"}}"
           else
             echo "Versions are the same. Skipping build."
           fi

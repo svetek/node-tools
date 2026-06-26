@@ -25,7 +25,7 @@ RUN set -eux; \
       'Signed-By: /etc/apt/keyrings/ripple.gpg' \
       > /etc/apt/sources.list.d/ripple.sources; \
     apt-get update; \
-    RIPPLED_VERSION="$(apt-cache madison "${RIPPLED_PACKAGE_NAME}" | awk '$3 ~ "^" ENVIRON["IMAGE_TAG"] {print $3; exit}')"; \
+    RIPPLED_VERSION="$(apt-cache madison "${RIPPLED_PACKAGE_NAME}" | awk -v tag="${IMAGE_TAG}" '$3 ~ "^" tag {print $3; exit}')"; \
     test -n "${RIPPLED_VERSION}"; \
     apt-get install -y --no-install-recommends "${RIPPLED_PACKAGE_NAME}=${RIPPLED_VERSION}"; \
     apt-get purge -y --auto-remove gnupg wget; \

@@ -4,7 +4,7 @@ ARG IMAGE_TAG
 ARG RIPPLED_REPO_BASE=https://repos.ripple.com/repos/rippled-deb
 ARG OS_CODENAME=trixie
 ARG RIPPLED_CHANNEL=stable
-ARG RIPPLED_PACKAGE_NAME=rippled
+ARG RIPPLED_PACKAGE_NAMES="rippled xrpld"
 ARG RIPPLED_UID=10001
 ARG RIPPLED_GID=10001
 
@@ -25,9 +25,22 @@ RUN set -eux; \
       'Signed-By: /etc/apt/keyrings/ripple.gpg' \
       > /etc/apt/sources.list.d/ripple.sources; \
     apt-get update; \
-    RIPPLED_VERSION="$(apt-cache madison "${RIPPLED_PACKAGE_NAME}" | awk -v tag="${IMAGE_TAG}" '$3 ~ "^" tag {print $3; exit}')"; \
+    RIPPLED_PACKAGE_NAME=""; \
+    RIPPLED_VERSION=""; \
+    for candidate in ${RIPPLED_PACKAGE_NAMES}; do \
+      version="$(apt-cache madison "${candidate}" | awk -v tag="${IMAGE_TAG}" '$3 ~ "^" tag {print $3; exit}')"; \
+      if [ -n "${version}" ]; then \
+        RIPPLED_PACKAGE_NAME="${candidate}"; \
+        RIPPLED_VERSION="${version}"; \
+        break; \
+      fi; \
+    done; \
+    test -n "${RIPPLED_PACKAGE_NAME}"; \
     test -n "${RIPPLED_VERSION}"; \
     apt-get install -y --no-install-recommends "${RIPPLED_PACKAGE_NAME}=${RIPPLED_VERSION}"; \
+    if command -v xrpld >/dev/null 2>&1 && ! command -v rippled >/dev/null 2>&1; then \
+      ln -s "$(command -v xrpld)" /usr/local/bin/rippled; \
+    fi; \
     apt-get purge -y --auto-remove gnupg wget; \
     rm -f /tmp/ripple.key; \
     rm -rf /var/lib/apt/lists/*

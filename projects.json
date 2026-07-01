@@ -1,7 +1,7 @@
 {
     "node_name": [
         "axelar-node",
-        "cosmos-node",
+        "cosmoshub-node",
         "lava-node",
         "ripple-node",
         "massa-node",
@@ -20,8 +20,8 @@
             "binary": "axelard"
         },
         {
-            "node_name": "cosmos-node",
-            "project_name": "cosmos",
+            "node_name": "cosmoshub-node",
+            "project_name": "cosmoshub",
             "git_repository": "cosmos/gaia",
             "binary": "gaiad",
             "include_prerelease": true

@@ -1,12 +1,12 @@
 FROM debian:13-slim
 
 ARG IMAGE_TAG
-ARG RIPPLED_REPO_BASE=https://repos.ripple.com/repos/rippled-deb
+ARG XRPLD_REPO_BASE=https://repos.ripple.com/repos/rippled-deb
 ARG OS_CODENAME=trixie
-ARG RIPPLED_CHANNEL=stable
-ARG RIPPLED_PACKAGE_NAMES="rippled xrpld"
-ARG RIPPLED_UID=10001
-ARG RIPPLED_GID=10001
+ARG XRPLD_CHANNEL=stable
+ARG XRPLD_PACKAGE_NAMES="xrpld"
+ARG XRPLD_UID=10001
+ARG XRPLD_GID=10001
 
 ENV DEBIAN_FRONTEND=noninteractive
 
@@ -19,41 +19,44 @@ RUN set -eux; \
     gpg --dearmor -o /etc/apt/keyrings/ripple.gpg /tmp/ripple.key; \
     printf '%s\n' \
       'Types: deb' \
-      "URIs: ${RIPPLED_REPO_BASE}" \
+      "URIs: ${XRPLD_REPO_BASE}" \
       "Suites: ${OS_CODENAME}" \
-      "Components: ${RIPPLED_CHANNEL}" \
+      "Components: ${XRPLD_CHANNEL}" \
       'Signed-By: /etc/apt/keyrings/ripple.gpg' \
       > /etc/apt/sources.list.d/ripple.sources; \
     apt-get update; \
-    RIPPLED_PACKAGE_NAME=""; \
-    RIPPLED_VERSION=""; \
-    for candidate in ${RIPPLED_PACKAGE_NAMES}; do \
+    XRPLD_PACKAGE_NAME=""; \
+    XRPLD_VERSION=""; \
+    for candidate in ${XRPLD_PACKAGE_NAMES}; do \
       version="$(apt-cache madison "${candidate}" | awk -v tag="${IMAGE_TAG}" '$3 ~ "^" tag {print $3; exit}')"; \
       if [ -n "${version}" ]; then \
-        RIPPLED_PACKAGE_NAME="${candidate}"; \
-        RIPPLED_VERSION="${version}"; \
+        XRPLD_PACKAGE_NAME="${candidate}"; \
+        XRPLD_VERSION="${version}"; \
         break; \
       fi; \
     done; \
-    test -n "${RIPPLED_PACKAGE_NAME}"; \
-    test -n "${RIPPLED_VERSION}"; \
-    apt-get install -y --no-install-recommends "${RIPPLED_PACKAGE_NAME}=${RIPPLED_VERSION}"; \
+    test -n "${XRPLD_PACKAGE_NAME}"; \
+    test -n "${XRPLD_VERSION}"; \
+    apt-get install -y --no-install-recommends "${XRPLD_PACKAGE_NAME}=${XRPLD_VERSION}"; \
     if command -v xrpld >/dev/null 2>&1 && ! command -v rippled >/dev/null 2>&1; then \
       ln -s "$(command -v xrpld)" /usr/local/bin/rippled; \
+    fi; \
+    if command -v rippled >/dev/null 2>&1 && ! command -v xrpld >/dev/null 2>&1; then \
+      ln -s "$(command -v rippled)" /usr/local/bin/xrpld; \
     fi; \
     apt-get purge -y --auto-remove gnupg wget; \
     rm -f /tmp/ripple.key; \
     rm -rf /var/lib/apt/lists/*
 
 RUN set -eux; \
-    groupadd --gid "${RIPPLED_GID}" appuser; \
-    useradd --uid "${RIPPLED_UID}" --gid "${RIPPLED_GID}" --home-dir /rippled/data --shell /usr/sbin/nologin appuser; \
-    install -d -m 0755 -o "${RIPPLED_UID}" -g "${RIPPLED_GID}" /rippled/data /rippled/data/nudb; \
-    install -d -m 0755 /rippled/config
+    groupadd --gid "${XRPLD_GID}" appuser; \
+    useradd --uid "${XRPLD_UID}" --gid "${XRPLD_GID}" --home-dir /xrpld/data --shell /usr/sbin/nologin appuser; \
+    install -d -m 0755 -o "${XRPLD_UID}" -g "${XRPLD_GID}" /xrpld/data /xrpld/data/nudb; \
+    install -d -m 0755 /xrpld/config
 
 EXPOSE 5005 5006 5007 6006 51235
 
 USER appuser:appuser
 
-ENTRYPOINT ["rippled"]
-CMD ["--conf=/rippled/config/rippled.cfg", "--fg"]
+ENTRYPOINT ["xrpld"]
+CMD ["--conf=/xrpld/config/xrpld.cfg", "--fg"]

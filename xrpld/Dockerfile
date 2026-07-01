@@ -14,16 +14,16 @@ RUN set -eux; \
     apt-get update; \
     apt-get install -y --no-install-recommends ca-certificates curl gnupg wget; \
     install -m 0755 -d /etc/apt/keyrings; \
-    wget -qO /tmp/ripple.key "https://repos.ripple.com/repos/api/gpg/key/public"; \
-    test "$(gpg --show-keys --with-colons /tmp/ripple.key | awk -F: '$1 == "fpr" {print $10; exit}')" = "E057C1CF72B0DF1A4559E8577DEE9236AB06FAA6"; \
-    gpg --dearmor -o /etc/apt/keyrings/ripple.gpg /tmp/ripple.key; \
+    wget -qO /tmp/xrpld.key "https://repos.ripple.com/repos/api/gpg/key/public"; \
+    test "$(gpg --show-keys --with-colons /tmp/xrpld.key | awk -F: '$1 == "fpr" {print $10; exit}')" = "E057C1CF72B0DF1A4559E8577DEE9236AB06FAA6"; \
+    gpg --dearmor -o /etc/apt/keyrings/xrpld.gpg /tmp/xrpld.key; \
     printf '%s\n' \
       'Types: deb' \
       "URIs: ${XRPLD_REPO_BASE}" \
       "Suites: ${OS_CODENAME}" \
       "Components: ${XRPLD_CHANNEL}" \
-      'Signed-By: /etc/apt/keyrings/ripple.gpg' \
-      > /etc/apt/sources.list.d/ripple.sources; \
+      'Signed-By: /etc/apt/keyrings/xrpld.gpg' \
+      > /etc/apt/sources.list.d/xrpld.sources; \
     apt-get update; \
     XRPLD_PACKAGE_NAME=""; \
     XRPLD_VERSION=""; \
@@ -38,14 +38,8 @@ RUN set -eux; \
     test -n "${XRPLD_PACKAGE_NAME}"; \
     test -n "${XRPLD_VERSION}"; \
     apt-get install -y --no-install-recommends "${XRPLD_PACKAGE_NAME}=${XRPLD_VERSION}"; \
-    if command -v xrpld >/dev/null 2>&1 && ! command -v rippled >/dev/null 2>&1; then \
-      ln -s "$(command -v xrpld)" /usr/local/bin/rippled; \
-    fi; \
-    if command -v rippled >/dev/null 2>&1 && ! command -v xrpld >/dev/null 2>&1; then \
-      ln -s "$(command -v rippled)" /usr/local/bin/xrpld; \
-    fi; \
     apt-get purge -y --auto-remove gnupg wget; \
-    rm -f /tmp/ripple.key; \
+    rm -f /tmp/xrpld.key; \
     rm -rf /var/lib/apt/lists/*
 
 RUN set -eux; \

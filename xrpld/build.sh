@@ -3,7 +3,7 @@ export DOCKER_BUILDKIT=1
 
 set -e
 
-BIN="rippled"
+BIN="xrpld"
 BUILD_DATE="$(date -u +'%Y-%m-%d')"
 DIR="$( cd "$( dirname "$0" )" && pwd )"
 DOCKERFILE="$DIR/Dockerfile"

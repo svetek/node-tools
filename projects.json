@@ -23,7 +23,8 @@
             "node_name": "cosmos-node",
             "project_name": "cosmos",
             "git_repository": "cosmos/gaia",
-            "binary": "gaiad"
+            "binary": "gaiad",
+            "include_prerelease": true
         },
         {
             "node_name": "lava-node",

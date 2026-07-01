@@ -51,13 +51,13 @@ jobs:
 
           last_version_info=$(printf '%s' "$github_releases_response" | jq -e -r -c '
             if type == "array" then
-              first(.[] | select(.prerelease == false and .draft == false) | {tag_name, published_at})
+              first(.[] | select(.draft == false and ((.prerelease == false) or ($include_prerelease and .prerelease == true))) | {tag_name, published_at})
             elif type == "object" and .message? then
               .message | halt_error(1)
             else
               "Unexpected GitHub API response type: \(type)" | halt_error(1)
             end
-          ')
+          ' --argjson include_prerelease '${{ matrix.include_prerelease || false }}')
           version=$(printf '%s' "$last_version_info" | jq -r .tag_name)
           version_date=$(printf '%s' "$last_version_info" | jq -r .published_at)
           echo "Last version is $version"

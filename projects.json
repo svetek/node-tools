@@ -6,7 +6,8 @@
         "xrpl-node",
         "massa-node",
         "near-node",
-        "sonic-node"
+        "sonic-node",
+        "casper-node-launcher"
     ],
     "include": [
         {
@@ -55,6 +56,12 @@
             "project_name": "sonic",
             "git_repository": "0xsoniclabs/sonic",
             "binary": "sonicd"
+        },
+        {
+            "node_name": "casper-node-launcher",
+            "project_name": "casper-node-launcher",
+            "git_repository": "casper-network/casper-node-launcher",
+            "binary": "casper-node-launcher"
         }
     ]
 }

@@ -15,11 +15,6 @@ WORKDIR /src/casper-node-launcher
 
 RUN git clone --depth 1 --branch "${IMAGE_TAG:?IMAGE_TAG build arg is required}" "${GIT_REPOSITORY}" .
 
-# rustup reads the cloned repo's own rust-toolchain.toml and auto-installs the pinned
-# compiler (1.85.1 as of v1.0.8), independent of RUST_VERSION above.
-# --locked is intentionally omitted: released tags (e.g. v1.0.8) ship a Cargo.lock whose
-# own self-referenced package version trails Cargo.toml by one release, which makes
-# --locked fail even though no real dependency needs resolving.
 RUN --mount=type=cache,target=/usr/local/cargo/registry \
     --mount=type=cache,target=/usr/local/cargo/git \
     --mount=type=cache,target=/src/casper-node-launcher/target \
@@ -37,14 +32,12 @@ LABEL org.opencontainers.image.title="Casper Node Launcher" \
       org.opencontainers.image.vendor="Impulse Expert" \
       org.opencontainers.image.licenses="Apache-2.0"
 
-# ca-certificates and libssl3 are runtime requirements of the casper-node binary that
-# this launcher spawns as a child process from the staged /var/lib/casper/bin volume,
-# not of the launcher binary itself.
 RUN --mount=type=cache,target=/var/cache/apt \
     --mount=type=cache,target=/var/lib/apt \
     apt-get update \
     && apt-get install -y --no-install-recommends \
         ca-certificates \
+        curl \
         libssl3t64 \
     && rm -rf /var/lib/apt/lists/*
 

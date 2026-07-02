@@ -7,7 +7,8 @@
         "massa-node",
         "near-node",
         "sonic-node",
-        "casper-node-launcher"
+        "casper-node-launcher",
+        "casper-sidecar"
     ],
     "include": [
         {
@@ -62,6 +63,12 @@
             "project_name": "casper-node-launcher",
             "git_repository": "casper-network/casper-node-launcher",
             "binary": "casper-node-launcher"
+        },
+        {
+            "node_name": "casper-sidecar",
+            "project_name": "casper-sidecar",
+            "git_repository": "casper-network/casper-sidecar",
+            "binary": "casper-sidecar"
         }
     ]
 }

@@ -3,14 +3,14 @@ export DOCKER_BUILDKIT=1
 
 set -euo pipefail
 
-BIN="casper-node-launcher"
 BUILD_DATE="$(date -u +'%Y-%m-%d')"
 DIR="$( cd "$( dirname "$0" )" && pwd )"
 DOCKERFILE="$DIR/Dockerfile"
-GIT_REPOSITORY="https://github.com/casper-network/casper-node-launcher.git"
 
 read -r -p "Enter image name: " IMAGE_NAME
-read -r -p "Enter release tag: " IMAGE_TAG
+read -r -p "Enter release tag: " RELEASE_TAG
+
+IMAGE_TAG="$RELEASE_TAG"
 
 echo "Do you want to send the image to DockerHub?"
 PS3="Send the image to DockerHub: "
@@ -41,13 +41,11 @@ echo -e "Build date: \t$BUILD_DATE"
 echo -e "Docker context: $DIR"
 echo -e "Dockerfile: \t$DOCKERFILE"
 echo -e "Docker Image: \t$IMAGE"
-echo -e "Version: \t$IMAGE_TAG"
-echo -e "Binary: \t$BIN\n"
+echo -e "Release tag: \t$RELEASE_TAG"
+echo -e "Image tag: \t$IMAGE_TAG\n"
 
 docker build -f "$DOCKERFILE" "$DIR" \
      --build-arg IMAGE_TAG="$IMAGE_TAG" \
-     --build-arg GIT_REPOSITORY="$GIT_REPOSITORY" \
-     --build-arg BIN="$BIN" \
      --tag "$IMAGE"
 
 if [[ "$PUSH_FLAG" == "yes" ]]

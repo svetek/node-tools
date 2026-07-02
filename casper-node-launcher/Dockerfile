@@ -1,32 +1,33 @@
 # syntax=docker/dockerfile:1.7
 
-ARG DEBIAN_VERSION=bookworm
-ARG RUNTIME_DEBIAN_VERSION=trixie
-ARG RUST_VERSION=1.85.1
+ARG DEBIAN_VERSION=trixie
+ARG RUST_VERSION=1.91.0
 ARG IMAGE_TAG
-ARG CASPER_LAUNCHER_VERSION
 ARG GIT_REPOSITORY=https://github.com/casper-network/casper-node-launcher.git
 ARG BIN=casper-node-launcher
 
 FROM rust:${RUST_VERSION}-${DEBIAN_VERSION} AS casper-node-launcher-builder
 ARG IMAGE_TAG
-ARG CASPER_LAUNCHER_VERSION
 ARG GIT_REPOSITORY
 ARG BIN
 
 WORKDIR /src/casper-node-launcher
 
-RUN LAUNCHER_RELEASE="${CASPER_LAUNCHER_VERSION:-${IMAGE_TAG:?IMAGE_TAG build arg is required}}" \
-  && git clone --depth 1 --branch "${LAUNCHER_RELEASE}" "${GIT_REPOSITORY}" .
+RUN git clone --depth 1 --branch "${IMAGE_TAG:?IMAGE_TAG build arg is required}" "${GIT_REPOSITORY}" .
 
+# rustup reads the cloned repo's own rust-toolchain.toml and auto-installs the pinned
+# compiler (1.85.1 as of v1.0.8), independent of RUST_VERSION above.
+# --locked is intentionally omitted: released tags (e.g. v1.0.8) ship a Cargo.lock whose
+# own self-referenced package version trails Cargo.toml by one release, which makes
+# --locked fail even though no real dependency needs resolving.
 RUN --mount=type=cache,target=/usr/local/cargo/registry \
     --mount=type=cache,target=/usr/local/cargo/git \
     --mount=type=cache,target=/src/casper-node-launcher/target \
     set -eux; \
-    cargo build --release --locked; \
+    cargo build --release; \
     install -Dm0755 "target/release/${BIN}" "/out/${BIN}"
 
-FROM debian:${RUNTIME_DEBIAN_VERSION}-slim AS runtime
+FROM debian:${DEBIAN_VERSION}-slim AS runtime
 ARG IMAGE_TAG
 
 LABEL org.opencontainers.image.title="Casper Node Launcher" \

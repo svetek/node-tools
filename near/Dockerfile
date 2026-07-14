@@ -15,6 +15,7 @@ RUN apt-get update -qq \
         llvm \
         pkg-config \
         g++ \
+        make \
         libssl-dev \
         libclang-dev \
         curl \

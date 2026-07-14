@@ -2,6 +2,7 @@
 set -e
 
 CONFIG_PATH="${CONFIG_PATH:-/root/.near}"
+DOWNLOAD_CONFIG_TYPE="${DOWNLOAD_CONFIG_TYPE:-rpc}"
 
 if [[ ! -f "$CONFIG_PATH/node_key.json" ]]
 then
@@ -11,7 +12,7 @@ then
          ${ACCOUNT_ID:+--account-id="$ACCOUNT_ID"} \
          ${BOOT_NODES:+--boot-nodes="$BOOT_NODES"} \
          --download-genesis \
-         --download-config
+         --download-config "$DOWNLOAD_CONFIG_TYPE"
 fi
 
 echo -e "\n\e[32m### Run Node ###\e[0m\n"

@@ -24,7 +24,7 @@ RUN apt-get update -qq \
 RUN rustup install ${RUST_VERSION} && rustup default ${RUST_VERSION}
 
 RUN git clone --depth 1 --branch "$IMAGE_TAG" "$GIT_REPOSITORY" .
-RUN make release
+RUN make neard-release
 
 # Runtime image
 FROM debian:trixie-slim

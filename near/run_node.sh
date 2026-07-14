@@ -1,7 +1,9 @@
 #!/bin/bash
 set -e
 
-if [[ ! -f $CONFIG_PATH/node_key.json ]]
+CONFIG_PATH="${CONFIG_PATH:-/root/.near}"
+
+if [[ ! -f "$CONFIG_PATH/node_key.json" ]]
 then
     echo -e "\e[32m### Initialization node ###\e[0m\n"
     $BIN ${CONFIG_PATH:+--home="$CONFIG_PATH"} init \

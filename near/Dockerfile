@@ -1,38 +1,47 @@
-# Builder Image
-FROM rust:slim-bookworm AS builder
+# Builder image
+FROM rust:1.93.0-slim-trixie AS builder
 
-ARG GIT_REPOSITORY
+ARG GIT_REPOSITORY=https://github.com/near/nearcore
 ARG IMAGE_TAG
-ARG RUST_VERSION=1.84.0
+ARG RUST_VERSION=1.93.0
 
-# Set Working Directory is /app
 WORKDIR /app
 
-# Install dependencies
-RUN apt-get update -qq && apt-get install -y git cmake clang llvm pkg-config g++ libssl-dev libclang-dev curl
+RUN apt-get update -qq \
+    && apt-get install -y --no-install-recommends \
+        git \
+        cmake \
+        clang \
+        llvm \
+        pkg-config \
+        g++ \
+        libssl-dev \
+        libclang-dev \
+        curl \
+    && rm -rf /var/lib/apt/lists/*
 
-# Install Rust 1.84.0
 RUN rustup install ${RUST_VERSION} && rustup default ${RUST_VERSION}
 
-# Clone and build the project
-RUN git clone --depth 1 --branch $IMAGE_TAG $GIT_REPOSITORY .
+RUN git clone --depth 1 --branch "$IMAGE_TAG" "$GIT_REPOSITORY" .
 RUN make release
 
-# Production Image
-FROM debian:bookworm-slim
+# Runtime image
+FROM debian:trixie-slim
 
-ARG BIN
+ARG BIN=neard
 
 ENV BIN=$BIN
+ENV CONFIG_PATH=/root/.near
 
-RUN apt-get update && apt-get upgrade -y \
-    && apt-get install -y tzdata ca-certificates curl wget jq expect procps \
-    && apt-get -y purge && apt-get -y clean \
-    && apt-get -y autoremove && rm -rf /var/lib/apt/lists/*
+WORKDIR /opt/near
+
+RUN apt-get update \
+    && apt-get install -y --no-install-recommends \
+        ca-certificates \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
  
 COPY --from=builder /app/target/release/$BIN /usr/bin/$BIN
-COPY ./run_node.sh .
+COPY --chmod=755 ./run_node.sh /usr/local/bin/run_node.sh
 
-RUN chmod +x ./run_node.sh
-
-ENTRYPOINT [ "./run_node.sh" ]
+ENTRYPOINT ["/usr/local/bin/run_node.sh"]

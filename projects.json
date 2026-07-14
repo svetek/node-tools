@@ -50,7 +50,8 @@
             "node_name": "near-node",
             "project_name": "near",
             "git_repository": "near/nearcore",
-            "binary": "neard"
+            "binary": "neard",
+            "include_prerelease": true
         },
         {
             "node_name": "sonic-node",

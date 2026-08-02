@@ -7,6 +7,7 @@
         "massa-node",
         "near-node",
         "sonic-node",
+        "bsc-node",
         "casper-node-launcher",
         "casper-sidecar"
     ],
@@ -58,6 +59,12 @@
             "project_name": "sonic",
             "git_repository": "0xsoniclabs/sonic",
             "binary": "sonicd"
+        },
+        {
+            "node_name": "bsc-node",
+            "project_name": "bsc",
+            "git_repository": "bnb-chain/bsc",
+            "binary": "geth"
         },
         {
             "node_name": "casper-node-launcher",

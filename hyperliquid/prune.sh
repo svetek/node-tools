@@ -33,7 +33,9 @@ while true; do
   size_before="$(du -sh "${DATA_PATH}" 2>/dev/null | cut -f1)"
 
   find "${DATA_PATH}" -mindepth 1 "${PRUNE_ARGS[@]}" -type f -mmin "+${MAX_AGE_MINUTES}" -exec rm -f {} + 2>/dev/null
-  find "${DATA_PATH}" -mindepth 1 "${PRUNE_ARGS[@]}" -type d -empty -exec rmdir {} + 2>/dev/null
+
+  # Keep empty directories: hl-node can create a log directory before opening
+  # its first file, so removing it here can race with the node and crash it.
 
   size_after="$(du -sh "${DATA_PATH}" 2>/dev/null | cut -f1)"
   log "prune done: ${size_before} -> ${size_after}"

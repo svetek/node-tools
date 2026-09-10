@@ -26,8 +26,8 @@ def prometheus_label_value(value: str) -> str:
 
 @dataclass(frozen=True)
 class CheckResult:
-    local_height: int
-    remote_height: int
+    node_height: int
+    trusted_height: int
     delta_blocks: int
     max_behind_blocks: int
     healthy: bool
@@ -50,17 +50,19 @@ class EndpointState:
     last_error_at: float | None = None
 
 
-def evaluate_heights(local_height: int, remote_height: int, max_behind_blocks: int) -> CheckResult:
-    delta_blocks = remote_height - local_height
+def evaluate_heights(
+    node_height: int, trusted_height: int, max_behind_blocks: int
+) -> CheckResult:
+    delta_blocks = trusted_height - node_height
     healthy = delta_blocks <= max_behind_blocks
     summary = (
-        "local node is within the allowed lag"
+        "node is within the allowed lag"
         if healthy
-        else "local node is behind the remote node beyond the allowed lag"
+        else "node is behind the trusted node beyond the allowed lag"
     )
     return CheckResult(
-        local_height=local_height,
-        remote_height=remote_height,
+        node_height=node_height,
+        trusted_height=trusted_height,
         delta_blocks=delta_blocks,
         max_behind_blocks=max_behind_blocks,
         healthy=healthy,
@@ -77,8 +79,8 @@ class SharedState:
     last_error: str | None = None
     consecutive_failures: int = 0
     result: CheckResult | None = None
-    local_rpc: EndpointState | None = None
-    remote_rpc: EndpointState | None = None
+    node_rpc: EndpointState | None = None
+    trusted_rpc: EndpointState | None = None
     websocket: EndpointState | None = None
 
     def snapshot(self) -> dict[str, Any]:
@@ -90,23 +92,25 @@ class SharedState:
                 "last_error": self.last_error,
                 "consecutive_failures": self.consecutive_failures,
                 "result": asdict(self.result) if self.result else None,
-                "local_rpc": asdict(self.local_rpc) if self.local_rpc else None,
-                "remote_rpc": asdict(self.remote_rpc) if self.remote_rpc else None,
+                "node_rpc": asdict(self.node_rpc) if self.node_rpc else None,
+                "trusted_rpc": (
+                    asdict(self.trusted_rpc) if self.trusted_rpc else None
+                ),
                 "websocket": asdict(self.websocket) if self.websocket else None,
             }
 
     def set_endpoint_urls(
-        self, local_url: str, remote_url: str, websocket_url: str = ""
+        self, node_url: str, trusted_url: str, websocket_url: str = ""
     ) -> None:
         with self.lock:
-            if self.local_rpc is None:
-                self.local_rpc = EndpointState(url=local_url)
+            if self.node_rpc is None:
+                self.node_rpc = EndpointState(url=node_url)
             else:
-                self.local_rpc.url = local_url
-            if self.remote_rpc is None:
-                self.remote_rpc = EndpointState(url=remote_url)
+                self.node_rpc.url = node_url
+            if self.trusted_rpc is None:
+                self.trusted_rpc = EndpointState(url=trusted_url)
             else:
-                self.remote_rpc.url = remote_url
+                self.trusted_rpc.url = trusted_url
             if websocket_url:
                 if self.websocket is None:
                     self.websocket = EndpointState(url=websocket_url)
@@ -143,10 +147,10 @@ class SharedState:
             endpoint.last_error_at = now
 
     def _endpoint_by_url(self, url: str) -> EndpointState:
-        if self.local_rpc and self.local_rpc.url == url:
-            return self.local_rpc
-        if self.remote_rpc and self.remote_rpc.url == url:
-            return self.remote_rpc
+        if self.node_rpc and self.node_rpc.url == url:
+            return self.node_rpc
+        if self.trusted_rpc and self.trusted_rpc.url == url:
+            return self.trusted_rpc
         if self.websocket and self.websocket.url == url:
             return self.websocket
         raise ValueError(f"unknown endpoint url: {url}")
@@ -179,27 +183,27 @@ class CheckerService:
         self.time_fn = time_fn
         self.sleep_fn = sleep_fn
         self.state.set_endpoint_urls(
-            config.local_rpc_url,
-            config.remote_rpc_url,
+            config.node_rpc_url,
+            config.trusted_rpc_url,
             config.websocket_url,
         )
 
     def run_once(self) -> CheckResult:
         now = self.time_fn()
         try:
-            local_height, remote_height = self._fetch_pair()
+            node_height, trusted_height = self._fetch_pair()
             self._check_websocket()
             result = evaluate_heights(
-                local_height=local_height,
-                remote_height=remote_height,
+                node_height=node_height,
+                trusted_height=trusted_height,
                 max_behind_blocks=self.config.max_behind_blocks,
             )
             self.state.update_success(result, now)
             LOGGER.info(
                 "block heights checked",
                 extra={
-                    "local_height": result.local_height,
-                    "remote_height": result.remote_height,
+                    "node_height": result.node_height,
+                    "trusted_height": result.trusted_height,
                     "delta_blocks": result.delta_blocks,
                     "healthy": result.healthy,
                     "consecutive_failures": self.state.snapshot()["consecutive_failures"],
@@ -245,20 +249,26 @@ class CheckerService:
 
     def _fetch_pair(self) -> tuple[int, int]:
         with ThreadPoolExecutor(max_workers=2) as executor:
-            local_future = executor.submit(
-                self._fetch_with_retries, self.config.local_rpc_url
+            node_future = executor.submit(
+                self._fetch_with_retries, self.config.node_rpc_url
             )
-            remote_future = executor.submit(
-                self._fetch_with_retries, self.config.remote_rpc_url
+            trusted_future = executor.submit(
+                self._fetch_with_retries, self.config.trusted_rpc_url
             )
-            local_result = self._resolve_future(local_future, self.config.local_rpc_url)
-            remote_result = self._resolve_future(remote_future, self.config.remote_rpc_url)
+            node_result = self._resolve_future(node_future, self.config.node_rpc_url)
+            trusted_result = self._resolve_future(
+                trusted_future, self.config.trusted_rpc_url
+            )
 
-            errors = [error for error in (local_result[1], remote_result[1]) if error is not None]
+            errors = [
+                error
+                for error in (node_result[1], trusted_result[1])
+                if error is not None
+            ]
             if errors:
                 raise errors[0]
 
-            return local_result[0], remote_result[0]
+            return node_result[0], trusted_result[0]
 
     def _resolve_future(
         self,
@@ -290,7 +300,7 @@ class CheckerService:
 
 
 class StatusHandler(BaseHTTPRequestHandler):
-    server_version = "evm-height-checker/0.2"
+    server_version = "evm-height-checker/0.3"
 
     def do_GET(self) -> None:  # noqa: N802
         now = time.time()
@@ -384,19 +394,29 @@ class StatusHandler(BaseHTTPRequestHandler):
 
     def _write_json(self, status: HTTPStatus, payload: dict[str, Any]) -> None:
         body = json.dumps(payload, ensure_ascii=True).encode("utf-8")
-        self.send_response(status)
-        self.send_header("Content-Type", "application/json")
-        self.send_header("Content-Length", str(len(body)))
-        self.end_headers()
-        self.wfile.write(body)
+        self._write_response(status, body, content_type="application/json")
 
     def _write_text(self, status: HTTPStatus, payload: str, content_type: str) -> None:
         body = payload.encode("utf-8")
-        self.send_response(status)
-        self.send_header("Content-Type", content_type)
-        self.send_header("Content-Length", str(len(body)))
-        self.end_headers()
-        self.wfile.write(body)
+        self._write_response(status, body, content_type)
+
+    def _write_response(
+        self, status: HTTPStatus, body: bytes, content_type: str
+    ) -> None:
+        try:
+            self.send_response(status)
+            self.send_header("Content-Type", content_type)
+            self.send_header("Content-Length", str(len(body)))
+            self.end_headers()
+            self.wfile.write(body)
+        except ConnectionError:
+            # Health-check clients may close the socket as soon as they receive
+            # the status code, without reading the response body.
+            self.close_connection = True
+            LOGGER.debug(
+                "client disconnected while writing response",
+                extra={"endpoint": getattr(self, "path", "")},
+            )
 
 
 class MonitoringHTTPServer(ThreadingHTTPServer):
@@ -417,8 +437,8 @@ class MonitoringHTTPServer(ThreadingHTTPServer):
 
 def render_metrics(snapshot: dict[str, Any], config: Config, now: float) -> str:
     result = snapshot["result"] or {}
-    local_rpc = snapshot["local_rpc"] or {}
-    remote_rpc = snapshot["remote_rpc"] or {}
+    node_rpc = snapshot["node_rpc"] or {}
+    trusted_rpc = snapshot["trusted_rpc"] or {}
     websocket = snapshot["websocket"] or {}
     ready = False
     if snapshot["last_success_at"] is not None and result:
@@ -427,33 +447,33 @@ def render_metrics(snapshot: dict[str, Any], config: Config, now: float) -> str:
             and result.get("healthy", False)
         )
 
-    local_height = result.get("local_height", 0)
-    remote_height = result.get("remote_height", 0)
+    node_height = result.get("node_height", 0)
+    trusted_height = result.get("trusted_height", 0)
     delta_blocks = result.get("delta_blocks", 0)
     healthy = 1 if result.get("healthy", False) else 0
     last_success_at = snapshot["last_success_at"] or 0
     last_attempt_at = snapshot["last_attempt_at"] or 0
-    local_rpc_up = 1 if local_rpc.get("up", False) else 0
-    remote_rpc_up = 1 if remote_rpc.get("up", False) else 0
+    node_rpc_up = 1 if node_rpc.get("up", False) else 0
+    trusted_rpc_up = 1 if trusted_rpc.get("up", False) else 0
     websocket_up = 1 if websocket.get("up", False) else 0
-    local_rpc_last_success_at = local_rpc.get("last_success_at") or 0
-    remote_rpc_last_success_at = remote_rpc.get("last_success_at") or 0
+    node_rpc_last_success_at = node_rpc.get("last_success_at") or 0
+    trusted_rpc_last_success_at = trusted_rpc.get("last_success_at") or 0
     websocket_last_success_at = websocket.get("last_success_at") or 0
-    local_rpc_last_error_at = local_rpc.get("last_error_at") or 0
-    remote_rpc_last_error_at = remote_rpc.get("last_error_at") or 0
+    node_rpc_last_error_at = node_rpc.get("last_error_at") or 0
+    trusted_rpc_last_error_at = trusted_rpc.get("last_error_at") or 0
     websocket_last_error_at = websocket.get("last_error_at") or 0
 
     rpc_up_samples = [
-        f'evm_height_checker_rpc_up{{endpoint="{prometheus_label_value(local_rpc.get("url", ""))}"}} {local_rpc_up}',
-        f'evm_height_checker_rpc_up{{endpoint="{prometheus_label_value(remote_rpc.get("url", ""))}"}} {remote_rpc_up}',
+        f'evm_height_checker_rpc_up{{endpoint="{prometheus_label_value(node_rpc.get("url", ""))}"}} {node_rpc_up}',
+        f'evm_height_checker_rpc_up{{endpoint="{prometheus_label_value(trusted_rpc.get("url", ""))}"}} {trusted_rpc_up}',
     ]
     rpc_last_success_samples = [
-        f'evm_height_checker_rpc_last_success_timestamp{{endpoint="{prometheus_label_value(local_rpc.get("url", ""))}"}} {local_rpc_last_success_at}',
-        f'evm_height_checker_rpc_last_success_timestamp{{endpoint="{prometheus_label_value(remote_rpc.get("url", ""))}"}} {remote_rpc_last_success_at}',
+        f'evm_height_checker_rpc_last_success_timestamp{{endpoint="{prometheus_label_value(node_rpc.get("url", ""))}"}} {node_rpc_last_success_at}',
+        f'evm_height_checker_rpc_last_success_timestamp{{endpoint="{prometheus_label_value(trusted_rpc.get("url", ""))}"}} {trusted_rpc_last_success_at}',
     ]
     rpc_last_error_samples = [
-        f'evm_height_checker_rpc_last_error_timestamp{{endpoint="{prometheus_label_value(local_rpc.get("url", ""))}"}} {local_rpc_last_error_at}',
-        f'evm_height_checker_rpc_last_error_timestamp{{endpoint="{prometheus_label_value(remote_rpc.get("url", ""))}"}} {remote_rpc_last_error_at}',
+        f'evm_height_checker_rpc_last_error_timestamp{{endpoint="{prometheus_label_value(node_rpc.get("url", ""))}"}} {node_rpc_last_error_at}',
+        f'evm_height_checker_rpc_last_error_timestamp{{endpoint="{prometheus_label_value(trusted_rpc.get("url", ""))}"}} {trusted_rpc_last_error_at}',
     ]
     if websocket:
         websocket_label = prometheus_label_value(websocket.get("url", ""))
@@ -470,16 +490,16 @@ def render_metrics(snapshot: dict[str, Any], config: Config, now: float) -> str:
         )
 
     lines = [
-        "# HELP evm_height_checker_local_height Latest local node block height.",
-        "# TYPE evm_height_checker_local_height gauge",
-        f"evm_height_checker_local_height {local_height}",
-        "# HELP evm_height_checker_remote_height Latest remote node block height.",
-        "# TYPE evm_height_checker_remote_height gauge",
-        f"evm_height_checker_remote_height {remote_height}",
+        "# HELP evm_height_checker_node_height Latest checked node block height.",
+        "# TYPE evm_height_checker_node_height gauge",
+        f"evm_height_checker_node_height {node_height}",
+        "# HELP evm_height_checker_trusted_height Latest trusted RPC block height.",
+        "# TYPE evm_height_checker_trusted_height gauge",
+        f"evm_height_checker_trusted_height {trusted_height}",
         "# HELP evm_height_checker_rpc_up RPC endpoint availability from the last check labeled by endpoint.",
         "# TYPE evm_height_checker_rpc_up gauge",
         *rpc_up_samples,
-        "# HELP evm_height_checker_delta_blocks Remote height minus local height.",
+        "# HELP evm_height_checker_delta_blocks Trusted height minus node height.",
         "# TYPE evm_height_checker_delta_blocks gauge",
         f"evm_height_checker_delta_blocks {delta_blocks}",
         "# HELP evm_height_checker_healthy Last successful comparison status.",

@@ -15,8 +15,8 @@ class JsonFormatter(logging.Formatter):
             "message": record.getMessage(),
         }
         for field in (
-            "local_height",
-            "remote_height",
+            "node_height",
+            "trusted_height",
             "delta_blocks",
             "healthy",
             "consecutive_failures",

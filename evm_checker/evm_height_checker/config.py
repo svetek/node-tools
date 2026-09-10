@@ -86,8 +86,8 @@ def _float(name: str, default: float) -> float:
 
 @dataclass(frozen=True)
 class Config:
-    local_rpc_url: str
-    remote_rpc_url: str
+    node_rpc_url: str
+    trusted_rpc_url: str
     rpc_user_agent: str
     max_behind_blocks: int
     poll_interval_seconds: float
@@ -109,17 +109,17 @@ class Config:
         )
 
         nodes = _nodes_json()
-        local_rpc_url = os.getenv("LOCAL_RPC_URL", "").strip()
-        if nodes and local_rpc_url:
-            raise ConfigError("set either NODES_JSON or LOCAL_RPC_URL, not both")
-        if not nodes and not local_rpc_url:
-            raise ConfigError("LOCAL_RPC_URL is required when NODES_JSON is not set")
+        node_rpc_url = os.getenv("NODE_RPC_URL", "").strip()
+        if nodes and node_rpc_url:
+            raise ConfigError("set either NODES_JSON or NODE_RPC_URL, not both")
+        if not nodes and not node_rpc_url:
+            raise ConfigError("NODE_RPC_URL is required when NODES_JSON is not set")
 
         config = cls(
-            local_rpc_url=local_rpc_url,
-            remote_rpc_url=_required_str("REMOTE_RPC_URL"),
-            rpc_user_agent=os.getenv("RPC_USER_AGENT", "evm-height-checker/0.2").strip()
-            or "evm-height-checker/0.2",
+            node_rpc_url=node_rpc_url,
+            trusted_rpc_url=_required_str("TRUSTED_RPC_URL"),
+            rpc_user_agent=os.getenv("RPC_USER_AGENT", "evm-height-checker/0.3").strip()
+            or "evm-height-checker/0.3",
             max_behind_blocks=_int("MAX_BEHIND_BLOCKS", 0),
             poll_interval_seconds=poll_interval_seconds,
             rpc_timeout_seconds=_float("RPC_TIMEOUT_SECONDS", 3.0),
@@ -156,7 +156,7 @@ class Config:
         return (
             NodeConfig(
                 name="default",
-                rpc_url=self.local_rpc_url,
+                rpc_url=self.node_rpc_url,
                 websocket_url=self.websocket_url,
             ),
         )

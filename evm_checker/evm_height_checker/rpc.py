@@ -15,7 +15,11 @@ class RpcError(RuntimeError):
 
 
 class RpcClient:
-    def __init__(self, timeout_seconds: float, user_agent: str = "evm-height-checker/0.2") -> None:
+    def __init__(
+        self,
+        timeout_seconds: float,
+        user_agent: str = "evm-height-checker/0.3",
+    ) -> None:
         self.timeout_seconds = timeout_seconds
         self.user_agent = user_agent
 

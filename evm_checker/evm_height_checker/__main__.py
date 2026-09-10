@@ -26,7 +26,7 @@ def main() -> int:
     for node in config.configured_nodes():
         node_config = replace(
             config,
-            local_rpc_url=node.rpc_url,
+            node_rpc_url=node.rpc_url,
             websocket_url=node.websocket_url,
             nodes=(),
         )

@@ -1,14 +1,14 @@
 # evm-height-checker
 
-`evm-height-checker` compares the block height of one or more EVM nodes with a remote RPC endpoint and reports whether each node's lag stays within the allowed threshold.
+`evm-height-checker` compares the block height of one or more EVM nodes with a trusted RPC endpoint and reports whether each node's lag stays within the allowed threshold.
 
 Core behavior:
 
-- requests `eth_blockNumber` from both local and remote RPC endpoints;
+- requests `eth_blockNumber` from both the checked node and trusted RPC endpoints;
 - optionally verifies that each node accepts a WebSocket upgrade;
-- calculates the delta as `remote - local`;
+- calculates the delta as `trusted - node`;
 - marks the check as `healthy` when `delta <= MAX_BEHIND_BLOCKS`;
-- treats the local node as healthy when it is equal to or ahead of the remote node.
+- treats the checked node as healthy when it is equal to or ahead of the trusted node.
 
 The service is built for production use:
 
@@ -80,13 +80,13 @@ curl http://127.0.0.1:8080/metrics
 
 Required:
 
-- `LOCAL_RPC_URL` - local EVM node RPC endpoint in single-node mode.
-- `NODES_JSON` - named nodes in multi-node mode. Set either this or `LOCAL_RPC_URL`.
-- `REMOTE_RPC_URL` - remote RPC endpoint used for comparison.
+- `NODE_RPC_URL` - checked EVM node RPC endpoint in single-node mode.
+- `NODES_JSON` - named nodes in multi-node mode. Set either this or `NODE_RPC_URL`.
+- `TRUSTED_RPC_URL` - trusted RPC endpoint used as the height baseline.
 
 Optional:
 
-- `MAX_BEHIND_BLOCKS` - maximum allowed lag of the local node in blocks. Default: `0`.
+- `MAX_BEHIND_BLOCKS` - maximum allowed lag of the checked node in blocks. Default: `0`.
 - `RPC_USER_AGENT` - HTTP `User-Agent` used for RPC requests. Default: `evm-height-checker/0.1`. Useful because some public RPC providers reject requests without this header.
 - `POLL_INTERVAL_SECONDS` - polling interval. Default: `5`.
 - `RPC_TIMEOUT_SECONDS` - timeout for a single RPC request. Default: `3`.
@@ -115,7 +115,7 @@ Multi-node example:
 ## HTTP Endpoints
 
 - `GET /healthz` - process liveness endpoint.
-- `GET /readyz` - readiness endpoint. Returns success only when the service has a fresh successful comparison and the local node is not behind the threshold.
+- `GET /readyz` - readiness endpoint. Returns success only when the service has a fresh successful comparison and the checked node is not behind the threshold.
 - `GET /readyz/<node>` - readiness of one named node in multi-node mode.
 - `GET /status` - detailed JSON status with timestamps, errors, the last comparison result, and per-endpoint RPC state.
 - `GET /status/<node>` - detailed status of one named node in multi-node mode.
@@ -125,10 +125,10 @@ Multi-node example:
 
 All exported metrics are `gauge` metrics. Multi-node mode adds a `node` label.
 
-- `evm_height_checker_local_height` - latest block height returned by the local RPC endpoint.
-- `evm_height_checker_remote_height` - latest block height returned by the remote RPC endpoint.
+- `evm_height_checker_node_height` - latest block height returned by the checked node.
+- `evm_height_checker_trusted_height` - latest block height returned by the trusted RPC endpoint.
 - `evm_height_checker_rpc_up{endpoint="..."}` - RPC endpoint availability with the endpoint URL exposed as a Prometheus label.
-- `evm_height_checker_delta_blocks` - block delta calculated as `remote - local`. Negative values mean the local node is ahead of the remote endpoint.
+- `evm_height_checker_delta_blocks` - block delta calculated as `trusted - node`. Negative values mean the checked node is ahead of the trusted endpoint.
 - `evm_height_checker_healthy` - result of the last successful comparison. `1` means healthy, `0` means unhealthy.
 - `evm_height_checker_ready` - current readiness state with TTL applied. `1` means ready, `0` means not ready.
 - `evm_height_checker_consecutive_failures` - number of failed checks in a row.
@@ -142,13 +142,13 @@ When one endpoint is down, `evm_height_checker_delta_blocks` keeps the last succ
 Example:
 
 ```text
-# HELP evm_height_checker_local_height Latest local node block height.
-# TYPE evm_height_checker_local_height gauge
-evm_height_checker_local_height 448706644
-# HELP evm_height_checker_remote_height Latest remote node block height.
-# TYPE evm_height_checker_remote_height gauge
-evm_height_checker_remote_height 448706642
-# HELP evm_height_checker_delta_blocks Remote height minus local height.
+# HELP evm_height_checker_node_height Latest checked node block height.
+# TYPE evm_height_checker_node_height gauge
+evm_height_checker_node_height 448706644
+# HELP evm_height_checker_trusted_height Latest trusted RPC block height.
+# TYPE evm_height_checker_trusted_height gauge
+evm_height_checker_trusted_height 448706642
+# HELP evm_height_checker_delta_blocks Trusted height minus node height.
 # TYPE evm_height_checker_delta_blocks gauge
 evm_height_checker_delta_blocks -2
 # HELP evm_height_checker_healthy Last successful comparison status.

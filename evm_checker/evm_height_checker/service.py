@@ -11,7 +11,7 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from typing import Any, Callable
 
 from .config import Config
-from .rpc import RpcClient, RpcError
+from .rpc import RpcClient, RpcError, WebSocketClient
 
 LOGGER = logging.getLogger("evm_height_checker")
 
@@ -79,6 +79,7 @@ class SharedState:
     result: CheckResult | None = None
     local_rpc: EndpointState | None = None
     remote_rpc: EndpointState | None = None
+    websocket: EndpointState | None = None
 
     def snapshot(self) -> dict[str, Any]:
         with self.lock:
@@ -91,9 +92,12 @@ class SharedState:
                 "result": asdict(self.result) if self.result else None,
                 "local_rpc": asdict(self.local_rpc) if self.local_rpc else None,
                 "remote_rpc": asdict(self.remote_rpc) if self.remote_rpc else None,
+                "websocket": asdict(self.websocket) if self.websocket else None,
             }
 
-    def set_endpoint_urls(self, local_url: str, remote_url: str) -> None:
+    def set_endpoint_urls(
+        self, local_url: str, remote_url: str, websocket_url: str = ""
+    ) -> None:
         with self.lock:
             if self.local_rpc is None:
                 self.local_rpc = EndpointState(url=local_url)
@@ -103,6 +107,11 @@ class SharedState:
                 self.remote_rpc = EndpointState(url=remote_url)
             else:
                 self.remote_rpc.url = remote_url
+            if websocket_url:
+                if self.websocket is None:
+                    self.websocket = EndpointState(url=websocket_url)
+                else:
+                    self.websocket.url = websocket_url
 
     def update_success(self, result: CheckResult, now: float) -> None:
         with self.lock:
@@ -138,6 +147,8 @@ class SharedState:
             return self.local_rpc
         if self.remote_rpc and self.remote_rpc.url == url:
             return self.remote_rpc
+        if self.websocket and self.websocket.url == url:
+            return self.websocket
         raise ValueError(f"unknown endpoint url: {url}")
 
     def is_ready(self, now: float, state_ttl_seconds: float) -> bool:
@@ -155,20 +166,29 @@ class CheckerService:
         config: Config,
         state: SharedState,
         rpc_client: RpcClient,
+        websocket_client: WebSocketClient | None = None,
         time_fn: Callable[[], float] = utc_timestamp,
         sleep_fn: Callable[[float], None] = time.sleep,
     ) -> None:
         self.config = config
         self.state = state
         self.rpc_client = rpc_client
+        self.websocket_client = websocket_client or WebSocketClient(
+            timeout_seconds=config.rpc_timeout_seconds
+        )
         self.time_fn = time_fn
         self.sleep_fn = sleep_fn
-        self.state.set_endpoint_urls(config.local_rpc_url, config.remote_rpc_url)
+        self.state.set_endpoint_urls(
+            config.local_rpc_url,
+            config.remote_rpc_url,
+            config.websocket_url,
+        )
 
     def run_once(self) -> CheckResult:
         now = self.time_fn()
         try:
             local_height, remote_height = self._fetch_pair()
+            self._check_websocket()
             result = evaluate_heights(
                 local_height=local_height,
                 remote_height=remote_height,
@@ -199,6 +219,17 @@ class CheckerService:
             else:
                 LOGGER.exception("failed to check block heights", extra=extra)
             raise
+
+    def _check_websocket(self) -> None:
+        if not self.config.websocket_url:
+            return
+        now = self.time_fn()
+        try:
+            self.websocket_client.check_handshake(self.config.websocket_url)
+            self.state.update_endpoint_success(self.config.websocket_url, now)
+        except Exception as exc:
+            self.state.update_endpoint_failure(self.config.websocket_url, str(exc), now)
+            raise RpcEndpointError(self.config.websocket_url, exc) from exc
 
     def run_forever(self, stop_event: threading.Event) -> None:
         while not stop_event.is_set():
@@ -259,7 +290,7 @@ class CheckerService:
 
 
 class StatusHandler(BaseHTTPRequestHandler):
-    server_version = "evm-height-checker/0.1"
+    server_version = "evm-height-checker/0.2"
 
     def do_GET(self) -> None:  # noqa: N802
         now = time.time()
@@ -270,24 +301,76 @@ class StatusHandler(BaseHTTPRequestHandler):
             return
 
         if self.path == "/readyz":
-            snapshot = server.state.snapshot()
-            ready = server.state.is_ready(now, server.config.state_ttl_seconds)
+            ready = all(
+                state.is_ready(now, server.config.state_ttl_seconds)
+                for state in server.states.values()
+            )
+            snapshots = {name: state.snapshot() for name, state in server.states.items()}
             payload = {
                 "status": "ready" if ready else "not_ready",
                 "ready": ready,
+                "nodes": snapshots,
+            }
+            if server.single_mode:
+                payload = {
+                    "status": payload["status"],
+                    "ready": ready,
+                    **next(iter(snapshots.values())),
+                }
+            self._write_json(HTTPStatus.OK if ready else HTTPStatus.SERVICE_UNAVAILABLE, payload)
+            return
+
+        if self.path.startswith("/readyz/"):
+            name = self.path.removeprefix("/readyz/")
+            state = server.states.get(name)
+            if state is None:
+                self._write_json(HTTPStatus.NOT_FOUND, {"error": "unknown node"})
+                return
+            snapshot = state.snapshot()
+            ready = state.is_ready(now, server.config.state_ttl_seconds)
+            payload = {
+                "status": "ready" if ready else "not_ready",
+                "ready": ready,
+                "node": name,
                 **snapshot,
             }
             self._write_json(HTTPStatus.OK if ready else HTTPStatus.SERVICE_UNAVAILABLE, payload)
             return
 
         if self.path == "/status":
-            snapshot = server.state.snapshot()
-            snapshot["ready"] = server.state.is_ready(now, server.config.state_ttl_seconds)
-            self._write_json(HTTPStatus.OK, snapshot)
+            snapshots = {}
+            for name, state in server.states.items():
+                snapshot = state.snapshot()
+                snapshot["ready"] = state.is_ready(now, server.config.state_ttl_seconds)
+                snapshots[name] = snapshot
+            self._write_json(
+                HTTPStatus.OK,
+                (
+                    next(iter(snapshots.values()))
+                    if server.single_mode
+                    else {"nodes": snapshots}
+                ),
+            )
+            return
+
+        if self.path.startswith("/status/"):
+            name = self.path.removeprefix("/status/")
+            state = server.states.get(name)
+            if state is None:
+                self._write_json(HTTPStatus.NOT_FOUND, {"error": "unknown node"})
+                return
+            snapshot = state.snapshot()
+            snapshot["ready"] = state.is_ready(now, server.config.state_ttl_seconds)
+            self._write_json(HTTPStatus.OK, {"node": name, **snapshot})
             return
 
         if self.path == "/metrics":
-            metrics = render_metrics(server.state.snapshot(), server.config, now)
+            if server.single_mode:
+                metrics = render_metrics(
+                    next(iter(server.states.values())).snapshot(), server.config, now
+                )
+            else:
+                metrics = render_multi_metrics(server.states, server.config, now)
             self._write_text(HTTPStatus.OK, metrics, content_type="text/plain; version=0.0.4")
             return
 
@@ -320,16 +403,23 @@ class MonitoringHTTPServer(ThreadingHTTPServer):
     allow_reuse_address = True
     daemon_threads = True
 
-    def __init__(self, server_address: tuple[str, int], config: Config, state: SharedState) -> None:
+    def __init__(
+        self,
+        server_address: tuple[str, int],
+        config: Config,
+        state: SharedState | dict[str, SharedState],
+    ) -> None:
         super().__init__(server_address, StatusHandler)
         self.config = config
-        self.state = state
+        self.single_mode = isinstance(state, SharedState)
+        self.states = {"default": state} if self.single_mode else state
 
 
 def render_metrics(snapshot: dict[str, Any], config: Config, now: float) -> str:
     result = snapshot["result"] or {}
     local_rpc = snapshot["local_rpc"] or {}
     remote_rpc = snapshot["remote_rpc"] or {}
+    websocket = snapshot["websocket"] or {}
     ready = False
     if snapshot["last_success_at"] is not None and result:
         ready = (
@@ -345,10 +435,39 @@ def render_metrics(snapshot: dict[str, Any], config: Config, now: float) -> str:
     last_attempt_at = snapshot["last_attempt_at"] or 0
     local_rpc_up = 1 if local_rpc.get("up", False) else 0
     remote_rpc_up = 1 if remote_rpc.get("up", False) else 0
+    websocket_up = 1 if websocket.get("up", False) else 0
     local_rpc_last_success_at = local_rpc.get("last_success_at") or 0
     remote_rpc_last_success_at = remote_rpc.get("last_success_at") or 0
+    websocket_last_success_at = websocket.get("last_success_at") or 0
     local_rpc_last_error_at = local_rpc.get("last_error_at") or 0
     remote_rpc_last_error_at = remote_rpc.get("last_error_at") or 0
+    websocket_last_error_at = websocket.get("last_error_at") or 0
+
+    rpc_up_samples = [
+        f'evm_height_checker_rpc_up{{endpoint="{prometheus_label_value(local_rpc.get("url", ""))}"}} {local_rpc_up}',
+        f'evm_height_checker_rpc_up{{endpoint="{prometheus_label_value(remote_rpc.get("url", ""))}"}} {remote_rpc_up}',
+    ]
+    rpc_last_success_samples = [
+        f'evm_height_checker_rpc_last_success_timestamp{{endpoint="{prometheus_label_value(local_rpc.get("url", ""))}"}} {local_rpc_last_success_at}',
+        f'evm_height_checker_rpc_last_success_timestamp{{endpoint="{prometheus_label_value(remote_rpc.get("url", ""))}"}} {remote_rpc_last_success_at}',
+    ]
+    rpc_last_error_samples = [
+        f'evm_height_checker_rpc_last_error_timestamp{{endpoint="{prometheus_label_value(local_rpc.get("url", ""))}"}} {local_rpc_last_error_at}',
+        f'evm_height_checker_rpc_last_error_timestamp{{endpoint="{prometheus_label_value(remote_rpc.get("url", ""))}"}} {remote_rpc_last_error_at}',
+    ]
+    if websocket:
+        websocket_label = prometheus_label_value(websocket.get("url", ""))
+        rpc_up_samples.append(
+            f'evm_height_checker_rpc_up{{endpoint="{websocket_label}"}} {websocket_up}'
+        )
+        rpc_last_success_samples.append(
+            "evm_height_checker_rpc_last_success_timestamp"
+            f'{{endpoint="{websocket_label}"}} {websocket_last_success_at}'
+        )
+        rpc_last_error_samples.append(
+            "evm_height_checker_rpc_last_error_timestamp"
+            f'{{endpoint="{websocket_label}"}} {websocket_last_error_at}'
+        )
 
     lines = [
         "# HELP evm_height_checker_local_height Latest local node block height.",
@@ -359,8 +478,7 @@ def render_metrics(snapshot: dict[str, Any], config: Config, now: float) -> str:
         f"evm_height_checker_remote_height {remote_height}",
         "# HELP evm_height_checker_rpc_up RPC endpoint availability from the last check labeled by endpoint.",
         "# TYPE evm_height_checker_rpc_up gauge",
-        f'evm_height_checker_rpc_up{{endpoint="{prometheus_label_value(local_rpc.get("url", ""))}"}} {local_rpc_up}',
-        f'evm_height_checker_rpc_up{{endpoint="{prometheus_label_value(remote_rpc.get("url", ""))}"}} {remote_rpc_up}',
+        *rpc_up_samples,
         "# HELP evm_height_checker_delta_blocks Remote height minus local height.",
         "# TYPE evm_height_checker_delta_blocks gauge",
         f"evm_height_checker_delta_blocks {delta_blocks}",
@@ -381,11 +499,39 @@ def render_metrics(snapshot: dict[str, Any], config: Config, now: float) -> str:
         f"evm_height_checker_last_attempt_timestamp {last_attempt_at}",
         "# HELP evm_height_checker_rpc_last_success_timestamp Unix timestamp of the last successful RPC call labeled by endpoint.",
         "# TYPE evm_height_checker_rpc_last_success_timestamp gauge",
-        f'evm_height_checker_rpc_last_success_timestamp{{endpoint="{prometheus_label_value(local_rpc.get("url", ""))}"}} {local_rpc_last_success_at}',
-        f'evm_height_checker_rpc_last_success_timestamp{{endpoint="{prometheus_label_value(remote_rpc.get("url", ""))}"}} {remote_rpc_last_success_at}',
+        *rpc_last_success_samples,
         "# HELP evm_height_checker_rpc_last_error_timestamp Unix timestamp of the last failed RPC call labeled by endpoint.",
         "# TYPE evm_height_checker_rpc_last_error_timestamp gauge",
-        f'evm_height_checker_rpc_last_error_timestamp{{endpoint="{prometheus_label_value(local_rpc.get("url", ""))}"}} {local_rpc_last_error_at}',
-        f'evm_height_checker_rpc_last_error_timestamp{{endpoint="{prometheus_label_value(remote_rpc.get("url", ""))}"}} {remote_rpc_last_error_at}',
+        *rpc_last_error_samples,
     ]
     return "\n".join(lines) + "\n"
+
+
+def render_multi_metrics(
+    states: dict[str, SharedState], config: Config, now: float
+) -> str:
+    metadata: list[str] = []
+    samples: list[str] = []
+    seen_metadata: set[str] = set()
+
+    for node_name, state in states.items():
+        for line in render_metrics(state.snapshot(), config, now).splitlines():
+            if line.startswith("# HELP") or line.startswith("# TYPE"):
+                metric_name = line.split()[2]
+                key = f"{line.split()[1]}:{metric_name}"
+                if key not in seen_metadata:
+                    seen_metadata.add(key)
+                    metadata.append(line)
+                continue
+            if not line:
+                continue
+
+            metric, value = line.rsplit(" ", 1)
+            node_label = f'node="{prometheus_label_value(node_name)}"'
+            if "{" in metric:
+                metric = metric[:-1] + f",{node_label}}}"
+            else:
+                metric = f"{metric}{{{node_label}}}"
+            samples.append(f"{metric} {value}")
+
+    return "\n".join([*metadata, *samples]) + "\n"

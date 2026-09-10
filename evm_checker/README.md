@@ -1,10 +1,11 @@
 # evm-height-checker
 
-`evm-height-checker` compares the block height of a local EVM node with a remote RPC endpoint and reports whether the lag stays within the allowed threshold.
+`evm-height-checker` compares the block height of one or more EVM nodes with a remote RPC endpoint and reports whether each node's lag stays within the allowed threshold.
 
 Core behavior:
 
 - requests `eth_blockNumber` from both local and remote RPC endpoints;
+- optionally verifies that each node accepts a WebSocket upgrade;
 - calculates the delta as `remote - local`;
 - marks the check as `healthy` when `delta <= MAX_BEHIND_BLOCKS`;
 - treats the local node as healthy when it is equal to or ahead of the remote node.
@@ -79,7 +80,8 @@ curl http://127.0.0.1:8080/metrics
 
 Required:
 
-- `LOCAL_RPC_URL` - local EVM node RPC endpoint.
+- `LOCAL_RPC_URL` - local EVM node RPC endpoint in single-node mode.
+- `NODES_JSON` - named nodes in multi-node mode. Set either this or `LOCAL_RPC_URL`.
 - `REMOTE_RPC_URL` - remote RPC endpoint used for comparison.
 
 Optional:
@@ -93,17 +95,35 @@ Optional:
 - `STATE_TTL_SECONDS` - how long the last successful state remains valid for readiness. Default: `max(POLL_INTERVAL_SECONDS * 3, 30)`.
 - `HTTP_HOST` - HTTP server bind address. Default: `0.0.0.0`.
 - `HTTP_PORT` - HTTP server port. Default: `8080`.
+- `WEBSOCKET_URL` - optional WebSocket endpoint checked in single-node mode.
+
+Multi-node example:
+
+```json
+{
+  "base-01": {
+    "rpc_url": "http://192.0.2.10:8545",
+    "websocket_url": "ws://192.0.2.10:8546"
+  },
+  "base-02": {
+    "rpc_url": "http://192.0.2.11:8545",
+    "websocket_url": "ws://192.0.2.11:8546"
+  }
+}
+```
 
 ## HTTP Endpoints
 
 - `GET /healthz` - process liveness endpoint.
 - `GET /readyz` - readiness endpoint. Returns success only when the service has a fresh successful comparison and the local node is not behind the threshold.
+- `GET /readyz/<node>` - readiness of one named node in multi-node mode.
 - `GET /status` - detailed JSON status with timestamps, errors, the last comparison result, and per-endpoint RPC state.
+- `GET /status/<node>` - detailed status of one named node in multi-node mode.
 - `GET /metrics` - Prometheus metrics endpoint.
 
 ## Prometheus Metrics
 
-All exported metrics are `gauge` metrics.
+All exported metrics are `gauge` metrics. Multi-node mode adds a `node` label.
 
 - `evm_height_checker_local_height` - latest block height returned by the local RPC endpoint.
 - `evm_height_checker_remote_height` - latest block height returned by the remote RPC endpoint.

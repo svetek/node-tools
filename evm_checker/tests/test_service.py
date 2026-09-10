@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import json
+import os
 import time
 import unittest
 from unittest.mock import patch
@@ -11,6 +13,7 @@ from evm_height_checker.service import (
     RpcEndpointError,
     SharedState,
     evaluate_heights,
+    render_multi_metrics,
     render_metrics,
 )
 
@@ -26,7 +29,43 @@ class FakeRpcClient:
         return response
 
 
+class FakeWebSocketClient:
+    def __init__(self, response: Exception | None = None) -> None:
+        self.response = response
+        self.checked_urls: list[str] = []
+
+    def check_handshake(self, url: str) -> None:
+        self.checked_urls.append(url)
+        if self.response:
+            raise self.response
+
+
 class TestService(unittest.TestCase):
+    def test_config_accepts_multiple_named_nodes(self) -> None:
+        nodes = {
+            "base-01": {
+                "rpc_url": "http://192.0.2.1:8545",
+                "websocket_url": "ws://192.0.2.1:8546",
+            },
+            "base-02": {"rpc_url": "http://192.0.2.2:8545"},
+        }
+        with patch.dict(
+            os.environ,
+            {
+                "NODES_JSON": json.dumps(nodes),
+                "REMOTE_RPC_URL": "https://example-rpc",
+            },
+            clear=True,
+        ):
+            config = Config.from_env()
+
+        self.assertEqual(config.local_rpc_url, "")
+        self.assertEqual(config.configured_nodes()[0].name, "base-01")
+        self.assertEqual(
+            config.configured_nodes()[0].websocket_url,
+            "ws://192.0.2.1:8546",
+        )
+
     def test_rpc_client_sends_user_agent(self) -> None:
         captured_headers = {}
 
@@ -88,6 +127,50 @@ class TestService(unittest.TestCase):
         self.assertEqual(snapshot["consecutive_failures"], 0)
         self.assertTrue(snapshot["local_rpc"]["up"])
         self.assertTrue(snapshot["remote_rpc"]["up"])
+
+    def test_run_once_requires_websocket_handshake_when_configured(self) -> None:
+        config = self._config(max_behind_blocks=1, websocket_url="ws://local-rpc:8546")
+        state = SharedState()
+        websocket_client = FakeWebSocketClient()
+        service = CheckerService(
+            config=config,
+            state=state,
+            rpc_client=FakeRpcClient(
+                {
+                    config.local_rpc_url: 150,
+                    config.remote_rpc_url: 151,
+                }
+            ),
+            websocket_client=websocket_client,
+        )
+
+        result = service.run_once()
+        snapshot = state.snapshot()
+
+        self.assertTrue(result.healthy)
+        self.assertEqual(websocket_client.checked_urls, ["ws://local-rpc:8546"])
+        self.assertTrue(snapshot["websocket"]["up"])
+
+    def test_websocket_failure_makes_node_not_ready(self) -> None:
+        config = self._config(max_behind_blocks=1, websocket_url="ws://local-rpc:8546")
+        state = SharedState()
+        service = CheckerService(
+            config=config,
+            state=state,
+            rpc_client=FakeRpcClient(
+                {
+                    config.local_rpc_url: 150,
+                    config.remote_rpc_url: 151,
+                }
+            ),
+            websocket_client=FakeWebSocketClient(RuntimeError("websocket unavailable")),
+        )
+
+        with self.assertRaises(RpcEndpointError):
+            service.run_once()
+
+        self.assertFalse(state.is_ready(time.time(), config.state_ttl_seconds))
+        self.assertFalse(state.snapshot()["websocket"]["up"])
 
     def test_run_once_preserves_last_success_on_failure(self) -> None:
         config = self._config(max_behind_blocks=0)
@@ -217,10 +300,24 @@ class TestService(unittest.TestCase):
         self.assertIn('evm_height_checker_rpc_last_error_timestamp{endpoint="http://remote-rpc"}', metrics)
         self.assertEqual(snapshot["remote_rpc"]["last_error"], "rpc failed for http://remote-rpc: timeout")
 
+    def test_multi_metrics_are_labeled_by_node(self) -> None:
+        config = self._config(max_behind_blocks=1)
+        states = {"base-01": SharedState(), "base-02": SharedState()}
+        for state in states.values():
+            state.set_endpoint_urls(config.local_rpc_url, config.remote_rpc_url)
+            state.update_success(evaluate_heights(100, 101, 1), time.time())
+
+        metrics = render_multi_metrics(states, config, time.time())
+
+        self.assertIn('evm_height_checker_ready{node="base-01"} 1', metrics)
+        self.assertIn('evm_height_checker_ready{node="base-02"} 1', metrics)
+        self.assertEqual(metrics.count("# HELP evm_height_checker_ready "), 1)
+
     def _config(
         self,
         max_behind_blocks: int,
         state_ttl_seconds: float = 30.0,
+        websocket_url: str = "",
     ) -> Config:
         return Config(
             local_rpc_url="http://local-rpc",
@@ -234,6 +331,7 @@ class TestService(unittest.TestCase):
             state_ttl_seconds=state_ttl_seconds,
             http_host="127.0.0.1",
             http_port=8080,
+            websocket_url=websocket_url,
         )
 
 

@@ -1,5 +1,7 @@
 import copy
 import json
+import logging
+import math
 import sys
 import threading
 import time
@@ -16,9 +18,34 @@ from .config import Config
 from .diagnostics import log_internal_error
 from .engine import Engine
 from .reference import TrustedReference
-from .rpc import RpcError
+from .rpc import NodeBehind, ReferenceUnavailable, RpcError
 from .scheduler import run_checks
 from .spec import Spec
+
+METRIC_DESCRIPTIONS = {
+    "reference_cache_fresh": "Whether the last successful trusted observation is within its TTL, independent of the latest refresh outcome (1 or 0).",
+    "height_comparison_verified": "Whether the latest target height comparison passed with a still-fresh trusted observation and fresh local result (1 or 0).",
+    "check_duration_seconds": "Duration of the last completed check including reference acquisition, in seconds (millisecond resolution).",
+    "target_rpc_duration_seconds": "Duration of the target height request excluding reference acquisition, in seconds (millisecond resolution).",
+    "reference_wait_duration_seconds": "Reference acquisition duration for the last height probe, in seconds (millisecond resolution).",
+    "check_last_completed_timestamp_seconds": "Unix time in seconds when the last check attempt completed, regardless of outcome.",
+    "check_results_total": "Completed check attempts by outcome and bounded error kind; does not count status reads or subsequent TTL expiry.",
+    "reference_up": "Whether the latest trusted refresh succeeded and its observation is fresh (1 or 0).",
+    "rpc_up": "Whether the latest endpoint height probe succeeded and is fresh (1 or 0); independent of lag validation.",
+    "degraded": "Whether this mode is available without a fresh trusted height comparison (1 or 0); lag is unverified.",
+    "max_behind_blocks": "Inclusive permitted target lag behind the trusted height, in blocks.",
+    "ready": "Whether all required checks for this node and mode are successful and fresh (1 or 0).",
+    "check_ok": "Whether the target check succeeded; unavailable trusted alone does not fail a check (1 or 0).",
+    "check_fresh": "Whether the last check attempt is within its configured state TTL (1 or 0).",
+    "node_height": "Target HTTP block height from the last successful height comparison.",
+    "trusted_height": "Trusted height used for the latest HTTP height diagnostic; may be the last known stale observation.",
+    "delta_blocks": "Known trusted minus current target HTTP height; may use a stale reference; absent if trusted is unknown.",
+    "reference_refresh_attempts_total": "Actual trusted fetch attempts, both proactive and on-demand; excludes cache/backoff hits.",
+    "reference_refresh_failures_total": "Trusted fetch attempts that failed or exceeded freshness TTL; excludes cache/backoff hits.",
+    "reference_age_seconds": "Age since the start of the last successful trusted fetch; absent before first success.",
+    "reference_refresh_duration_seconds": "Duration of the last completed trusted fetch, including retries; absent before first completion.",
+    "internal_errors_total": "Internal errors by configured node/check or fixed service operation.",
+}
 
 
 class Checker:
@@ -43,10 +70,11 @@ class Checker:
             lambda: reference_engine.reference_height(config.trusted), config.trusted_ttl, clock
         )
         self.internal_errors: dict[tuple[str, str], int] = {}
+        self.check_results: dict[tuple[str, str, str, str], int] = {}
         self.states: dict[str, dict[str, dict[str, Any]]] = {name: {} for name in config.nodes}
         self.lock = threading.Lock()
-        self.admissions: dict[tuple[str, str], dict[str, Any]] = {}
         self.progress: dict[tuple[str, str], tuple[int, float]] = {}
+        self.missing_metric_help: set[str] = set()
         self.plans = {}
         for name, node in config.nodes.items():
             if node.websocket_url and not self.adapter.websocket:
@@ -69,6 +97,57 @@ class Checker:
                     partial(client.subscription, node.websocket_url, subscribe, unsubscribe),
                 )
             self.plans[name] = plan
+        self.warn_capacity()
+
+    def capacity_estimates(self) -> list[dict[str, Any]]:
+        """One-timeout-per-task heuristic, not a bound on actual RPC work."""
+        estimates = []
+        for mode in ("readyz", "pruning", "archive"):
+            jobs = sum(level == mode for plan in self.plans.values() for level, _ in plan.values())
+            workers = self.config.workers if mode == "readyz" else self.config.deep_workers
+            interval = self.config.poll if mode == "readyz" else self.config.deep_interval
+            ttl = self.config.ttl if mode == "readyz" else self.config.deep_ttl
+            nominal_round = math.ceil(jobs / workers) * self.config.timeout
+            estimates.append(
+                dict(
+                    mode=mode,
+                    jobs=jobs,
+                    workers=workers,
+                    interval=interval,
+                    ttl=ttl,
+                    nominal_round=nominal_round,
+                    at_risk=jobs > 0 and nominal_round + interval >= ttl,
+                )
+            )
+        return estimates
+
+    def warn_capacity(self) -> None:
+        for estimate in self.capacity_estimates():
+            if estimate["at_risk"]:
+                logging.warning(
+                    "Check pool capacity risk: mode=%s jobs=%s workers=%s "
+                    "nominal_round_seconds=%g interval_seconds=%g ttl_seconds=%g; "
+                    "one target timeout per task, not a throughput guarantee; "
+                    "retries, multi-call tasks and trusted waits may increase duration. "
+                    "Review workers, TTLs or fleet size; readiness may become stale.",
+                    estimate["mode"],
+                    estimate["jobs"],
+                    estimate["workers"],
+                    estimate["nominal_round"],
+                    estimate["interval"],
+                    estimate["ttl"],
+                )
+
+    def metric_help(self, suffix: str) -> str:
+        description = METRIC_DESCRIPTIONS.get(suffix)
+        if description is not None:
+            return description
+        with self.lock:
+            report = suffix not in self.missing_metric_help
+            self.missing_metric_help.add(suffix)
+        if report:
+            self.internal_error("monitoring", "metric_help", KeyError("missing metric description"))
+        return "Metric description unavailable; consult the checker documentation."
 
     def internal_error(self, name: str, key: str, error: Exception) -> None:
         with self.lock:
@@ -79,7 +158,31 @@ class Checker:
         start = self.clock()
         try:
             details = fn() or {}
+            if {"ok", "error", "error_kind"}.intersection(details):
+                raise ValueError("check details contain reserved outcome keys")
             row = {"ok": True, **details}
+        except ReferenceUnavailable as exc:
+            row = {
+                "ok": True,
+                "reference_fresh": False,
+                "reference_error": str(exc),
+                "node_height": exc.node_height,
+                "target_rpc_latency_ms": exc.target_rpc_latency_ms,
+                "trusted_wait_ms": exc.trusted_wait_ms,
+            }
+            height, observed = self.reference.last_success()
+            if height is not None:
+                row.update(trusted_height=height, delta_blocks=height - exc.node_height)
+            if observed is not None:
+                row["reference_expires_at"] = observed + self.config.trusted_ttl
+        except NodeBehind as exc:
+            row = {
+                **exc.details,
+                "ok": False,
+                "error": str(exc),
+                "error_kind": "rpc_error",
+                "reference_fresh": True,
+            }
         except RpcError as exc:
             row = {"ok": False, "error": str(exc), "error_kind": "rpc_error"}
         except Exception as exc:
@@ -102,72 +205,62 @@ class Checker:
                 )
                 self.progress[name, key] = (height, progressed)
             self.states[name][key] = row
-            self.update_admissions(name)
+            if not row["ok"]:
+                outcome = "failure"
+                error_kind = row.get("error_kind", "internal_error")
+                if error_kind not in ("rpc_error", "internal_error"):
+                    error_kind = "internal_error"
+            elif key.endswith("/height") and not row.get("reference_fresh", False):
+                outcome, error_kind = "unverified", "reference_error"
+            else:
+                outcome, error_kind = "success", "none"
+            counter_key = (name, key, outcome, error_kind)
+            self.check_results[counter_key] = self.check_results.get(counter_key, 0) + 1
         return row
-
-    def update_admissions(self, name: str) -> None:
-        """Called under the state lock. Only complete strict checks grant admission."""
-        now = self.clock()
-        for mode in ("pruning", "archive"):
-            levels = {"readyz", "pruning"} | ({"archive"} if mode == "archive" else set())
-            rows = [
-                (key, self.states[name].get(key, {}))
-                for key, (level, _) in self.plans[name].items()
-                if level in levels
-            ]
-            if any(
-                row and not row.get("ok") and row.get("error_kind") != "reference_error"
-                for _, row in rows
-            ):
-                self.admissions.pop((name, mode), None)
-                continue
-            strict = all(
-                row.get("ok")
-                and now - row["monotonic_at"]
-                <= (self.config.ttl if row["mode"] == "readyz" else self.config.deep_ttl)
-                and (
-                    not key.endswith("/height")
-                    or (self.reference.valid() and now < row.get("reference_expires_at", 0))
-                )
-                for key, row in rows
-            )
-            if strict:
-                heights = {key: row["node_height"] for key, row in rows if key.endswith("/height")}
-                if not heights:
-                    continue
-                expires = min(
-                    row["reference_expires_at"] for key, row in rows if key.endswith("/height")
-                )
-                self.admissions[name, mode] = {
-                    "expires": expires + self.config.reference_grace,
-                    "heights": heights,
-                }
 
     def compare(self, url: str) -> dict[str, Any]:
         start = self.clock()
         try:
+            # After bootstrap, the independent updater owns retries. Target checks
+            # must not queue behind an unavailable reference's network requests.
+            if self.reference.has_attempted_refresh() and not self.reference.available():
+                raise RpcError("trusted reference unavailable or stale")
             reference, reference_started = self.reference.snapshot()
         except RpcError:
             target_start = self.clock()
             # Always probe the target: a reference outage must not mask its failure.
             height = self.engine.height(url)
-            return {
-                "ok": False,
-                "error": "trusted reference unavailable or stale",
-                "error_kind": "reference_error",
-                "node_height": height,
-                "target_rpc_latency_ms": round((self.clock() - target_start) * 1000),
-                "trusted_wait_ms": round((target_start - start) * 1000),
-            }
+            raise ReferenceUnavailable(
+                height,
+                round((self.clock() - target_start) * 1000),
+                round((target_start - start) * 1000),
+            ) from None
         target_start = self.clock()
-        result: dict[str, Any] = self.engine.compare_height(url, reference)
+        try:
+            result: dict[str, Any] = self.engine.compare_height(url, reference)
+        except NodeBehind as exc:
+            if (
+                self.reference.available()
+                and self.clock() < reference_started + self.config.trusted_ttl
+            ):
+                raise
+            raise ReferenceUnavailable(
+                exc.details["node_height"],
+                round((self.clock() - target_start) * 1000),
+                round((target_start - start) * 1000),
+            ) from None
         result.update(
+            reference_fresh=True,
             trusted_wait_ms=round((target_start - start) * 1000),
             target_rpc_latency_ms=round((self.clock() - target_start) * 1000),
             reference_expires_at=reference_started + self.config.trusted_ttl,
         )
-        if not self.reference.valid() or self.clock() >= result["reference_expires_at"]:
-            raise RpcError("trusted reference unavailable or stale")
+        if not self.reference.available() or self.clock() >= result["reference_expires_at"]:
+            raise ReferenceUnavailable(
+                result["node_height"],
+                result["target_rpc_latency_ms"],
+                result["trusted_wait_ms"],
+            )
         return result
 
     def cycle(self, name, *, mode=None, pool=None, stop=None):
@@ -236,7 +329,6 @@ class Checker:
     def snapshot(self, name: str | None = None) -> dict[str, dict[str, dict[str, Any]]]:
         with self.lock:
             states = copy.deepcopy(self.states if name is None else {name: self.states[name]})
-            admissions = copy.deepcopy(self.admissions)
             progress = dict(self.progress)
         for node, checks in states.items():
             for key, row in checks.items():
@@ -249,28 +341,22 @@ class Checker:
                 if (
                     row["ok"]
                     and key.endswith("/height")
-                    and (not self.reference.valid() or self.clock() >= reference_expires_at)
+                    and (not self.reference.available() or self.clock() >= reference_expires_at)
                 ):
                     row.update(
-                        ok=False,
-                        error="trusted reference unavailable or stale",
-                        error_kind="reference_error",
+                        reference_fresh=False,
+                        reference_error="trusted reference unavailable or stale",
                     )
                 if key.endswith("/height"):
                     last = progress.get((node, key))
-                    row["degraded_modes"] = [
-                        mode
-                        for mode in ("pruning", "archive")
-                        if (admission := admissions.get((node, mode))) is not None
-                        and self.config.reference_grace > 0
-                        and not self.reference.valid()
-                        and row.get("error_kind") == "reference_error"
-                        and row["fresh"]
-                        and self.clock() < admission["expires"]
-                        and last is not None
-                        and self.clock() - last[1] < self.config.progress_ttl
-                        and row.get("node_height", -1) > admission["heights"].get(key, float("inf"))
-                    ]
+                    if (
+                        row["ok"]
+                        and not row.get("reference_fresh", False)
+                        and (last is None or self.clock() - last[1] >= self.config.progress_ttl)
+                    ):
+                        row.update(
+                            ok=False, error="node height is not progressing", error_kind="rpc_error"
+                        )
         return states
 
     def readiness(self, name, checks, mode):
@@ -280,11 +366,7 @@ class Checker:
         if mode == "archive":
             levels.add("archive")
         required = [k for k, (level, _) in self.plans[name].items() if level in levels]
-        return all(
-            checks.get(k, {}).get("fresh")
-            and (checks[k].get("ok") or mode in checks[k].get("degraded_modes", []))
-            for k in required
-        )
+        return all(checks.get(k, {}).get("fresh") and checks[k].get("ok") for k in required)
 
     def response(self, path: str) -> tuple[int, dict[str, Any]]:
         parts = urlsplit(path).path.strip("/").split("/")
@@ -303,8 +385,10 @@ class Checker:
                 "readiness": {
                     m: self.readiness(name, checks, m) for m in ("readyz", "pruning", "archive")
                 },
-                "degraded": not self.readiness(name, checks, "readyz")
-                and any(self.readiness(name, checks, mode) for mode in ("pruning", "archive")),
+                "degraded": any(
+                    k.endswith("/height") and not r.get("reference_fresh", False)
+                    for k, r in checks.items()
+                ),
                 "checks": checks,
             }
             for name, checks in states.items()
@@ -316,6 +400,7 @@ class Checker:
             "version": __version__,
             "ready": ready,
             "mode": endpoint,
+            "reference": self.reference.metrics(),
             "spec_sha256": self.spec.hashes,
             "nodes": rows,
         }
@@ -330,12 +415,34 @@ class Checker:
         def label(v):
             return v.replace("\\", "\\\\").replace('"', '\\"').replace("\n", "\\n")
 
+        def rpc_sample(name, role, transport, url, up):
+            tags = f'chain="{self.config.chain_id}",node="{label(name)}",role="{role}",transport="{transport}"'
+            if self.config.expose_endpoint_urls:
+                tags += f',endpoint="{label(url)}"'
+            lines.append(f"node_rpc_checker_rpc_up{{{tags}}} {up}")
+
+        rpc_sample("", "trusted", "http", self.config.trusted, int(self.reference.available()))
         for name, checks in self.snapshot().items():
+            node = self.config.nodes[name]
+            for transport, url in (("http", node.rpc_url), ("ws", node.websocket_url)):
+                if url:
+                    height = checks.get(transport + "/height", {})
+                    up = int(bool(height.get("fresh") and "node_height" in height))
+                    rpc_sample(name, "backend", transport, url, up)
+                    verified = int(
+                        bool(
+                            height.get("ok")
+                            and height.get("fresh")
+                            and height.get("reference_fresh")
+                        )
+                    )
+                    lines.append(
+                        f'node_rpc_checker_height_comparison_verified{{chain="{self.config.chain_id}",node="{label(name)}",transport="{transport}"}} {verified}'
+                    )
             for mode in ("readyz", "pruning", "archive"):
-                degraded = (
-                    mode != "readyz"
-                    and self.readiness(name, checks, mode)
-                    and not self.readiness(name, checks, "readyz")
+                degraded = self.readiness(name, checks, mode) and any(
+                    k.endswith("/height") and not r.get("reference_fresh", False)
+                    for k, r in checks.items()
                 )
                 lines.append(
                     f'node_rpc_checker_degraded{{chain="{self.config.chain_id}",node="{label(name)}",mode="{mode}"}} {int(degraded)}'
@@ -347,12 +454,19 @@ class Checker:
                 tags = f'chain="{self.config.chain_id}",node="{label(name)}",check="{label(key)}"'
                 lines.append(f"node_rpc_checker_check_ok{{{tags}}} {int(row['ok'])}")
                 lines.append(f"node_rpc_checker_check_fresh{{{tags}}} {int(row['fresh'])}")
-                lines.append(f"node_rpc_checker_latency_ms{{{tags}}} {row['latency_ms']}")
+                lines.append(
+                    f"node_rpc_checker_check_duration_seconds{{{tags}}} {row['latency_ms'] / 1000}"
+                )
                 for metric in ("target_rpc_latency_ms", "trusted_wait_ms"):
                     if metric in row:
-                        lines.append(f"node_rpc_checker_{metric}{{{tags}}} {row[metric]}")
+                        canonical = (
+                            "target_rpc_duration_seconds"
+                            if metric == "target_rpc_latency_ms"
+                            else "reference_wait_duration_seconds"
+                        )
+                        lines.append(f"node_rpc_checker_{canonical}{{{tags}}} {row[metric] / 1000}")
                 lines.append(
-                    f"node_rpc_checker_last_attempt_timestamp{{{tags}}} {row['checked_at']}"
+                    f"node_rpc_checker_check_last_completed_timestamp_seconds{{{tags}}} {row['checked_at']}"
                 )
             for key in ("node_height", "trusted_height", "delta_blocks"):
                 if key in checks.get("http/height", {}):
@@ -361,30 +475,14 @@ class Checker:
                     )
         with self.lock:
             errors = dict(self.internal_errors)
+            results = dict(self.check_results)
+        for (name, key, outcome, error_kind), count in results.items():
+            tags = f'chain="{self.config.chain_id}",node="{label(name)}",check="{label(key)}",outcome="{outcome}",error_kind="{error_kind}"'
+            lines.append(f"node_rpc_checker_check_results_total{{{tags}}} {count}")
         for (name, key), count in errors.items():
             lines.append(
                 f'node_rpc_checker_internal_errors_total{{chain="{self.config.chain_id}",node="{label(name)}",check="{label(key)}"}} {count}'
             )
-        descriptions = {
-            "degraded": "Whether this pool admits a previously verified growing node under bounded reference grace (1 or 0); lag is unverified.",
-            "max_behind_blocks": "Inclusive permitted target lag behind the trusted height, in blocks.",
-            "ready": "Whether all required checks for this node and mode are successful and fresh (1 or 0).",
-            "check_ok": "Whether the last check succeeded; height checks also require a valid reference (1 or 0).",
-            "check_fresh": "Whether the last check attempt is within its configured state TTL (1 or 0).",
-            "last_attempt_timestamp": "Unix timestamp in seconds when the last check attempt completed.",
-            "node_height": "Target HTTP block height from the last successful height comparison.",
-            "trusted_height": "Trusted block height used by the last successful HTTP height comparison.",
-            "delta_blocks": "Trusted minus target HTTP block height; negative means target ahead; last successful comparison.",
-            "reference_valid": "Whether the shared trusted snapshot is successful and within its hard TTL (1 or 0).",
-            "reference_refresh_attempts_total": "Actual trusted fetch attempts, both proactive and on-demand; excludes cache/backoff hits.",
-            "reference_refresh_failures_total": "Trusted fetch attempts that failed or exceeded freshness TTL; excludes cache/backoff hits.",
-            "reference_age_seconds": "Age since the start of the last successful trusted fetch; absent before first success.",
-            "reference_refresh_duration_seconds": "Duration of the last completed trusted fetch, including retries; absent before first completion.",
-            "latency_ms": "Whole check duration including reference work (legacy name).",
-            "target_rpc_latency_ms": "Target height RPC duration excluding reference work; successful checks only.",
-            "trusted_wait_ms": "Reference acquisition duration including refresh or lock wait; successful height checks only.",
-            "internal_errors_total": "Internal errors by configured node/check or fixed service operation.",
-        }
         # Group families, with metadata preceding every family's samples.
         families: dict[str, list[str]] = {}
         for line in lines:
@@ -396,7 +494,7 @@ class Checker:
             kind = "counter" if suffix.endswith("_total") else "gauge"
             output.extend(
                 [
-                    f"# HELP {metric} {descriptions[suffix]}",
+                    f"# HELP {metric} {self.metric_help(suffix)}",
                     f"# TYPE {metric} {kind}",
                     *samples,
                 ]

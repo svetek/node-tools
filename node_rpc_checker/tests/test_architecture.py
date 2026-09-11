@@ -34,7 +34,7 @@ class ReferenceTests(unittest.TestCase):
             self.assertEqual(list(pool.map(lambda _: reference.get(), range(64))), [123] * 64)
         self.assertEqual(fetch.call_count, 1)
         now[0] = 5
-        self.assertFalse(reference.valid())
+        self.assertFalse(reference.cache_is_fresh())
         self.assertEqual(reference.get(), 123)
         self.assertEqual(fetch.call_count, 2)
 
@@ -51,7 +51,7 @@ class ReferenceTests(unittest.TestCase):
             with self.assertRaises(RpcError):
                 reference.get()
         self.assertEqual(fetch.call_count, 1)
-        self.assertFalse(reference.valid())
+        self.assertFalse(reference.cache_is_fresh())
         now[0] += 5
         fetch.side_effect = None
         fetch.return_value = 10
@@ -67,7 +67,7 @@ class ReferenceTests(unittest.TestCase):
         reference = TrustedReference(fetch, 5, lambda: now[0])
         with self.assertRaisesRegex(RpcError, "expired"):
             reference.get()
-        self.assertFalse(reference.valid())
+        self.assertFalse(reference.cache_is_fresh())
 
     def test_shared_between_nodes_and_transports_and_fail_closed(self):
         now = [0]

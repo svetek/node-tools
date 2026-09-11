@@ -3,7 +3,7 @@ import re
 from typing import Any
 
 from .adapters import Evm, Near
-from .rpc import RpcClient, RpcError
+from .rpc import NodeBehind, RpcClient, RpcError
 from .spec import Rule, Spec
 
 
@@ -143,9 +143,7 @@ class Engine:
     def compare_height(self, url: str, reference: int) -> dict[str, int]:
         local = self.height(url)
         if reference - local > self.max_behind_blocks:
-            raise RpcError(
-                f"node behind: node={local}, trusted={reference}, lag={reference - local}, allowed={self.max_behind_blocks}"
-            )
+            raise NodeBehind(local, reference, self.max_behind_blocks)
         return {
             "node_height": local,
             "trusted_height": reference,

@@ -29,9 +29,8 @@ class TrustedReference:
         with self.state_lock:
             age = None if self.started is None else max(0.0, self.clock() - self.started)
             values = {
-                "reference_valid": float(
-                    self.height is not None and age is not None and age < self.ttl
-                ),
+                "reference_up": float(self._cache_is_fresh_unlocked() and not self.error),
+                "reference_cache_fresh": float(self._cache_is_fresh_unlocked()),
                 "reference_refresh_attempts_total": float(self.attempts),
                 "reference_refresh_failures_total": float(self.failures),
             }
@@ -41,13 +40,33 @@ class TrustedReference:
                 values["reference_refresh_duration_seconds"] = self.last_duration
             return values
 
-    def valid(self) -> bool:
+    def last_success(self) -> tuple[int | None, float | None]:
+        """Return the last successful observation, including expired data, without I/O."""
         with self.state_lock:
-            return (
-                self.height is not None
-                and self.started is not None
-                and self.clock() - self.started < self.ttl
-            )
+            return self.height, self.started
+
+    def available(self) -> bool:
+        """Fresh observation and no failure in the latest refresh attempt."""
+        with self.state_lock:
+            return not self.error and self._cache_is_fresh_unlocked()
+
+    def has_attempted_refresh(self) -> bool:
+        """Whether a refresh has started, not necessarily succeeded."""
+        with self.state_lock:
+            return self.attempts > 0
+
+    def cache_is_fresh(self) -> bool:
+        """Cached observation age only; independent of the latest refresh failure."""
+        with self.state_lock:
+            return self._cache_is_fresh_unlocked()
+
+    def _cache_is_fresh_unlocked(self) -> bool:
+        """Caller must hold state_lock."""
+        return (
+            self.height is not None
+            and self.started is not None
+            and self.clock() - self.started < self.ttl
+        )
 
     def snapshot(self) -> tuple[int, float]:
         """Acquire a fresh height and its own observation-start timestamp atomically."""
@@ -55,6 +74,7 @@ class TrustedReference:
         with self.state_lock:
             if (
                 self.height is None
+                or self.error
                 or self.started is None
                 or self.clock() - self.started >= self.ttl
             ):

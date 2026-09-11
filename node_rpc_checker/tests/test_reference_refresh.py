@@ -92,7 +92,7 @@ class RefreshTests(unittest.TestCase):
         self.now[0] = 20
         checker.reference.get(refresh=True)
         self.now[0] = 30
-        self.assertTrue(checker.reference.valid())
+        self.assertTrue(checker.reference.cache_is_fresh())
         self.assertEqual(checker.response("/readyz/n")[0], 503)
         checker.cycle("n", mode="readyz")
         self.assertEqual(checker.response("/readyz/n")[0], 200)

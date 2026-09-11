@@ -334,9 +334,11 @@ class ServiceTests(unittest.TestCase):
         self.assertEqual(self.c.response("/archive/n")[0], 503)
         self.fake.earliest = 0
         self.now += 61
+        self.c.reference.get(refresh=True)
         self.c.cycle("n")
         self.assertEqual(self.c.response("/archive/n")[0], 200)
         self.now += 181
+        self.c.reference.get(refresh=True)
         self.c.cycle("n", mode="readyz")
         self.assertEqual(self.c.response("/readyz/n")[0], 200)
         self.assertEqual(self.c.response("/pruning/n")[0], 503)

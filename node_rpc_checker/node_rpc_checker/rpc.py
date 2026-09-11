@@ -16,6 +16,29 @@ class RpcError(Exception):
     pass
 
 
+class NodeBehind(RpcError):
+    def __init__(self, local: int, reference: int, allowed: int) -> None:
+        super().__init__(
+            f"node behind: node={local}, trusted={reference}, lag={reference - local}, allowed={allowed}"
+        )
+        self.details = {
+            "node_height": local,
+            "trusted_height": reference,
+            "delta_blocks": reference - local,
+            "max_behind_blocks": allowed,
+        }
+
+
+class ReferenceUnavailable(RpcError):
+    """A target height was obtained, but no fresh comparison is available."""
+
+    def __init__(self, node_height: int, target_rpc_latency_ms: int, trusted_wait_ms: int) -> None:
+        super().__init__("trusted reference unavailable or stale")
+        self.node_height = node_height
+        self.target_rpc_latency_ms = target_rpc_latency_ms
+        self.trusted_wait_ms = trusted_wait_ms
+
+
 class NoRedirect(urllib.request.HTTPRedirectHandler):
     def redirect_request(self, req, fp, code, msg, headers, newurl):
         fp.close()
@@ -74,7 +97,8 @@ class RpcClient:
                 last = exc
                 if attempt < self.config.retries:
                     self.stop.wait(self.config.retry_delay)
-        # Do not expose URLs (which may contain credentials) in errors/metrics.
+        # Never include URLs or upstream exception messages in RPC errors.
+        # Full endpoint URL metrics require a separate explicit opt-in.
         raise RpcError(f"RPC transport/response failure: {type(last).__name__}")
 
     @staticmethod
@@ -114,28 +138,3 @@ class RpcClient:
                     return {"subscription": True}
         except (OSError, ValueError, RuntimeError) as exc:
             raise RpcError(f"WebSocket subscription failed: {type(exc).__name__}") from None
-
-
-def result_of(response):
-    if "error" in response:
-        error = response["error"]
-        cause = error.get("cause", {}) if isinstance(error, dict) else {}
-        raise RpcError(str(cause.get("name", "JSON_RPC_ERROR")))
-    if not isinstance(response.get("result"), dict):
-        raise RpcError("expected object result")
-    return response["result"]
-
-
-def header_of(response, expected=None):
-    header = result_of(response).get("header", {})
-    height = header.get("height")
-    if (
-        type(height) is not int
-        or height < 0
-        or not isinstance(header.get("hash"), str)
-        or not header["hash"]
-    ):
-        raise RpcError("invalid block header")
-    if expected is not None and height != expected:
-        raise RpcError("unexpected block height")
-    return header

@@ -144,11 +144,12 @@ its age from refresh start. A dedicated updater waits `TRUSTED_REFRESH_INTERVAL_
 of node polling. During refresh, readers use the previous snapshot only while
 it is still fresh, without waiting for the refresh lock. At most one refresh runs at a time; successful EVM
 refreshes require two RPC calls regardless of node count. A failed refresh preserves
-the previous successful reference only until its original hard TTL expires.
+the previous successful height for the lifetime of the process, even after TTL expiry.
 On-demand callers without a fresh snapshot retain TTL-length backoff from failure
 completion to prevent retry storms. The single proactive updater bypasses that
 backoff and retries after its configured refresh interval, not after the TTL.
-No stale reference is used to report strict readiness. Status reads never
+After bootstrap, target checks do not initiate expired-reference refreshes;
+the independent updater owns retries. No stale reference enforces the lag limit. Status reads never
 perform RPC I/O or wait for a refresh. Replicas do not share this cache.
 Each cached height comparison retains the expiry of the particular snapshot it
 used; publishing a newer reference cannot extend an old comparison's lifetime.
@@ -159,9 +160,9 @@ a shorter refresh interval and a deliberate smaller freshness budget. Equal
 refresh interval and TTL now fail configuration validation at startup.
 
 The height comparison, including the configured lag allowance, uses this bounded-age snapshot, not a fresh
-public RPC call per target. Expiry invalidates cached strict height
-successes even when their ordinary state TTL has not expired. Choose a TTL that
-allows the reference network/height requests to finish; too short causes 503.
+public RPC call per target. Expiry marks comparisons as unverified without
+failing an otherwise healthy target. Choose a TTL that allows the reference
+network/height requests to finish so lag validation can remain active.
 Trusted RPC uses a separate client with `TRUSTED_RPC_TIMEOUT_SECONDS=5`;
 target HTTP/WS and subscriptions keep `RPC_TIMEOUT_SECONDS=3`. The role, not
 URL equality, selects the timeout (even if target and trusted URLs are identical).
@@ -173,36 +174,60 @@ also changes the accepted data age and should be an explicit operator decision.
 This is not a hard end-to-end deadline: HTTP timeouts do not bound
 all DNS/header/body work together. Allow for the previous fetch duration, the refresh
 interval and the next fetch duration to avoid expiry during consecutive slow refreshes.
-Sustained slow or failed trusted RPCs fail strict readiness; raising TTL does not
-guarantee availability. Startup warns if TTL does not exceed one nominal fetch
+Sustained slow or failed trusted RPCs disable fresh lag validation, not target readiness.
+Startup warns if TTL does not exceed one nominal fetch
 budget plus the refresh interval; this warning is not a hard timing guarantee.
 
 ### Protection during trusted outages
 
-`/readyz` always requires strict reference/height validation. `/pruning` and
-`/archive` may remain HTTP 200 in a bounded **degraded** mode; HAProxy using
-those paths requires no change. This is an availability policy, **not a guarantee
-that MAX_BEHIND_BLOCKS is satisfied while the reference is unavailable**.
+Trusted is advisory: `/readyz`, `/pruning` and `/archive` do not fail solely
+because it is unavailable. There is no reference-outage admission deadline.
+`REFERENCE_GRACE_SECONDS` is deprecated and accepted only for config compatibility;
+it no longer controls admission, including when set to zero.
 
-Admission requires a complete prior strict success for that node and pool,
-including all configured transports and historical checks. Grace ends at the
-expiry of the reference snapshot used for that admission plus
-`REFERENCE_GRACE_SECONDS` (default 120; zero disables grace). Local successes
-and repeated reference failures never extend this deadline. Restart loses admission.
+With a healthy, fresh trusted observation, `MAX_BEHIND_BLOCKS` is enforced.
+Otherwise the latest successful trusted height is retained in memory and
+`delta_blocks = last_trusted_height - current_target_height` continues updating.
+The delta becomes more negative as the target advances; it is diagnostic only,
+not proof of current network synchronization. On cold start without any successful
+trusted observation, trusted height and delta are absent, never fabricated as zero.
+Restart clears the remembered height; it is not persisted to disk.
 
-During grace the checker still fetches target height. Every transport must advance
-beyond its admitted height, with forward progress within NODE_PROGRESS_TTL_SECONDS
-(default 30). Unchanged heights are tolerated only within that progress window.
-Core, shard, network, WS, pruning and archive checks must remain successful and fresh.
-Target errors, a height regression or a confirmed excessive lag revoke admission;
-only a complete strict success can restore it. Unknown/unverified nodes cannot
-enter grace. A stale local or historical check is never masked by grace.
+Core, network, shard, WS and requested historical checks must still succeed and
+remain fresh. Height regression fails the check. While trusted comparison is
+unavailable, each target transport must show forward progress within
+`NODE_PROGRESS_TTL_SECONDS` (default 30). A successful local probe recovers a
+target independently of trusted. Cold-start targets can pass their own checks.
+There is no guarantee of bounded lag until trusted recovers and a new target
+comparison succeeds. Recovery alone does not produce an intermediate 503.
 
-`/status` exposes per-node `degraded` and height-check `degraded_modes`; the
-`node_rpc_checker_degraded{node,mode}` gauge is 1 only for an admitted degraded pool.
-The height check itself remains `ok=false, error_kind=reference_error` in grace;
-strict `/readyz` stays 503. Alert on degraded pools and reference failures.
-After trusted recovery, a new successful comparison restores strict readiness.
+`/status` exposes `reference_fresh=false` and `reference_error` on unverified
+height results, plus per-node `degraded` and top-level reference diagnostics.
+`node_rpc_checker_degraded{node,mode}` identifies available but unverified modes.
+`node_rpc_checker_reference_up` reports failed/expired trusted observations;
+`reference_age_seconds` shows the age of the last successful observation.
+`node_rpc_checker_rpc_up{chain,node,role,transport}` reports endpoint probe availability.
+Backend samples use the configured node name and role `backend`; trusted uses
+an empty node name and role `trusted`. Transports are `http` or `ws` (including TLS variants).
+All exported families use `node_rpc_checker_`; old aliases are no longer emitted.
+Update dashboards and alerts from `evm_height_checker_rpc_up` to
+`node_rpc_checker_rpc_up`, also replacing the old URL-based aggregation.
+For the Kubernetes scrape configuration that renames the RPC `node` label to `exported_node`:
+
+```promql
+max by (app_kubernetes_io_instance, exported_node, role, transport) (
+  node_rpc_checker_rpc_up{
+    namespace="haproxy", app_kubernetes_io_instance=~"${chain:regex}"
+  }
+)
+```
+
+A reachable but lagging target has rpc_up=1 and readiness=0.
+An `endpoint` label is added only with `METRICS_EXPOSE_ENDPOINT_URLS=true`.
+This opt-in exposes the entire URL, including path/query credentials. Keep it
+disabled when using authenticated RPC URLs. Existing `by (endpoint)` dashboards
+must migrate to the safe identity labels; enabling exposure is not required.
+Reference selection/failover is still an operator action, not automatic.
 
 `cycle()` is a one-shot executor, not a scheduler. Production core, pruning and
 archive loops all use `run_mode()`, one scheduler per mode for all nodes.
@@ -211,6 +236,17 @@ overlapping attempts of the same check and unbounded executor queues are forbidd
 Core uses CHECK_WORKERS globally; pruning and archive each use DEEP_CHECK_WORKERS.
 Migration: CHECK_WORKERS no longer multiplies by node count. Large fleets may
 need higher worker limits to complete checks within their state TTLs.
+After loading the actual spec-driven plans, startup estimates capacity separately
+for core, pruning and archive: `ceil(jobs / workers) * RPC_TIMEOUT_SECONDS`.
+If that nominal round plus the mode's interval reaches its TTL, a warning reports
+the mode, task count, worker count, nominal round, interval and TTL. Counts include
+configured transports, subscriptions and addons. Neither worker limits nor TTLs
+are changed automatically and the configuration is not rejected.
+This is a conservative scheduling heuristic assuming one target timeout per task,
+not an upper bound or a throughput guarantee: retries, multi-call WS checks,
+trusted waits, host load and latency distributions can change actual durations.
+Absence of a warning is not proof of sufficient capacity. Increasing state TTLs
+accepts older results and may also require deliberate reference-policy changes.
 Shutdown skips queued checks; in-flight transport calls remain timeout-bounded
 subject to the DNS/header limitations below.
 
@@ -282,7 +318,8 @@ default; WEBSOCKET_URL and comma-separated ADDONS apply to it. Multi-node exampl
 | MAX_BEHIND_BLOCKS | 0; nonnegative integer, inclusive lag allowance |
 | TRUSTED_STATE_TTL_SECONDS | 30 seconds; must not exceed STATE_TTL_SECONDS |
 | TRUSTED_REFRESH_INTERVAL_SECONDS | 5 seconds between refreshes; must be below trusted TTL |
-| REFERENCE_GRACE_SECONDS | 120 seconds after admitted reference expiry; 0 disables pool protection |
+| REFERENCE_GRACE_SECONDS | Deprecated; accepted for compatibility, no effect on admission |
+| METRICS_EXPOSE_ENDPOINT_URLS | false; true explicitly exposes full RPC URLs in endpoint labels |
 | NODE_PROGRESS_TTL_SECONDS | 30 seconds since last observed forward height progress |
 | DEEP_STATE_TTL_SECONDS | 180 seconds, must exceed deep interval |
 | RPC_TIMEOUT_SECONDS | 3 seconds |
@@ -301,18 +338,27 @@ request counts. EVM eth_syncing is not a rule in these supplied specs.
 
 Metrics prefix: node_rpc_checker_, with chain/node and mode or check labels.
 Metrics include readiness, check success/freshness, latency, timestamps and HTTP
-height/delta. RPC URLs are not exposed in metrics or errors.
-Reference metrics are instance-wide (chain label only): reference_valid,
+height/delta. RPC URLs are excluded from errors and, by default, metrics.
+Enabling METRICS_EXPOSE_ENDPOINT_URLS exposes full URLs in rpc_up labels, including secrets.
+Reference metrics are instance-wide (chain label only): reference_cache_fresh, reference_up,
 reference_refresh_attempts_total and reference_refresh_failures_total are present
 from startup. They count actual fetch attempts, not cached failures or cache hits,
 and include on-demand and proactive work. reference_age_seconds is absent before
 the first successful snapshot; reference_refresh_duration_seconds is absent before
 the first completed attempt. Both are in seconds, including retry time where applicable.
-Use reference_valid=0 to distinguish a trusted outage from target-node failures.
-All exported families include HELP and TYPE metadata. The legacy `latency_ms`
-continues to measure whole-check duration. Successful height checks additionally
-expose `target_rpc_latency_ms` (target request, including its retries) and
-`trusted_wait_ms` (reference acquisition, including any refresh/lock wait).
+`reference_cache_fresh` describes cached observation freshness only. `reference_up`
+additionally requires that the latest refresh did not fail. Thus a failed refresh
+can yield reference_cache_fresh=1 and reference_up=0 until the cached observation expires.
+Use reference_up=0 to alert on trusted unavailability independently of target readiness.
+All exported families include HELP and TYPE metadata. Tests require explicit descriptions for emitted
+families. If a description is accidentally missing at runtime, a generic HELP
+preserves all samples and records one internal `monitoring/metric_help` error per
+missing family per process, without repeated scrape log spam. The error counter
+is visible on the following scrape.
+`check_duration_seconds` measures whole-check duration. Height probes with timing
+details additionally expose `target_rpc_duration_seconds` (including target retries)
+and `reference_wait_duration_seconds` (including any reference refresh/lock wait).
+Durations retain millisecond resolution but are exported in seconds.
 Use target RPC timing, not whole-check duration, to compare node latency.
 The configured lag limit is exposed in status/readiness responses and in
 `node_rpc_checker_max_behind_blocks`; `delta_blocks` retains its signed value
@@ -327,8 +373,64 @@ Also alert on failed metric scrapes and process exits/restarts: a broken metrics
 endpoint or a process that cannot start cannot expose its own error counters.
 Target/internal failures fail readiness; reference failures follow the protection
 policy above. Internal error counters survive recovery
-until the service restarts. Invalid shared-reference state also invalidates
-otherwise successful cached height checks (`error_kind=reference_error`).
+until the service restarts. Invalid shared-reference state marks height comparisons
+as unverified (`reference_fresh=false`) without turning target success into failure.
+
+### Metric contract and migration
+
+All names below have the prefix `node_rpc_checker_`. There are 22 canonical
+families, with no deprecated metric aliases. Some samples
+appear only after a matching observation or error; absent does not mean zero.
+
+| Canonical family | Meaning |
+| --- | --- |
+| rpc_up | Fresh successful RPC height probe; independent of readiness and lag |
+| ready | Admission for readyz, pruning or archive |
+| degraded | Mode is available without a fresh verified height comparison |
+| height_comparison_verified | Latest height comparison passed, and both local result and reference used remain fresh |
+| check_ok | Individual check result, including current progress guard |
+| check_fresh | Individual check result is within local TTL |
+| node_height | Last measured HTTP target height |
+| trusted_height | Trusted height used by the latest HTTP diagnostic, possibly stale |
+| delta_blocks | Known trusted minus measured target height; signed, absent if reference unknown |
+| max_behind_blocks | Configured inclusive lag allowance |
+| check_duration_seconds | Last completed check duration |
+| target_rpc_duration_seconds | Last target height RPC duration, when recorded |
+| reference_wait_duration_seconds | Reference acquisition duration, when recorded |
+| check_last_completed_timestamp_seconds | Unix timestamp of check completion, success or failure |
+| reference_cache_fresh | Last successful reference observation is within TTL |
+| reference_up | Cached reference is fresh and latest refresh did not fail |
+| reference_age_seconds | Age since the start of the last successful reference fetch |
+| reference_refresh_duration_seconds | Last completed reference fetch duration |
+| reference_refresh_attempts_total | Actual reference fetch attempts |
+| reference_refresh_failures_total | Failed reference fetch attempts |
+| check_results_total | Completed check attempts by outcome and error_kind |
+| internal_errors_total | Internal errors by configured node/check or fixed service operation |
+
+`height_comparison_verified{chain,node,transport}` starts at zero and remains zero
+on cold start, reference outage, stale results, or failed/lagging comparisons.
+A negative delta against a stale cached height is not a verified comparison.
+
+`check_results_total{chain,node,check,outcome,error_kind}` increments once at check
+completion. Allowed pairs are success/none, failure/rpc_error,
+failure/internal_error, and unverified/reference_error. The last pair means that
+the target height was obtained but could not be compared to a fresh reference;
+it does not by itself make readiness fail. Status/metrics reads and later TTL
+expiry do not increment counters. Counter series appear on their first event and
+reset on restart. Error messages and URLs are never counter labels.
+
+| Removed name | Replacement |
+| --- | --- |
+| reference_valid | reference_cache_fresh |
+| latency_ms | check_duration_seconds (old value / 1000) |
+| target_rpc_latency_ms | target_rpc_duration_seconds (old value / 1000) |
+| trusted_wait_ms | reference_wait_duration_seconds (old value / 1000) |
+| last_attempt_timestamp | check_last_completed_timestamp_seconds |
+
+Old names are no longer exported, including HELP/TYPE metadata. Update dashboards
+and alerts to the replacements together with the service rollout. Do not keep
+fallback queries referencing removed names. Per-check JSON status fields remain
+unchanged; reference diagnostics use reference_cache_fresh instead of reference_valid.
 
 ## Security and operational limits
 
@@ -338,6 +440,11 @@ otherwise successful cached height checks (`error_kind=reference_error`).
 - HTTP redirects are rejected. URLs reject userinfo, whitespace/control
   characters, invalid ports and fragments. Percent-encode path/query tokens;
   protect the environment file and prefer HTTPS/WSS for credentials.
+- Keep METRICS_EXPOSE_ENDPOINT_URLS=false (default) for credential-bearing URLs.
+  Opting in exposes credentials through the unauthenticated metrics endpoint and
+  downstream metric storage. Escaping, percent-encoding and HTTPS do not redact
+  labels. Previously scraped secrets remain subject to storage retention; removing
+  the label does not erase history. Rotate any exposed credentials as appropriate.
 - JSON-RPC IDs must match both type and value. HTTP responses are capped at
   4 MiB, WS messages at 1 MiB. Upstream error names are length/character bounded.
   HTTP body reads have an elapsed-time guard; DNS, connect and HTTP header

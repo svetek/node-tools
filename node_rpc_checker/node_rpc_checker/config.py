@@ -4,7 +4,7 @@ import math
 import os
 import re
 from dataclasses import dataclass
-from typing import Self
+from typing import Any, Self
 from urllib.parse import urlsplit
 
 CHAINS = (
@@ -72,7 +72,7 @@ class Config:
     max_behind_blocks: int = 0
     trusted_refresh_interval: float = 5
     deep_workers: int = 2
-    reference_grace: float = 120
+    expose_endpoint_urls: bool = False
     progress_ttl: float = 30
     trusted_timeout: float = 5
 
@@ -129,7 +129,18 @@ class Config:
         trusted = os.getenv("TRUSTED_RPC_URL", defaults.get(chain_id, ""))
         for url in [trusted, *(n.rpc_url for n in nodes.values())]:
             validate_url(url, ("http", "https"))
-        values = {}
+        values: dict[str, Any] = {}
+        expose_urls = os.getenv("METRICS_EXPOSE_ENDPOINT_URLS", "false").lower()
+        if expose_urls not in ("true", "false"):
+            raise ValueError("METRICS_EXPOSE_ENDPOINT_URLS must be true or false")
+        values["expose_endpoint_urls"] = expose_urls == "true"
+        if values["expose_endpoint_urls"]:
+            logging.warning("Endpoint URL metrics enabled: path/query credentials will be exposed")
+        if "REFERENCE_GRACE_SECONDS" in os.environ:
+            legacy_grace = float(os.environ["REFERENCE_GRACE_SECONDS"])
+            if not math.isfinite(legacy_grace) or legacy_grace < 0:
+                raise ValueError("invalid REFERENCE_GRACE_SECONDS")
+            logging.warning("REFERENCE_GRACE_SECONDS is deprecated and ignored")
         for field, env, default in [
             ("poll", "POLL_INTERVAL_SECONDS", 5),
             ("deep_interval", "DEEP_CHECK_INTERVAL_SECONDS", 60),
@@ -140,15 +151,10 @@ class Config:
             ("retry_delay", "RETRY_DELAY_SECONDS", 0.5),
             ("trusted_ttl", "TRUSTED_STATE_TTL_SECONDS", 30),
             ("trusted_refresh_interval", "TRUSTED_REFRESH_INTERVAL_SECONDS", 5),
-            ("reference_grace", "REFERENCE_GRACE_SECONDS", 120),
             ("progress_ttl", "NODE_PROGRESS_TTL_SECONDS", 30),
         ]:
             v = float(os.getenv(env, str(default)))
-            if (
-                not math.isfinite(v)
-                or v < 0
-                or (v == 0 and field not in ("retry_delay", "reference_grace"))
-            ):
+            if not math.isfinite(v) or v < 0 or (v == 0 and field != "retry_delay"):
                 raise ValueError(f"invalid {env}")
             values[field] = v
         retries = int(os.getenv("RPC_RETRY_COUNT", "2"))
@@ -179,7 +185,7 @@ class Config:
         if values["trusted_ttl"] <= nominal_fetch + values["trusted_refresh_interval"]:
             logging.warning(
                 "Trusted TTL leaves insufficient nominal refresh/retry margin; "
-                "slow references may cause readiness 503"
+                "slow references may disable fresh lag validation"
             )
         return cls(
             chain_id,

@@ -45,7 +45,7 @@ class ReferenceDiagnosticsTests(unittest.TestCase):
         stats = checker.reference.metrics()
         self.assertEqual(stats["reference_refresh_attempts_total"], 3)
         self.assertEqual(stats["reference_refresh_failures_total"], 1)
-        self.assertEqual(stats["reference_valid"], 1)
+        self.assertEqual(stats["reference_cache_fresh"], 1)
         self.assertIn(
             "# TYPE node_rpc_checker_reference_refresh_failures_total counter", checker.metrics()
         )
@@ -84,7 +84,7 @@ class ReferenceDiagnosticsTests(unittest.TestCase):
         stats = reference.metrics()
         self.assertEqual(stats["reference_refresh_failures_total"], 1)
         self.assertEqual(stats["reference_refresh_duration_seconds"], 31)
-        self.assertEqual(stats["reference_valid"], 0)
+        self.assertEqual(stats["reference_cache_fresh"], 0)
 
 
 class GlobalSchedulerTests(unittest.TestCase):

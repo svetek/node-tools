@@ -1,5 +1,6 @@
 services:
-  rpc-checker:
+  node-rpc-checker:
+    image: svetekllc/node-rpc-checker:1.1.0
     build: .
     restart: unless-stopped
     env_file: .env

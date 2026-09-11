@@ -1,7 +1,7 @@
-# rpc-checker
+# node-rpc-checker
 
-Service version: **1.1.0**. Release image: `svetekllc/rpc-checker:1.1.0`.
-Version is defined in `rpc_checker/__init__.py`, used by package metadata and
+Service version: **1.1.0**. Release image: `svetekllc/node-rpc-checker:1.1.0`.
+Version is defined in `node_rpc_checker/__init__.py`, used by package metadata and
 RPC User-Agent, and exposed in `/healthz`, `/status` and readiness responses.
 The Docker build checks that its VERSION label matches the service version.
 
@@ -11,16 +11,16 @@ multiple named nodes per instance. Use separate instances for separate chains.
 
 ## Layout and launch
 
-- `rpc_checker/`: Python package, engine, adapters, HTTP/WS transports.
-- `rpc_checker/specs/`: bundled near.json, ethereum.json, base.json, arbitrum.json.
+- `node_rpc_checker/`: Python package, engine, adapters, HTTP/WS transports.
+- `node_rpc_checker/specs/`: bundled near.json, ethereum.json, base.json, arbitrum.json.
 - `tests/`: unit and local HTTP/WS integration tests.
 - `legacy/near`, `legacy/evm_checker`: preserved standalone implementations.
 
 Run from this directory:
 
 ```bash
-CHAIN_ID=BASE NODE_RPC_URL=http://192.0.2.10:8545 python3 -m rpc_checker
-CHAIN_ID=NEAR NODE_RPC_URL=http://192.0.2.11:3030 python3 -m rpc_checker
+CHAIN_ID=BASE NODE_RPC_URL=http://192.0.2.10:8545 python3 -m node_rpc_checker
+CHAIN_ID=NEAR NODE_RPC_URL=http://192.0.2.11:3030 python3 -m node_rpc_checker
 ```
 
 Docker: copy `.env.example` to `.env`, configure reachable upstream addresses,
@@ -29,7 +29,7 @@ not the host. Compose binds the monitoring API to host loopback by default.
 From the repository root:
 
 ```bash
-docker build -t rpc-checker:latest rpc_checker
+docker build -t svetekllc/node-rpc-checker:1.1.0 node_rpc_checker
 ```
 
 ## Chain selection
@@ -177,7 +177,7 @@ next scheduled cycle. Subscription is attempted once per core cycle.
 Tune intervals/timeouts/TTLs for upstream latency and quotas; WS/addons multiply
 request counts. EVM eth_syncing is not a rule in these supplied specs.
 
-Metrics prefix: rpc_checker_, with chain/node and mode or check labels.
+Metrics prefix: node_rpc_checker_, with chain/node and mode or check labels.
 Metrics include readiness, check success/freshness, latency, timestamps and HTTP
 height/delta. RPC URLs are not exposed in metrics or errors.
 
@@ -207,10 +207,18 @@ height/delta. RPC URLs are not exposed in metrics or errors.
 
 ## Migration and tests
 
+The unified service was renamed from `rpc-checker` / `rpc_checker` to
+`node-rpc-checker` / `node_rpc_checker`. The project directory and Python
+package are both `node_rpc_checker`; launch with `python3 -m node_rpc_checker`.
+Update build contexts, imports, deployment image references and Compose service
+names. Prometheus queries using `rpc_checker_*` must use `node_rpc_checker_*`.
+No compatibility alias or duplicate metrics are provided. Endpoint paths and
+environment variables are unchanged. Legacy implementations keep their names.
+
 Old implementations/configs are retained in legacy/ and excluded from the new
-image/package. Image/module now: rpc-checker / python3 -m rpc_checker.
+image/package. Image/module now: node-rpc-checker / python3 -m node_rpc_checker.
 NEAR_NETWORK becomes CHAIN_ID=NEAR or NEART; EVM needs its explicit spec ID.
-Metrics change from near_rpc_checker_* or evm_height_checker_* to rpc_checker_*.
+Metrics change from near_rpc_checker_* or evm_height_checker_* to node_rpc_checker_*.
 Update dashboards/alerts separately; the old EVM Grafana dashboard remains
 unchanged for legacy deployments. HTTP paths remain; EVM readiness now requires
 spec checks, not just height/WS upgrade. Unlike legacy EVM, known failures

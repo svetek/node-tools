@@ -142,16 +142,16 @@ class Checker:
             return v.replace('\\', '\\\\').replace('"', '\\"').replace('\n', '\\n')
         for name, checks in self.snapshot().items():
             for mode in ('readyz', 'pruning', 'archive'):
-                lines.append(f'rpc_checker_ready{{chain="{self.config.chain_id}",node="{label(name)}",mode="{mode}"}} {int(self.readiness(name,checks,mode))}')
+                lines.append(f'node_rpc_checker_ready{{chain="{self.config.chain_id}",node="{label(name)}",mode="{mode}"}} {int(self.readiness(name,checks,mode))}')
             for key, row in checks.items():
                 tags = f'chain="{self.config.chain_id}",node="{label(name)}",check="{label(key)}"'
-                lines.append(f'rpc_checker_check_ok{{{tags}}} {int(row["ok"])}')
-                lines.append(f'rpc_checker_check_fresh{{{tags}}} {int(row["fresh"])}')
-                lines.append(f'rpc_checker_latency_ms{{{tags}}} {row["latency_ms"]}')
-                lines.append(f'rpc_checker_last_attempt_timestamp{{{tags}}} {row["checked_at"]}')
+                lines.append(f'node_rpc_checker_check_ok{{{tags}}} {int(row["ok"])}')
+                lines.append(f'node_rpc_checker_check_fresh{{{tags}}} {int(row["fresh"])}')
+                lines.append(f'node_rpc_checker_latency_ms{{{tags}}} {row["latency_ms"]}')
+                lines.append(f'node_rpc_checker_last_attempt_timestamp{{{tags}}} {row["checked_at"]}')
             for key in ('node_height', 'trusted_height', 'delta_blocks'):
                 if key in checks.get('http/height', {}):
-                    lines.append(f'rpc_checker_{key}{{chain="{self.config.chain_id}",node="{label(name)}"}} {checks["http/height"][key]}')
+                    lines.append(f'node_rpc_checker_{key}{{chain="{self.config.chain_id}",node="{label(name)}"}} {checks["http/height"][key]}')
         return '\n'.join(lines) + '\n'
 
 

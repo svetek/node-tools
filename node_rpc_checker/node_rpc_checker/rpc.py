@@ -33,7 +33,7 @@ class RpcClient:
                         ws.send_json(payload)
                         return self.envelope(ws.receive_json(),payload)
                 request = urllib.request.Request(url, data=json.dumps(payload).encode(),
-                    headers={'Content-Type': 'application/json', 'User-Agent': f'rpc-checker/{__version__}'})
+                    headers={'Content-Type': 'application/json', 'User-Agent': f'node-rpc-checker/{__version__}'})
                 try:
                     response = self.opener.open(request, timeout=self.config.timeout)
                 except urllib.error.HTTPError as exc:

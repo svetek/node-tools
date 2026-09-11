@@ -48,7 +48,7 @@ class WebSocketConnection:
                 "Connection: Upgrade\r\n"
                 f"Sec-WebSocket-Key: {key}\r\n"
                 "Sec-WebSocket-Version: 13\r\n"
-                f"User-Agent: rpc-checker/{__version__}\r\n\r\n"
+                f"User-Agent: node-rpc-checker/{__version__}\r\n\r\n"
             )
             self._remaining()
             self.socket.sendall(request.encode("ascii"))

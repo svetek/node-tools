@@ -13,13 +13,13 @@ import urllib.request
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from unittest.mock import Mock, patch
 
-from rpc_checker.adapters import adapter_for
-from rpc_checker import __version__
-from rpc_checker.config import Config, Node
-from rpc_checker.engine import Engine, parse
-from rpc_checker.rpc import RpcClient, RpcError
-from rpc_checker.service import Checker, make_server
-from rpc_checker.spec import Spec, validate_parser
+from node_rpc_checker.adapters import adapter_for
+from node_rpc_checker import __version__
+from node_rpc_checker.config import Config, Node
+from node_rpc_checker.engine import Engine, parse
+from node_rpc_checker.rpc import RpcClient, RpcError
+from node_rpc_checker.service import Checker, make_server
+from node_rpc_checker.spec import Spec, validate_parser
 
 
 class Fake:
@@ -103,7 +103,7 @@ class SpecTests(unittest.TestCase):
         for path in ('.result.[-1]', '.result.[*]', '.result.[9999999999]', '.result..x'):
             with self.assertRaises(ValueError):validate_parser({'parsers':[{'parse_type':'RESULT','parse_path':path}]})
     def test_invalid_parser_and_missing_import_fail_startup(self):
-        source=Path(__file__).parents[1]/'rpc_checker/specs/base.json'
+        source=Path(__file__).parents[1]/'node_rpc_checker/specs/base.json'
         with tempfile.TemporaryDirectory() as d:
             Path(d,'base.json').write_bytes(source.read_bytes())
             with self.assertRaises(ValueError):Spec('BASE',d)
@@ -174,6 +174,8 @@ class ServiceTests(unittest.TestCase):
         self.assertEqual(self.c.response('/healthz')[1]['version'], __version__)
         self.assertEqual(self.c.response('/status')[1]['version'], __version__)
         self.assertEqual(self.c.response('/readyz/n')[1]['version'], __version__)
+        self.assertIn('node_rpc_checker_ready{', self.c.metrics())
+        self.assertFalse(any(line.startswith('rpc_checker_') for line in self.c.metrics().splitlines()))
     def test_arbitrum_readiness_http_ws_and_addon(self):
         for chain in ('ARBITRUM','ARBITRUMN','ARBITRUMS'):
             f=Fake(chain)
@@ -328,7 +330,7 @@ class TransportTests(unittest.TestCase):
             response.__enter__=Mock(return_value=response)
             response.__exit__=Mock(return_value=False)
             response.read1.return_value=b'x'*65536 if oversized else b' '
-            clock=patch('rpc_checker.rpc.time.monotonic',return_value=0) if oversized else patch('rpc_checker.rpc.time.monotonic',side_effect=[0,0,2])
+            clock=patch('node_rpc_checker.rpc.time.monotonic',return_value=0) if oversized else patch('node_rpc_checker.rpc.time.monotonic',side_effect=[0,0,2])
             with patch.object(client.opener,'open',return_value=response),clock:
                 with self.assertRaises(RpcError):client.call('http://node',{'id':1})
             response.__exit__.assert_called_once()

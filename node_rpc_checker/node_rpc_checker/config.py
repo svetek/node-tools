@@ -74,6 +74,7 @@ class Config:
     deep_workers: int = 2
     reference_grace: float = 120
     progress_ttl: float = 30
+    trusted_timeout: float = 5
 
     def __post_init__(self) -> None:
         if type(self.max_behind_blocks) is not int or self.max_behind_blocks < 0:
@@ -135,6 +136,7 @@ class Config:
             ("ttl", "STATE_TTL_SECONDS", 30),
             ("deep_ttl", "DEEP_STATE_TTL_SECONDS", 180),
             ("timeout", "RPC_TIMEOUT_SECONDS", 3),
+            ("trusted_timeout", "TRUSTED_RPC_TIMEOUT_SECONDS", 5),
             ("retry_delay", "RETRY_DELAY_SECONDS", 0.5),
             ("trusted_ttl", "TRUSTED_STATE_TTL_SECONDS", 30),
             ("trusted_refresh_interval", "TRUSTED_REFRESH_INTERVAL_SECONDS", 5),
@@ -171,7 +173,9 @@ class Config:
             raise ValueError(
                 "TRUSTED_REFRESH_INTERVAL_SECONDS must be less than TRUSTED_STATE_TTL_SECONDS"
             )
-        nominal_fetch = 2 * ((retries + 1) * values["timeout"] + retries * values["retry_delay"])
+        nominal_fetch = 2 * (
+            (retries + 1) * values["trusted_timeout"] + retries * values["retry_delay"]
+        )
         if values["trusted_ttl"] <= nominal_fetch + values["trusted_refresh_interval"]:
             logging.warning(
                 "Trusted TTL leaves insufficient nominal refresh/retry margin; "

@@ -2,6 +2,7 @@ import argparse
 import logging
 import signal
 import threading
+from dataclasses import replace
 
 from . import __version__
 from .config import Config
@@ -21,7 +22,11 @@ def main(argv=None):
         return 2
     stop = threading.Event()
     try:
-        checker = Checker(config, RpcClient(config, stop))
+        checker = Checker(
+            config,
+            RpcClient(config, stop),
+            trusted_client=RpcClient(replace(config, timeout=config.trusted_timeout), stop),
+        )
     except (ValueError, KeyError, TypeError) as exc:
         logging.error("specification/configuration error: %s", exc)
         return 2
@@ -62,7 +67,7 @@ def main(argv=None):
         stop.set()
         server.server_close()
         for thread in started_threads:
-            thread.join(timeout=config.timeout + 1)
+            thread.join(timeout=max(config.timeout, config.trusted_timeout) + 1)
         for signum, handler in previous_handlers.items():
             signal.signal(signum, handler)
     return 0

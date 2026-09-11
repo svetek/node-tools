@@ -162,8 +162,15 @@ The height comparison, including the configured lag allowance, uses this bounded
 public RPC call per target. Expiry invalidates cached strict height
 successes even when their ordinary state TTL has not expired. Choose a TTL that
 allows the reference network/height requests to finish; too short causes 503.
-The nominal two-call retry budget at defaults is 20 seconds, versus the 30-second
-freshness bound. This is not a hard end-to-end deadline: HTTP timeouts do not bound
+Trusted RPC uses a separate client with `TRUSTED_RPC_TIMEOUT_SECONDS=5`;
+target HTTP/WS and subscriptions keep `RPC_TIMEOUT_SECONDS=3`. The role, not
+URL equality, selects the timeout (even if target and trusted URLs are identical).
+The nominal two-call retry budget at defaults is 32 seconds, versus the 30-second
+freshness bound, so startup warns about insufficient retry margin. Fast successful
+requests still pass. To accommodate the nominal budget plus refresh interval,
+increase both trusted and state TTLs above 37 seconds, for example to 45; this
+also changes the accepted data age and should be an explicit operator decision.
+This is not a hard end-to-end deadline: HTTP timeouts do not bound
 all DNS/header/body work together. Allow for the previous fetch duration, the refresh
 interval and the next fetch duration to avoid expiry during consecutive slow refreshes.
 Sustained slow or failed trusted RPCs fail strict readiness; raising TTL does not
@@ -279,6 +286,7 @@ default; WEBSOCKET_URL and comma-separated ADDONS apply to it. Multi-node exampl
 | NODE_PROGRESS_TTL_SECONDS | 30 seconds since last observed forward height progress |
 | DEEP_STATE_TTL_SECONDS | 180 seconds, must exceed deep interval |
 | RPC_TIMEOUT_SECONDS | 3 seconds |
+| TRUSTED_RPC_TIMEOUT_SECONDS | 5 seconds; trusted network/height calls only, including HTTP body reads |
 | RPC_RETRY_COUNT | 2 extra attempts for transport/invalid-envelope errors; range 0–5 |
 | CHECK_WORKERS | 4 concurrent core checks globally; range 1–32 |
 | DEEP_CHECK_WORKERS | 2 workers in each of the separate pruning/archive pools; range 1–32 |

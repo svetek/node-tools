@@ -174,8 +174,8 @@ class RefreshConfigTests(unittest.TestCase):
         ):
             return Config.from_env()
 
-    def test_defaults_have_retry_margin(self):
-        with self.assertNoLogs(level="WARNING"):
+    def test_defaults_warn_about_full_retry_budget(self):
+        with self.assertLogs(level="WARNING"):
             config = self.load()
         self.assertEqual(config.trusted_ttl, 30)
         self.assertEqual(config.trusted_refresh_interval, 5)

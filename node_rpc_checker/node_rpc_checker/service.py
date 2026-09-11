@@ -22,13 +22,25 @@ from .spec import Spec
 
 
 class Checker:
-    def __init__(self, config: Config, client: Any, clock: Callable[[], float] = time.monotonic):
+    def __init__(
+        self,
+        config: Config,
+        client: Any,
+        clock: Callable[[], float] = time.monotonic,
+        *,
+        trusted_client: Any = None,
+    ):
         self.config, self.client, self.clock = config, client, clock
         self.spec = Spec(config.chain_id)
         self.adapter = adapter_for(config.chain_id)
         self.engine = Engine(self.spec, client, self.adapter, config.max_behind_blocks)
+        reference_engine = (
+            self.engine
+            if trusted_client is None
+            else Engine(self.spec, trusted_client, self.adapter, config.max_behind_blocks)
+        )
         self.reference = TrustedReference(
-            lambda: self.engine.reference_height(config.trusted), config.trusted_ttl, clock
+            lambda: reference_engine.reference_height(config.trusted), config.trusted_ttl, clock
         )
         self.internal_errors: dict[tuple[str, str], int] = {}
         self.states: dict[str, dict[str, dict[str, Any]]] = {name: {} for name in config.nodes}

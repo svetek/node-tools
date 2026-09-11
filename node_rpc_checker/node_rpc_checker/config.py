@@ -72,6 +72,8 @@ class Config:
     max_behind_blocks: int = 0
     trusted_refresh_interval: float = 5
     deep_workers: int = 2
+    reference_grace: float = 120
+    progress_ttl: float = 30
 
     def __post_init__(self) -> None:
         if type(self.max_behind_blocks) is not int or self.max_behind_blocks < 0:
@@ -136,9 +138,15 @@ class Config:
             ("retry_delay", "RETRY_DELAY_SECONDS", 0.5),
             ("trusted_ttl", "TRUSTED_STATE_TTL_SECONDS", 30),
             ("trusted_refresh_interval", "TRUSTED_REFRESH_INTERVAL_SECONDS", 5),
+            ("reference_grace", "REFERENCE_GRACE_SECONDS", 120),
+            ("progress_ttl", "NODE_PROGRESS_TTL_SECONDS", 30),
         ]:
             v = float(os.getenv(env, str(default)))
-            if not math.isfinite(v) or v < 0 or (v == 0 and field != "retry_delay"):
+            if (
+                not math.isfinite(v)
+                or v < 0
+                or (v == 0 and field not in ("retry_delay", "reference_grace"))
+            ):
                 raise ValueError(f"invalid {env}")
             values[field] = v
         retries = int(os.getenv("RPC_RETRY_COUNT", "2"))

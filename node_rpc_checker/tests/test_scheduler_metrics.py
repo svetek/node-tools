@@ -21,6 +21,8 @@ class ReferenceDiagnosticsTests(unittest.TestCase):
         with patch.object(checker.reference, "fetch", side_effect=RpcError("502")):
             with self.assertRaises(RpcError):
                 checker.reference.get(refresh=True)
+        self.assertEqual(checker.response("/readyz/n")[0], 200)
+        now[0] = 30
         self.assertEqual(checker.response("/readyz/n")[0], 503)
         for _ in range(64):
             with self.assertRaises(RpcError):
@@ -36,7 +38,7 @@ class ReferenceDiagnosticsTests(unittest.TestCase):
             def wait(self, interval):
                 self.done = True
 
-        now[0] = 10
+        now[0] = 31
         checker.run_reference(Stop())
         checker.cycle("n", mode="readyz")
         self.assertEqual(checker.response("/readyz/n")[0], 200)

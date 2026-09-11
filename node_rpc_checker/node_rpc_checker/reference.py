@@ -30,10 +30,7 @@ class TrustedReference:
             age = None if self.started is None else max(0.0, self.clock() - self.started)
             values = {
                 "reference_valid": float(
-                    not self.error
-                    and self.height is not None
-                    and age is not None
-                    and age < self.ttl
+                    self.height is not None and age is not None and age < self.ttl
                 ),
                 "reference_refresh_attempts_total": float(self.attempts),
                 "reference_refresh_failures_total": float(self.failures),
@@ -47,8 +44,7 @@ class TrustedReference:
     def valid(self) -> bool:
         with self.state_lock:
             return (
-                not self.error
-                and self.height is not None
+                self.height is not None
                 and self.started is not None
                 and self.clock() - self.started < self.ttl
             )
@@ -58,8 +54,7 @@ class TrustedReference:
         self.get()
         with self.state_lock:
             if (
-                self.error
-                or self.height is None
+                self.height is None
                 or self.started is None
                 or self.clock() - self.started >= self.ttl
             ):
@@ -71,8 +66,7 @@ class TrustedReference:
         if not refresh:
             with self.state_lock:
                 if (
-                    not self.error
-                    and self.height is not None
+                    self.height is not None
                     and self.started is not None
                     and self.clock() - self.started < self.ttl
                 ):

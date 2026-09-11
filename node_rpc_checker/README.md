@@ -143,11 +143,12 @@ its age from refresh start. A dedicated updater waits `TRUSTED_REFRESH_INTERVAL_
 (default 5, strictly below trusted TTL) between completed refreshes, independently
 of node polling. During refresh, readers use the previous snapshot only while
 it is still fresh, without waiting for the refresh lock. At most one refresh runs at a time; successful EVM
-refreshes require two RPC calls regardless of node count. A failed refresh
-invalidates the reference. On-demand callers retain TTL-length backoff from failure
+refreshes require two RPC calls regardless of node count. A failed refresh preserves
+the previous successful reference only until its original hard TTL expires.
+On-demand callers without a fresh snapshot retain TTL-length backoff from failure
 completion to prevent retry storms. The single proactive updater bypasses that
 backoff and retries after its configured refresh interval, not after the TTL.
-No stale reference is used to report readiness. Status reads never
+No stale reference is used to report strict readiness. Status reads never
 perform RPC I/O or wait for a refresh. Replicas do not share this cache.
 Each cached height comparison retains the expiry of the particular snapshot it
 used; publishing a newer reference cannot extend an old comparison's lifetime.
@@ -158,16 +159,43 @@ a shorter refresh interval and a deliberate smaller freshness budget. Equal
 refresh interval and TTL now fail configuration validation at startup.
 
 The height comparison, including the configured lag allowance, uses this bounded-age snapshot, not a fresh
-public RPC call per target. Expiry or refresh failure invalidates cached height
+public RPC call per target. Expiry invalidates cached strict height
 successes even when their ordinary state TTL has not expired. Choose a TTL that
 allows the reference network/height requests to finish; too short causes 503.
 The nominal two-call retry budget at defaults is 20 seconds, versus the 30-second
 freshness bound. This is not a hard end-to-end deadline: HTTP timeouts do not bound
 all DNS/header/body work together. Allow for the previous fetch duration, the refresh
 interval and the next fetch duration to avoid expiry during consecutive slow refreshes.
-Sustained slow or failed trusted RPCs intentionally fail closed; raising TTL does not
+Sustained slow or failed trusted RPCs fail strict readiness; raising TTL does not
 guarantee availability. Startup warns if TTL does not exceed one nominal fetch
 budget plus the refresh interval; this warning is not a hard timing guarantee.
+
+### Protection during trusted outages
+
+`/readyz` always requires strict reference/height validation. `/pruning` and
+`/archive` may remain HTTP 200 in a bounded **degraded** mode; HAProxy using
+those paths requires no change. This is an availability policy, **not a guarantee
+that MAX_BEHIND_BLOCKS is satisfied while the reference is unavailable**.
+
+Admission requires a complete prior strict success for that node and pool,
+including all configured transports and historical checks. Grace ends at the
+expiry of the reference snapshot used for that admission plus
+`REFERENCE_GRACE_SECONDS` (default 120; zero disables grace). Local successes
+and repeated reference failures never extend this deadline. Restart loses admission.
+
+During grace the checker still fetches target height. Every transport must advance
+beyond its admitted height, with forward progress within NODE_PROGRESS_TTL_SECONDS
+(default 30). Unchanged heights are tolerated only within that progress window.
+Core, shard, network, WS, pruning and archive checks must remain successful and fresh.
+Target errors, a height regression or a confirmed excessive lag revoke admission;
+only a complete strict success can restore it. Unknown/unverified nodes cannot
+enter grace. A stale local or historical check is never masked by grace.
+
+`/status` exposes per-node `degraded` and height-check `degraded_modes`; the
+`node_rpc_checker_degraded{node,mode}` gauge is 1 only for an admitted degraded pool.
+The height check itself remains `ok=false, error_kind=reference_error` in grace;
+strict `/readyz` stays 503. Alert on degraded pools and reference failures.
+After trusted recovery, a new successful comparison restores strict readiness.
 
 `cycle()` is a one-shot executor, not a scheduler. Production core, pruning and
 archive loops all use `run_mode()`, one scheduler per mode for all nodes.
@@ -247,6 +275,8 @@ default; WEBSOCKET_URL and comma-separated ADDONS apply to it. Multi-node exampl
 | MAX_BEHIND_BLOCKS | 0; nonnegative integer, inclusive lag allowance |
 | TRUSTED_STATE_TTL_SECONDS | 30 seconds; must not exceed STATE_TTL_SECONDS |
 | TRUSTED_REFRESH_INTERVAL_SECONDS | 5 seconds between refreshes; must be below trusted TTL |
+| REFERENCE_GRACE_SECONDS | 120 seconds after admitted reference expiry; 0 disables pool protection |
+| NODE_PROGRESS_TTL_SECONDS | 30 seconds since last observed forward height progress |
 | DEEP_STATE_TTL_SECONDS | 180 seconds, must exceed deep interval |
 | RPC_TIMEOUT_SECONDS | 3 seconds |
 | RPC_RETRY_COUNT | 2 extra attempts for transport/invalid-envelope errors; range 0–5 |
@@ -287,7 +317,8 @@ trusted updater, HTTP response/handler, listen and lifecycle). Logs include sani
 omit exception values, source lines, chained exceptions and frame locals.
 Also alert on failed metric scrapes and process exits/restarts: a broken metrics
 endpoint or a process that cannot start cannot expose its own error counters.
-Both failure classes fail readiness; internal error counters survive recovery
+Target/internal failures fail readiness; reference failures follow the protection
+policy above. Internal error counters survive recovery
 until the service restarts. Invalid shared-reference state also invalidates
 otherwise successful cached height checks (`error_kind=reference_error`).
 

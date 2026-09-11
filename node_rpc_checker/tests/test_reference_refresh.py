@@ -76,12 +76,14 @@ class RefreshTests(unittest.TestCase):
         checker.cycle("n", mode="readyz")
         self.assertEqual(checker.response("/readyz/n")[0], 200)
 
-    def test_failed_refresh_invalidates_previous_fresh_success(self):
+    def test_failed_refresh_preserves_only_unexpired_success(self):
         checker = self.checker()
         checker.cycle("n", mode="readyz")
         with patch.object(checker.reference, "fetch", side_effect=RpcError("offline")) as fetch:
             checker.run_reference(StopAfterWait(3))
         self.assertEqual(fetch.call_count, 3)
+        self.assertEqual(checker.response("/readyz/n")[0], 200)
+        self.now[0] = 30
         self.assertEqual(checker.response("/readyz/n")[0], 503)
 
     def test_new_reference_cannot_extend_old_comparison_freshness(self):

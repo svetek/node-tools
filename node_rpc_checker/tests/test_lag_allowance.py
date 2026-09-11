@@ -66,7 +66,7 @@ class LagAllowanceTests(unittest.TestCase):
             if ws:
                 self.assertEqual(checker.snapshot()["n"]["ws/height"]["delta_blocks"], 10)
             fake.height = fake.reference - 11
-            checker.cycle("n", False)
+            checker.cycle("n", mode="readyz")
             for mode in ("readyz", "pruning", "archive"):
                 self.assertEqual(checker.response("/" + mode + "/n")[0], 503)
 
@@ -78,9 +78,9 @@ class LagAllowanceTests(unittest.TestCase):
             fake,
             lambda: now[0],
         )
-        checker.cycle("n", False)
+        checker.cycle("n", mode="readyz")
         self.assertEqual(checker.response("/readyz/n")[0], 200)
-        now[0] = 6
+        now[0] = checker.config.trusted_ttl
         self.assertEqual(checker.response("/readyz/n")[0], 503)
 
     def test_allowance_does_not_bypass_shards(self):
@@ -89,5 +89,5 @@ class LagAllowanceTests(unittest.TestCase):
         checker = Checker(
             Config("NEAR", {"n": Node("node")}, "trusted", max_behind_blocks=1000), fake
         )
-        checker.cycle("n", False)
+        checker.cycle("n", mode="readyz")
         self.assertEqual(checker.response("/readyz/n")[0], 503)

@@ -1,7 +1,7 @@
 # node-rpc-checker
 
 The only version source is `node_rpc_checker/VERSION` (print it with
-`python3 tools/release.py version`). Images use `svetekllc/node-rpc-checker:<version>`.
+`python3 tools/release.py version` from the checker directory). Images use `svetekllc/node-rpc-checker:<version>`.
 The version is used by package metadata and
 RPC User-Agent, and exposed in `/healthz`, `/status` and readiness responses.
 The Docker build checks its VERSION label against both installed package metadata
@@ -137,17 +137,34 @@ Independent core rules run concurrently within a bounded per-node pool, so a
 slow shard probe does not serially delay every other rule.
 
 All nodes and transports in one service instance share a single-flight trusted
-snapshot. `TRUSTED_STATE_TTL_SECONDS` (default 5, maximum STATE_TTL_SECONDS) bounds
-its age from refresh start. At most one refresh runs at a time; successful EVM
+snapshot. `TRUSTED_STATE_TTL_SECONDS` (default 30, maximum STATE_TTL_SECONDS) bounds
+its age from refresh start. A dedicated updater waits `TRUSTED_REFRESH_INTERVAL_SECONDS`
+(default 5, strictly below trusted TTL) between completed refreshes, independently
+of node polling. During refresh, readers use the previous snapshot only while
+it is still fresh, without waiting for the refresh lock. At most one refresh runs at a time; successful EVM
 refreshes require two RPC calls regardless of node count. A failed refresh
 invalidates the reference, with retry backoff equal to its TTL from failure
 completion. No stale reference is used to report readiness. Status reads never
 perform RPC I/O or wait for a refresh. Replicas do not share this cache.
+Each cached height comparison retains the expiry of the particular snapshot it
+used; publishing a newer reference cannot extend an old comparison's lifetime.
+
+Migration: explicitly configured `TRUSTED_STATE_TTL_SECONDS=5` is not replaced
+by the new default. Set it to 30 (with STATE_TTL_SECONDS at least 30), or choose
+a shorter refresh interval and a deliberate smaller freshness budget. Equal
+refresh interval and TTL now fail configuration validation at startup.
 
 The height comparison, including the configured lag allowance, uses this bounded-age snapshot, not a fresh
 public RPC call per target. Expiry or refresh failure invalidates cached height
 successes even when their ordinary state TTL has not expired. Choose a TTL that
 allows the reference network/height requests to finish; too short causes 503.
+The nominal two-call retry budget at defaults is 20 seconds, versus the 30-second
+freshness bound. This is not a hard end-to-end deadline: HTTP timeouts do not bound
+all DNS/header/body work together. Allow for the previous fetch duration, the refresh
+interval and the next fetch duration to avoid expiry during consecutive slow refreshes.
+Sustained slow or failed trusted RPCs intentionally fail closed; raising TTL does not
+guarantee availability. Startup warns if TTL does not exceed one nominal fetch
+budget plus the refresh interval; this warning is not a hard timing guarantee.
 
 `cycle()` is a one-shot executor, not a scheduler. Production core, pruning and
 archive loops all use `run_mode()` with their respective intervals, measured
@@ -213,7 +230,8 @@ default; WEBSOCKET_URL and comma-separated ADDONS apply to it. Multi-node exampl
 | DEEP_CHECK_INTERVAL_SECONDS | 60 seconds between deep cycles |
 | STATE_TTL_SECONDS | 30 seconds for core |
 | MAX_BEHIND_BLOCKS | 0; nonnegative integer, inclusive lag allowance |
-| TRUSTED_STATE_TTL_SECONDS | 5 seconds; must not exceed STATE_TTL_SECONDS |
+| TRUSTED_STATE_TTL_SECONDS | 30 seconds; must not exceed STATE_TTL_SECONDS |
+| TRUSTED_REFRESH_INTERVAL_SECONDS | 5 seconds between refreshes; must be below trusted TTL |
 | DEEP_STATE_TTL_SECONDS | 180 seconds, must exceed deep interval |
 | RPC_TIMEOUT_SECONDS | 3 seconds |
 | RPC_RETRY_COUNT | 2 extra attempts for transport/invalid-envelope errors; range 0–5 |
@@ -230,14 +248,22 @@ request counts. EVM eth_syncing is not a rule in these supplied specs.
 Metrics prefix: node_rpc_checker_, with chain/node and mode or check labels.
 Metrics include readiness, check success/freshness, latency, timestamps and HTTP
 height/delta. RPC URLs are not exposed in metrics or errors.
+All exported families include HELP and TYPE metadata. The legacy `latency_ms`
+continues to measure whole-check duration. Successful height checks additionally
+expose `target_rpc_latency_ms` (target request, including its retries) and
+`trusted_wait_ms` (reference acquisition, including any refresh/lock wait).
+Use target RPC timing, not whole-check duration, to compare node latency.
 The configured lag limit is exposed in status/readiness responses and in
 `node_rpc_checker_max_behind_blocks`; `delta_blocks` retains its signed value
 (trusted minus target), including a positive delta accepted within the limit.
 
 Expected RPC failures have `error_kind=rpc_error`. Unexpected exceptions have
 `error_kind=internal_error` and increment `node_rpc_checker_internal_errors_total`
-per node/check. Logs include sanitized stack locations and exception type, but
+per node/check, including fixed service and monitoring operations (poll loop,
+trusted updater, HTTP response/handler, listen and lifecycle). Logs include sanitized stack locations and exception type, but
 omit exception values, source lines, chained exceptions and frame locals.
+Also alert on failed metric scrapes and process exits/restarts: a broken metrics
+endpoint or a process that cannot start cannot expose its own error counters.
 Both failure classes fail readiness; internal error counters survive recovery
 until the service restarts. Invalid shared-reference state also invalidates
 otherwise successful cached height checks (`error_kind=reference_error`).

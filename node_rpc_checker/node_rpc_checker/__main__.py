@@ -5,7 +5,6 @@ import threading
 
 from . import __version__
 from .config import Config
-from .diagnostics import log_internal_error
 from .rpc import RpcClient
 from .service import Checker, make_server
 
@@ -29,7 +28,7 @@ def main(argv=None):
     try:
         server = make_server(checker, (config.host, config.port))
     except OSError as error:
-        log_internal_error("service", "listen", error)
+        checker.internal_error("service", "listen", error)
         return 2
     threads = [
         threading.Thread(target=checker.run, args=(name, stop), daemon=True)
@@ -40,6 +39,7 @@ def main(argv=None):
         for name in config.nodes
         for archive in (False, True)
     ]
+    threads.append(threading.Thread(target=checker.run_reference, args=(stop,), daemon=True))
 
     shutdown_requested = False
 
@@ -61,7 +61,7 @@ def main(argv=None):
         logging.info("RPC checker started: chain=%s nodes=%s", config.chain_id, len(config.nodes))
         server.serve_forever(poll_interval=0.2)
     except Exception as error:
-        log_internal_error("service", "lifecycle", error)
+        checker.internal_error("service", "lifecycle", error)
         return 1
     finally:
         stop.set()

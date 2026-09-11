@@ -19,8 +19,9 @@ from unittest.mock import Mock, patch
 from node_rpc_checker import __version__
 from node_rpc_checker.__main__ import main
 from node_rpc_checker.config import Config, Node
-from node_rpc_checker.service import make_server
+from node_rpc_checker.service import Checker, make_server
 from node_rpc_checker.websocket import WebSocketConnection
+from tests.helpers import Fake
 from tools.release import main as release_main
 
 
@@ -63,9 +64,9 @@ class PackagingTests(unittest.TestCase):
 
 class HttpFailureTests(unittest.TestCase):
     def test_response_and_metrics_errors_return_sanitized_500(self):
-        checker = Mock()
-        checker.response.side_effect = RuntimeError("secret-token")
-        checker.metrics.side_effect = RuntimeError("secret-token")
+        checker = Checker(Config("BASE", {"n": Node("node")}, "trusted"), Fake())
+        checker.response = Mock(side_effect=RuntimeError("secret-token"))
+        checker.metrics = Mock(side_effect=RuntimeError("secret-token"))
         server = make_server(checker, ("127.0.0.1", 0))
         thread = threading.Thread(target=server.serve_forever, daemon=True)
         thread.start()
@@ -80,6 +81,7 @@ class HttpFailureTests(unittest.TestCase):
                     with caught.exception as response:
                         self.assertEqual(json.load(response), {"error": "internal server error"})
                 self.assertNotIn("secret-token", "\n".join(logs.output))
+            self.assertEqual(checker.internal_errors["monitoring", "response"], 2)
         finally:
             server.shutdown()
             server.server_close()
@@ -106,7 +108,8 @@ class HttpFailureTests(unittest.TestCase):
             server.server_close()
 
     def test_server_fallback_sanitizes_unexpected_errors(self):
-        server = make_server(Mock(), ("127.0.0.1", 0))
+        checker = Checker(Config("BASE", {"n": Node("node")}, "trusted"), Fake())
+        server = make_server(checker, ("127.0.0.1", 0))
         try:
             try:
                 raise RuntimeError("secret-token")
@@ -114,6 +117,7 @@ class HttpFailureTests(unittest.TestCase):
                 with self.assertLogs(level="ERROR") as logs:
                     server.handle_error(None, ("127.0.0.1", 1))
             self.assertNotIn("secret-token", "\n".join(logs.output))
+            self.assertEqual(checker.internal_errors["monitoring", "http_handler"], 1)
         finally:
             server.server_close()
 
@@ -214,16 +218,16 @@ class LifecycleTests(unittest.TestCase):
     def test_partial_thread_start_failure_cleans_up(self):
         config = Config("BASE", {"n": Node("http://node")}, "http://reference")
         server = Mock()
-        threads = [Mock(), Mock(), Mock()]
+        threads = [Mock(), Mock(), Mock(), Mock()]
         threads[1].start.side_effect = RuntimeError("secret-token")
         with (
             patch("node_rpc_checker.__main__.Config.from_env", return_value=config),
-            patch("node_rpc_checker.__main__.Checker"),
+            patch("node_rpc_checker.__main__.Checker") as checker_class,
             patch("node_rpc_checker.__main__.make_server", return_value=server),
             patch("node_rpc_checker.__main__.threading.Thread", side_effect=threads),
-            self.assertLogs(level="ERROR"),
         ):
             self.assertEqual(main([]), 1)
+        checker_class.return_value.internal_error.assert_called_once()
         threads[0].join.assert_called_once()
         threads[1].join.assert_not_called()
         threads[2].start.assert_not_called()
@@ -238,12 +242,13 @@ class LifecycleTests(unittest.TestCase):
         config = Config("BASE", {"n": Node("http://node")}, "http://reference")
         with (
             patch("node_rpc_checker.__main__.Config.from_env", return_value=config),
-            patch("node_rpc_checker.__main__.Checker"),
+            patch("node_rpc_checker.__main__.Checker", return_value=Checker(config, Fake())) as cls,
             patch("node_rpc_checker.__main__.make_server", side_effect=OSError("secret-token")),
             self.assertLogs(level="ERROR") as logs,
         ):
             self.assertEqual(main([]), 2)
         self.assertNotIn("secret-token", "\n".join(logs.output))
+        self.assertEqual(cls.return_value.internal_errors["service", "listen"], 1)
 
     def test_success_cleanup_and_signal_restoration(self):
         config = Config("BASE", {"n": Node("http://node")}, "http://reference")
@@ -259,6 +264,7 @@ class LifecycleTests(unittest.TestCase):
         server.server_close.assert_called_once()
         self.assertEqual(checker.return_value.run.call_count, 1)
         self.assertEqual(checker.return_value.run_deep.call_count, 2)
+        self.assertEqual(checker.return_value.run_reference.call_count, 1)
         self.assertTrue(checker.return_value.run.call_args.args[1].is_set())
         self.assertEqual(old, {s: signal.getsignal(s) for s in old})
 
@@ -268,13 +274,14 @@ class LifecycleTests(unittest.TestCase):
         config = Config("BASE", {"n": Node("http://node")}, "http://reference")
         with (
             patch("node_rpc_checker.__main__.Config.from_env", return_value=config),
-            patch("node_rpc_checker.__main__.Checker"),
+            patch("node_rpc_checker.__main__.Checker") as cls,
             patch("node_rpc_checker.__main__.make_server", return_value=server),
-            self.assertLogs(level="ERROR") as logs,
         ):
             self.assertEqual(main([]), 1)
         server.server_close.assert_called_once()
-        self.assertNotIn("secret-token", "\n".join(logs.output))
+        self.assertEqual(
+            cls.return_value.internal_error.call_args.args[:2], ("service", "lifecycle")
+        )
 
     def test_real_sigterm_and_sigint(self):
         for signum in (signal.SIGTERM, signal.SIGINT):

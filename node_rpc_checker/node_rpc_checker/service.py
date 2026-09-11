@@ -55,6 +55,11 @@ class Checker:
                 )
             self.plans[name] = plan
 
+    def internal_error(self, name: str, key: str, error: Exception) -> None:
+        with self.lock:
+            self.internal_errors[name, key] = self.internal_errors.get((name, key), 0) + 1
+        log_internal_error(name, key, error)
+
     def record(self, name: str, key: str, fn: Callable[[], dict[str, Any]]) -> dict[str, Any]:
         start = self.clock()
         try:
@@ -63,9 +68,7 @@ class Checker:
         except RpcError as exc:
             row = {"ok": False, "error": str(exc), "error_kind": "rpc_error"}
         except Exception as exc:
-            log_internal_error(name, key, exc)
-            with self.lock:
-                self.internal_errors[name, key] = self.internal_errors.get((name, key), 0) + 1
+            self.internal_error(name, key, exc)
             row = {"ok": False, "error": type(exc).__name__, "error_kind": "internal_error"}
         row.update(
             checked_at=time.time(),
@@ -78,19 +81,23 @@ class Checker:
         return row
 
     def compare(self, url: str) -> dict[str, Any]:
-        reference = self.reference.get()
-        result = self.engine.compare_height(url, reference)
-        if not self.reference.valid():
+        start = self.clock()
+        reference, reference_started = self.reference.snapshot()
+        target_start = self.clock()
+        result: dict[str, Any] = self.engine.compare_height(url, reference)
+        result.update(
+            trusted_wait_ms=round((target_start - start) * 1000),
+            target_rpc_latency_ms=round((self.clock() - target_start) * 1000),
+            reference_expires_at=reference_started + self.config.trusted_ttl,
+        )
+        if not self.reference.valid() or self.clock() >= result["reference_expires_at"]:
             raise RpcError("trusted reference unavailable or stale")
         return result
 
-    def cycle(self, name, include_deep=True, pool=None, mode=None, stop=None):
+    def cycle(self, name, *, mode=None, pool=None, stop=None):
         """Run selected checks once. Scheduling belongs exclusively to run_mode."""
         jobs = []
         for key, (level, fn) in self.plans[name].items():
-            deep = level != "readyz"
-            if deep and not include_deep:
-                continue
             if mode is not None and level != mode:
                 continue
             jobs.append((key, fn))
@@ -115,6 +122,18 @@ class Checker:
     def run(self, name: str, stop: threading.Event) -> None:
         self.run_mode(name, "readyz", self.config.poll, stop)
 
+    def run_reference(self, stop: threading.Event) -> None:
+        # A single proactive updater for all nodes and transports. Never extend
+        # the hard TTL of the previous snapshot while a refresh is in flight.
+        while not stop.is_set():
+            try:
+                self.reference.get(refresh=True)
+            except RpcError:
+                pass  # Reference failure already invalidates readiness.
+            except Exception as exc:
+                self.internal_error("service", "trusted_refresh", exc)
+            stop.wait(self.config.trusted_refresh_interval)
+
     def run_mode(self, name: str, mode: str, interval: float, stop: threading.Event) -> None:
         workers = self.config.workers if mode == "readyz" else 1
         with ThreadPoolExecutor(max_workers=workers) as pool:
@@ -122,7 +141,7 @@ class Checker:
                 try:
                     self.cycle(name, pool=pool, mode=mode, stop=stop)
                 except Exception as exc:
-                    log_internal_error(name, mode, exc)
+                    self.internal_error(name, mode, exc)
                 stop.wait(interval)
 
     def run_deep(self, name: str, archive: bool, stop: threading.Event) -> None:
@@ -135,11 +154,16 @@ class Checker:
         for checks in states.values():
             for key, row in checks.items():
                 age = max(0, self.clock() - row.pop("monotonic_at"))
+                reference_expires_at = row.pop("reference_expires_at", float("inf"))
                 row["age_seconds"] = round(age, 3)
                 row["fresh"] = age <= (
                     self.config.deep_ttl if row["mode"] != "readyz" else self.config.ttl
                 )
-                if row["ok"] and key.endswith("/height") and not self.reference.valid():
+                if (
+                    row["ok"]
+                    and key.endswith("/height")
+                    and (not self.reference.valid() or self.clock() >= reference_expires_at)
+                ):
                     row.update(
                         ok=False,
                         error="trusted reference unavailable or stale",
@@ -206,6 +230,9 @@ class Checker:
                 lines.append(f"node_rpc_checker_check_ok{{{tags}}} {int(row['ok'])}")
                 lines.append(f"node_rpc_checker_check_fresh{{{tags}}} {int(row['fresh'])}")
                 lines.append(f"node_rpc_checker_latency_ms{{{tags}}} {row['latency_ms']}")
+                for metric in ("target_rpc_latency_ms", "trusted_wait_ms"):
+                    if metric in row:
+                        lines.append(f"node_rpc_checker_{metric}{{{tags}}} {row[metric]}")
                 lines.append(
                     f"node_rpc_checker_last_attempt_timestamp{{{tags}}} {row['checked_at']}"
                 )
@@ -220,7 +247,29 @@ class Checker:
             lines.append(
                 f'node_rpc_checker_internal_errors_total{{chain="{self.config.chain_id}",node="{label(name)}",check="{label(key)}"}} {count}'
             )
-        return "\n".join(lines) + "\n"
+        descriptions = {
+            "latency_ms": "Whole check duration including reference work (legacy name).",
+            "target_rpc_latency_ms": "Target height RPC duration excluding reference work; successful checks only.",
+            "trusted_wait_ms": "Reference acquisition duration including refresh or lock wait; successful height checks only.",
+            "internal_errors_total": "Internal errors by configured node/check or fixed service operation.",
+        }
+        # Group families, with metadata preceding every family's samples.
+        families: dict[str, list[str]] = {}
+        for line in lines:
+            metric = line.split("{", 1)[0]
+            families.setdefault(metric, []).append(line)
+        output = []
+        for metric, samples in families.items():
+            suffix = metric.removeprefix("node_rpc_checker_")
+            kind = "counter" if suffix == "internal_errors_total" else "gauge"
+            output.extend(
+                [
+                    f"# HELP {metric} {descriptions.get(suffix, suffix.replace('_', ' ') + '.')}",
+                    f"# TYPE {metric} {kind}",
+                    *samples,
+                ]
+            )
+        return "\n".join(output) + "\n"
 
 
 class BoundedHTTPServer(ThreadingHTTPServer):
@@ -256,7 +305,10 @@ class BoundedHTTPServer(ThreadingHTTPServer):
     def handle_error(self, request, client_address):
         error = sys.exc_info()[1]
         if isinstance(error, Exception):
-            log_internal_error("monitoring", "http_handler", error)
+            self.internal_error("monitoring", "http_handler", error)
+
+    def internal_error(self, name: str, key: str, error: Exception) -> None:
+        log_internal_error(name, key, error)
 
 
 def make_server(checker, address):
@@ -273,7 +325,7 @@ def make_server(checker, address):
                     code, data = checker.response(self.path)
                     body, content_type = json.dumps(data).encode(), "application/json"
             except Exception as error:
-                log_internal_error("monitoring", "response", error)
+                checker.internal_error("monitoring", "response", error)
                 code, body, content_type = (
                     500,
                     b'{"error":"internal server error"}',
@@ -292,4 +344,8 @@ def make_server(checker, address):
         def log_message(self, *_args):
             pass
 
-    return BoundedHTTPServer(address, Handler)
+    class CheckerHTTPServer(BoundedHTTPServer):
+        def internal_error(self, name: str, key: str, error: Exception) -> None:
+            checker.internal_error(name, key, error)
+
+    return CheckerHTTPServer(address, Handler)

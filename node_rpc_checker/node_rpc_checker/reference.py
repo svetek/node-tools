@@ -30,31 +30,59 @@ class TrustedReference:
                 and self.clock() - self.started < self.ttl
             )
 
-    def get(self) -> int:
+    def snapshot(self) -> tuple[int, float]:
+        """Acquire a fresh height and its own observation-start timestamp atomically."""
+        self.get()
+        with self.state_lock:
+            if (
+                self.error
+                or self.height is None
+                or self.started is None
+                or self.clock() - self.started >= self.ttl
+            ):
+                raise RpcError("trusted reference unavailable or stale")
+            return self.height, self.started
+
+    def get(self, *, refresh: bool = False) -> int:
+        # Readers never queue behind a refresh while the published snapshot is fresh.
+        if not refresh:
+            with self.state_lock:
+                if (
+                    not self.error
+                    and self.height is not None
+                    and self.started is not None
+                    and self.clock() - self.started < self.ttl
+                ):
+                    return self.height
         # The I/O lock serializes refreshes, not status/metrics reads.
         with self.update_lock:
             with self.state_lock:
                 if self.error and self.clock() < self.retry_after:
                     raise RpcError("trusted reference unavailable")
-                if self.started is not None and self.clock() - self.started < self.ttl:
+                if (
+                    not refresh
+                    and self.started is not None
+                    and self.clock() - self.started < self.ttl
+                ):
                     if self.error:
                         raise RpcError("trusted reference unavailable")
                     if self.height is not None:
                         return self.height
-                self.started = self.clock()
-                self.height = None
-                self.error = True
+                started = self.clock()
             try:
                 height = self.fetch()
             except Exception:
                 # Cache failure too, preventing retry storms across all nodes.
                 with self.state_lock:
+                    self.error = True
                     self.retry_after = self.clock() + self.ttl
                 raise
             with self.state_lock:
-                if self.clock() - self.started >= self.ttl:
+                if self.clock() - started >= self.ttl:
+                    self.error = True
                     self.retry_after = self.clock() + self.ttl
                     raise RpcError("trusted reference expired during refresh")
                 self.height = height
+                self.started = started
                 self.error = False
                 return height

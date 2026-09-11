@@ -1,4 +1,5 @@
 import json
+import logging
 import math
 import os
 import re
@@ -67,8 +68,9 @@ class Config:
     host: str = "0.0.0.0"
     port: int = 8080
     workers: int = 4
-    trusted_ttl: float = 5
+    trusted_ttl: float = 30
     max_behind_blocks: int = 0
+    trusted_refresh_interval: float = 5
 
     def __post_init__(self) -> None:
         if type(self.max_behind_blocks) is not int or self.max_behind_blocks < 0:
@@ -131,7 +133,8 @@ class Config:
             ("deep_ttl", "DEEP_STATE_TTL_SECONDS", 180),
             ("timeout", "RPC_TIMEOUT_SECONDS", 3),
             ("retry_delay", "RETRY_DELAY_SECONDS", 0.5),
-            ("trusted_ttl", "TRUSTED_STATE_TTL_SECONDS", 5),
+            ("trusted_ttl", "TRUSTED_STATE_TTL_SECONDS", 30),
+            ("trusted_refresh_interval", "TRUSTED_REFRESH_INTERVAL_SECONDS", 5),
         ]:
             v = float(os.getenv(env, str(default)))
             if not math.isfinite(v) or v < 0 or (v == 0 and field != "retry_delay"):
@@ -152,6 +155,16 @@ class Config:
             raise ValueError("DEEP_STATE_TTL_SECONDS must exceed DEEP_CHECK_INTERVAL_SECONDS")
         if values["trusted_ttl"] > values["ttl"]:
             raise ValueError("TRUSTED_STATE_TTL_SECONDS must not exceed STATE_TTL_SECONDS")
+        if values["trusted_refresh_interval"] >= values["trusted_ttl"]:
+            raise ValueError(
+                "TRUSTED_REFRESH_INTERVAL_SECONDS must be less than TRUSTED_STATE_TTL_SECONDS"
+            )
+        nominal_fetch = 2 * ((retries + 1) * values["timeout"] + retries * values["retry_delay"])
+        if values["trusted_ttl"] <= nominal_fetch + values["trusted_refresh_interval"]:
+            logging.warning(
+                "Trusted TTL leaves insufficient nominal refresh/retry margin; "
+                "slow references may cause readiness 503"
+            )
         return cls(
             chain_id,
             nodes,

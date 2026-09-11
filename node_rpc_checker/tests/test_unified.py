@@ -314,7 +314,7 @@ class ServiceTests(unittest.TestCase):
             c.cycle("n")
             self.assertEqual(c.response("/archive/n")[0], 200)
             f.addon_fail = True
-            c.cycle("n", False)
+            c.cycle("n", mode="readyz")
             self.assertEqual(c.response("/readyz/n")[0], 503)
 
     def setUp(self):
@@ -325,7 +325,7 @@ class ServiceTests(unittest.TestCase):
 
     def test_readiness_levels_and_ttl(self):
         self.assertEqual(self.c.response("/readyz/n")[0], 503)
-        self.c.cycle("n", False)
+        self.c.cycle("n", mode="readyz")
         self.assertEqual(self.c.response("/readyz/n")[0], 200)
         self.assertEqual(self.c.response("/pruning/n")[0], 503)
         self.fake.earliest = 10
@@ -337,11 +337,11 @@ class ServiceTests(unittest.TestCase):
         self.c.cycle("n")
         self.assertEqual(self.c.response("/archive/n")[0], 200)
         self.now += 181
-        self.c.cycle("n", False)
+        self.c.cycle("n", mode="readyz")
         self.assertEqual(self.c.response("/readyz/n")[0], 200)
         self.assertEqual(self.c.response("/pruning/n")[0], 503)
         self.fake.chain_bad = True
-        self.c.cycle("n", False)
+        self.c.cycle("n", mode="readyz")
         self.assertEqual(self.c.response("/readyz/n")[0], 503)
 
     def test_addon_and_ws_required_only_when_configured(self):
@@ -350,11 +350,11 @@ class ServiceTests(unittest.TestCase):
         c.cycle("n")
         self.assertEqual(c.response("/readyz/n")[0], 200)
         self.fake.addon_fail = True
-        c.cycle("n", False)
+        c.cycle("n", mode="readyz")
         self.assertEqual(c.response("/readyz/n")[0], 503)
         self.fake.addon_fail = False
         self.fake.ws_bad = True
-        c.cycle("n", False)
+        c.cycle("n", mode="readyz")
         self.assertEqual(c.response("/readyz/n")[0], 503)
         with self.assertRaises(ValueError):
             Checker(Config("NEAR", {"n": Node("node", "ws://node")}, "trusted"), Fake("NEAR"))
@@ -408,7 +408,7 @@ class ServiceTests(unittest.TestCase):
         # Inject jobs into the executor's plan, independent of how callables bind
         # adapter/engine methods during Checker construction.
         c.plans["n"] = {key: (mode, verify) for key, (mode, _) in c.plans["n"].items()}
-        t = threading.Thread(target=c.cycle, args=("n", False))
+        t = threading.Thread(target=c.cycle, args=("n",), kwargs={"mode": "readyz"})
         t.start()
         try:
             self.assertTrue(both.wait(2))

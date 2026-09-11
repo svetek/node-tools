@@ -75,13 +75,13 @@ class ReferenceTests(unittest.TestCase):
         nodes = {str(i): Node("http://node", "ws://node") for i in range(8)}
         checker = Checker(Config("BASE", nodes, "trusted"), fake, lambda: now[0])
         with ThreadPoolExecutor(max_workers=8) as pool:
-            list(pool.map(lambda n: checker.cycle(n, False), nodes))
+            list(pool.map(lambda n: checker.cycle(n, mode="readyz"), nodes))
         self.assertEqual(sum(url == "trusted" for url, p in fake.calls), 2)
         self.assertEqual(checker.response("/readyz")[0], 200)
-        now[0] = 5
+        now[0] = 30
         self.assertEqual(checker.response("/readyz")[0], 503)
         fake.chain_bad = True
-        checker.cycle("0", False)
+        checker.cycle("0", mode="readyz")
         self.assertEqual(checker.response("/readyz/1")[0], 503)
 
     def test_reference_expiry_during_target_request(self):
@@ -89,7 +89,7 @@ class ReferenceTests(unittest.TestCase):
         checker = Checker(Config("BASE", {"n": Node("node")}, "trusted"), Fake(), lambda: now[0])
 
         def slow(url, height):
-            now[0] = 6
+            now[0] = 31
             return {"node_height": height}
 
         with patch.object(checker.engine, "compare_height", side_effect=slow):

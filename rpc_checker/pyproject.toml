@@ -1,0 +1,19 @@
+[project]
+name = "rpc-checker"
+dynamic = ["version"]
+description = "Lava-spec-driven NEAR and EVM RPC readiness checks"
+requires-python = ">=3.11"
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+include = ["rpc_checker*"]
+exclude = ["legacy*", "tests*"]
+
+[tool.setuptools.package-data]
+rpc_checker = ["specs/*.json"]
+
+[tool.setuptools.dynamic]
+version = {attr = "rpc_checker.__version__"}

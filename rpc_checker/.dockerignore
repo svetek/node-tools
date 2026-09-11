@@ -1,0 +1,7 @@
+legacy
+tests
+.env
+**/__pycache__
+*.egg-info
+build
+dist

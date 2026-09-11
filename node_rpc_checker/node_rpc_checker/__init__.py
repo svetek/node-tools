@@ -1,3 +1,5 @@
 """Specification-driven NEAR and EVM RPC readiness service."""
 
-__version__ = "1.1.0"
+from importlib.resources import files
+
+__version__ = files(__package__).joinpath("VERSION").read_text(encoding="utf-8").strip()

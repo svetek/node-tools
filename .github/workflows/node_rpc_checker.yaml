@@ -1,0 +1,36 @@
+name: Node RPC checker quality
+on:
+  push:
+    paths: ['node_rpc_checker/**', '.github/workflows/node_rpc_checker.yaml']
+  pull_request:
+    paths: ['node_rpc_checker/**', '.github/workflows/node_rpc_checker.yaml']
+permissions:
+  contents: read
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python: ['3.11', '3.12']
+    defaults:
+      run:
+        working-directory: node_rpc_checker
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '${{ matrix.python }}'
+      - run: python -m pip install -e '.[dev]'
+      - run: ruff check node_rpc_checker tests tools
+      - run: ruff format --check node_rpc_checker tests tools
+      - run: mypy
+      - run: python -m unittest discover -s tests -v
+      - run: python -m unittest discover -s tests -t . -v
+      - run: python -m build
+      - name: Test installed wheel outside source tree
+        run: |
+          python -m venv /tmp/checker-wheel
+          /tmp/checker-wheel/bin/pip install --no-deps dist/*.whl
+          cd /tmp
+          /tmp/checker-wheel/bin/python -c 'from importlib.metadata import version; from node_rpc_checker import __version__; from node_rpc_checker.spec import Spec; assert version("node-rpc-checker") == __version__; assert Spec("ARBITRUM").chain_rule'
+          /tmp/checker-wheel/bin/node-rpc-checker --version

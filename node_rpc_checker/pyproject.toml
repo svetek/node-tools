@@ -3,6 +3,30 @@ name = "node-rpc-checker"
 dynamic = ["version"]
 description = "Lava-spec-driven NEAR and EVM RPC readiness checks"
 requires-python = ">=3.11"
+readme = "README.md"
+license = {file = "LICENSE"}
+authors = [{name = "node-tools contributors"}]
+
+[project.scripts]
+node-rpc-checker = "node_rpc_checker.__main__:main"
+
+[project.optional-dependencies]
+dev = ["ruff==0.16.7", "mypy==2.3.1", "build==1.5.0"]
+
+[tool.ruff]
+target-version = "py311"
+line-length = 100
+extend-exclude = ["legacy"]
+
+[tool.ruff.lint]
+select = ["E4", "E7", "E9", "F", "I"]
+
+[tool.mypy]
+python_version = "3.11"
+files = ["node_rpc_checker"]
+check_untyped_defs = true
+warn_unused_ignores = true
+warn_redundant_casts = true
 
 [build-system]
 requires = ["setuptools>=68"]
@@ -13,7 +37,7 @@ include = ["node_rpc_checker*"]
 exclude = ["legacy*", "tests*"]
 
 [tool.setuptools.package-data]
-node_rpc_checker = ["specs/*.json"]
+node_rpc_checker = ["specs/*.json", "VERSION"]
 
 [tool.setuptools.dynamic]
-version = {attr = "node_rpc_checker.__version__"}
+version = {file = "node_rpc_checker/VERSION"}

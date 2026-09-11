@@ -1,47 +1,77 @@
+import argparse
 import logging
 import signal
 import threading
 
+from . import __version__
 from .config import Config
+from .diagnostics import log_internal_error
 from .rpc import RpcClient
 from .service import Checker, make_server
 
 
-def main():
+def main(argv=None):
+    parser = argparse.ArgumentParser(description="Lava-spec-driven node RPC readiness service")
+    parser.add_argument("--version", action="version", version=__version__)
+    parser.parse_args(argv)
     logging.basicConfig(level=logging.INFO)
     try:
         config = Config.from_env()
     except (ValueError, TypeError) as exc:
-        logging.error('configuration: %s', exc)
+        logging.error("configuration: %s", exc)
         return 2
     stop = threading.Event()
     try:
         checker = Checker(config, RpcClient(config, stop))
     except (ValueError, KeyError, TypeError) as exc:
-        logging.error('specification/configuration error: %s', exc)
+        logging.error("specification/configuration error: %s", exc)
         return 2
-    server = make_server(checker, (config.host, config.port))
-    threads = [threading.Thread(target=checker.run, args=(name, stop), daemon=True)
-               for name in config.nodes]
-    threads += [threading.Thread(target=checker.run_deep, args=(name, archive, stop), daemon=True)
-                for name in config.nodes for archive in (False, True)]
-    def shutdown(*_args):
-        stop.set()
-        threading.Thread(target=server.shutdown, daemon=True).start()
-    signal.signal(signal.SIGTERM, shutdown)
-    signal.signal(signal.SIGINT, shutdown)
-    for thread in threads:
-        thread.start()
-    logging.info('RPC checker started: chain=%s nodes=%s', config.chain_id, len(config.nodes))
     try:
+        server = make_server(checker, (config.host, config.port))
+    except OSError as error:
+        log_internal_error("service", "listen", error)
+        return 2
+    threads = [
+        threading.Thread(target=checker.run, args=(name, stop), daemon=True)
+        for name in config.nodes
+    ]
+    threads += [
+        threading.Thread(target=checker.run_deep, args=(name, archive, stop), daemon=True)
+        for name in config.nodes
+        for archive in (False, True)
+    ]
+
+    shutdown_requested = False
+
+    def shutdown(*_args):
+        nonlocal shutdown_requested
+        stop.set()
+        if not shutdown_requested:
+            shutdown_requested = True
+            threading.Thread(target=server.shutdown, daemon=True).start()
+
+    previous_handlers = {}
+    started_threads = []
+    try:
+        for signum in (signal.SIGTERM, signal.SIGINT):
+            previous_handlers[signum] = signal.signal(signum, shutdown)
+        for thread in threads:
+            thread.start()
+            started_threads.append(thread)
+        logging.info("RPC checker started: chain=%s nodes=%s", config.chain_id, len(config.nodes))
         server.serve_forever(poll_interval=0.2)
+    except Exception as error:
+        log_internal_error("service", "lifecycle", error)
+        return 1
     finally:
         stop.set()
         server.server_close()
-        for thread in threads:
+        for thread in started_threads:
             thread.join(timeout=config.timeout + 1)
+        for signum, handler in previous_handlers.items():
+            signal.signal(signum, handler)
     return 0
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     raise SystemExit(main())

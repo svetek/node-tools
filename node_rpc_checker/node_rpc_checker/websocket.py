@@ -8,10 +8,12 @@ import struct
 import time
 import urllib.parse
 from typing import Any
-from .config import validate_url
-from . import __version__
 
-WS_GUID = '258EAFA5-E914-47DA-95CA-C5AB0DC85B11'
+from . import __version__
+from .config import validate_url
+
+WS_GUID = "258EAFA5-E914-47DA-95CA-C5AB0DC85B11"
+
 
 class WebSocketConnection:
     def __init__(self, url: str, timeout: float):
@@ -20,9 +22,10 @@ class WebSocketConnection:
         self.socket: socket.socket | ssl.SSLSocket | None = None
 
     def __enter__(self) -> "WebSocketConnection":
-        validate_url(self.url, ('ws', 'wss'))
+        validate_url(self.url, ("ws", "wss"))
         self.deadline = time.monotonic() + self.timeout
         parsed = urllib.parse.urlsplit(self.url)
+        assert parsed.hostname is not None  # validate_url already checked it.
         secure = parsed.scheme == "wss"
         port = parsed.port or (443 if secure else 80)
         raw_socket = socket.create_connection((parsed.hostname, port), timeout=self.timeout)
@@ -39,7 +42,7 @@ class WebSocketConnection:
             if parsed.query:
                 path += "?" + parsed.query
             default_port = 443 if secure else 80
-            host = f'[{parsed.hostname}]' if ':' in parsed.hostname else parsed.hostname
+            host = f"[{parsed.hostname}]" if ":" in parsed.hostname else parsed.hostname
             host = host if port == default_port else f"{host}:{port}"
             request = (
                 f"GET {path} HTTP/1.1\r\n"
@@ -61,13 +64,13 @@ class WebSocketConnection:
                 if ":" in line:
                     name, value = line.split(":", 1)
                     response_headers[name.strip().lower()] = value.strip()
-            expected = base64.b64encode(
-                hashlib.sha1((key + WS_GUID).encode()).digest()
-            ).decode()
+            expected = base64.b64encode(hashlib.sha1((key + WS_GUID).encode()).digest()).decode()
             if response_headers.get("sec-websocket-accept") != expected:
                 raise RuntimeError("invalid Sec-WebSocket-Accept")
-            if response_headers.get('upgrade','').lower() != 'websocket' or 'upgrade' not in {s.strip() for s in response_headers.get('connection','').lower().split(',')}:
-                raise RuntimeError('invalid WebSocket upgrade headers')
+            if response_headers.get("upgrade", "").lower() != "websocket" or "upgrade" not in {
+                s.strip() for s in response_headers.get("connection", "").lower().split(",")
+            }:
+                raise RuntimeError("invalid WebSocket upgrade headers")
             self._buffer = bytearray(remainder)
             return self
         except Exception:
@@ -135,7 +138,7 @@ class WebSocketConnection:
             opcode = first & 0x0F
             masked = bool(second & 0x80)
             if first & 0x70 or masked:
-                raise RuntimeError('invalid server frame flags')
+                raise RuntimeError("invalid server frame flags")
             length = second & 0x7F
             if length == 126:
                 length = struct.unpack("!H", self._read_exact(2))[0]
@@ -151,27 +154,28 @@ class WebSocketConnection:
                 raise RuntimeError("WebSocket server closed the connection")
             if opcode == 0x9:
                 if not final or length > 125:
-                    raise RuntimeError('invalid ping frame')
+                    raise RuntimeError("invalid ping frame")
                 self._send_control(0xA, payload)
                 continue
             if opcode == 0xA:
                 if not final or length > 125:
-                    raise RuntimeError('invalid pong frame')
+                    raise RuntimeError("invalid pong frame")
                 continue
             if opcode in {0x0, 0x1}:
                 if (opcode == 0x0 and not started) or (opcode == 0x1 and started):
-                    raise RuntimeError('invalid continuation frame')
+                    raise RuntimeError("invalid continuation frame")
                 started = True
                 fragments.extend(payload)
                 if final:
                     return json.loads(fragments.decode("utf-8"))
             else:
-                raise RuntimeError('unsupported WebSocket opcode')
+                raise RuntimeError("unsupported WebSocket opcode")
 
     def _remaining(self):
+        assert self.socket is not None
         remaining = self.deadline - time.monotonic()
         if remaining <= 0:
-            raise TimeoutError('WebSocket deadline exceeded')
+            raise TimeoutError("WebSocket deadline exceeded")
         self.socket.settimeout(remaining)
 
     def _send_control(self, opcode: int, payload: bytes) -> None:

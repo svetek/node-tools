@@ -1,7 +1,10 @@
 services:
   node-rpc-checker:
-    image: svetekllc/node-rpc-checker:1.1.0
-    build: .
+    image: svetekllc/node-rpc-checker:${CHECKER_VERSION:?Run python3 tools/release.py compose ...}
+    build:
+      context: .
+      args:
+        VERSION: ${CHECKER_VERSION:?Run python3 tools/release.py compose ...}
     restart: unless-stopped
     env_file: .env
     ports:

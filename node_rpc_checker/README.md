@@ -1,9 +1,11 @@
 # node-rpc-checker
 
-Service version: **1.1.0**. Release image: `svetekllc/node-rpc-checker:1.1.0`.
-Version is defined in `node_rpc_checker/__init__.py`, used by package metadata and
+The only version source is `node_rpc_checker/VERSION` (print it with
+`python3 tools/release.py version`). Images use `svetekllc/node-rpc-checker:<version>`.
+The version is used by package metadata and
 RPC User-Agent, and exposed in `/healthz`, `/status` and readiness responses.
-The Docker build checks that its VERSION label matches the service version.
+The Docker build checks its VERSION label against both installed package metadata
+and the module version. The current source revision is not automatically published.
 
 Universal NEAR/EVM RPC readiness service driven by bundled Lava specifications.
 Python 3.11+, no third-party runtime dependencies. One chain per service instance,
@@ -24,13 +26,26 @@ CHAIN_ID=NEAR NODE_RPC_URL=http://192.0.2.11:3030 python3 -m node_rpc_checker
 ```
 
 Docker: copy `.env.example` to `.env`, configure reachable upstream addresses,
-then run `docker compose up -d --build`. Container localhost means the container,
+then run `python3 tools/release.py compose up -d --build`. Container localhost means the container,
 not the host. Compose binds the monitoring API to host loopback by default.
 From the repository root:
 
 ```bash
-docker build -t svetekllc/node-rpc-checker:1.1.0 node_rpc_checker
+python3 node_rpc_checker/tools/release.py build
 ```
+
+The wrapper derives the Docker tag and Compose build-arg from VERSION; no manual
+version literals are needed in Compose. Direct Compose requires CHECKER_VERSION;
+use the wrapper to avoid mismatches. Edit VERSION before creating a new release.
+The wrapper does not publish images. Raw Docker builds must explicitly provide
+`--build-arg VERSION=<matching version>` and an appropriate tag.
+
+Docker builds a wheel in a separate builder stage and installs it without network
+access in the runtime stage. Runtime starts the installed `node-rpc-checker`
+console script from `/app`, not a source checkout. `python -m node_rpc_checker`
+and `node-rpc-checker --version` are supported. The wheel includes VERSION, all
+four spec snapshots, metadata, README description and a copy of the repository
+LICENSE. Python 3.12 in Docker is one supported runtime, not the minimum version.
 
 ## Chain selection
 
@@ -70,6 +85,10 @@ Unsupported selected collections, parsers, extensions, templates, missing import
 and cycles cause startup failure. This is not a full interpreter for every future
 Lava construct. Supported result parsers: PARSE_BY_ARG, PARSE_CANONICAL, dotted
 RESULT alternatives, including nonnegative array indices such as `.result.[0].blockHash`.
+Missing `chain-id` verification is a configuration error (exit code 2).
+`GET_BLOCK_BY_NUM` templates require exactly one `%d` or `%x`; other height and
+verification templates cannot contain placeholders. Formatting and the resulting
+JSON are validated before polling starts, including selected addon rules.
 Hex values are validated; NEAR hashes remain opaque despite
 the spec's base64 annotation. This service does not build Lava finalization proofs.
 
@@ -81,7 +100,7 @@ suffixes exactly as supplied by the spec.
 
 | Endpoint (also accepts /<node>) | Required successful, fresh checks |
 | --- | --- |
-| /readyz | Core rules + target height >= trusted height |
+| /readyz | Core rules + trusted height − target height <= MAX_BEHIND_BLOCKS |
 | /pruning | Core readiness + ordinary retention conditions |
 | /archive | Pruning readiness + archive conditions |
 | /status | Always 200 for known nodes; all checks and readiness levels |
@@ -102,9 +121,13 @@ readiness; nodes.<name>.readiness contains all three levels.
   Height uses eth_blockNumber. Pruning requires H−earliest >=128;
   archive requires earliest==0. Genesis availability does not prove historical
   state access: these are the spec probes, not exhaustive archive tests.
-- The trusted chain is verified before reading reference height, including NEAR
-  syncing status. Target height is read afterwards. **Even one block behind
-  fails**; ahead passes. No MAX_BEHIND_BLOCKS option or positive QoS lag allowance.
+- The trusted chain is verified before refreshing reference height, including NEAR
+  syncing status. Target height is read after obtaining that snapshot.
+  `MAX_BEHIND_BLOCKS` sets the inclusive allowed lag (default **0**).
+  With `MAX_BEHIND_BLOCKS=10`, lag of 10 passes and lag of 11 fails; equal/ahead
+  heights pass. This applies to NEAR/EVM, HTTP/WS and all readiness levels.
+  It is one setting per service instance and is not inferred from Lava QoS fields.
+  Network, shards, freshness, pruning and archive conditions remain required.
 
 Core, pruning and archive have independent workers per node. Slow archive
 requests do not block core polling. HTTP health requests only inspect cached
@@ -112,6 +135,25 @@ state. Explicit failures replace old success immediately, including transport
 failures after retries. TTL uses monotonic age from the start of an attempt.
 Independent core rules run concurrently within a bounded per-node pool, so a
 slow shard probe does not serially delay every other rule.
+
+All nodes and transports in one service instance share a single-flight trusted
+snapshot. `TRUSTED_STATE_TTL_SECONDS` (default 5, maximum STATE_TTL_SECONDS) bounds
+its age from refresh start. At most one refresh runs at a time; successful EVM
+refreshes require two RPC calls regardless of node count. A failed refresh
+invalidates the reference, with retry backoff equal to its TTL from failure
+completion. No stale reference is used to report readiness. Status reads never
+perform RPC I/O or wait for a refresh. Replicas do not share this cache.
+
+The height comparison, including the configured lag allowance, uses this bounded-age snapshot, not a fresh
+public RPC call per target. Expiry or refresh failure invalidates cached height
+successes even when their ordinary state TTL has not expired. Choose a TTL that
+allows the reference network/height requests to finish; too short causes 503.
+
+`cycle()` is a one-shot executor, not a scheduler. Production core, pruning and
+archive loops all use `run_mode()` with their respective intervals, measured
+after group completion. Deep groups use one worker each, core uses CHECK_WORKERS.
+Shutdown skips queued checks; in-flight transport calls remain timeout-bounded
+subject to the DNS/header limitations below.
 
 ## Optional addons and WS
 
@@ -136,6 +178,12 @@ wait for an actual block event. Other WS calls open new connections; latency
 includes handshake. NEAR rejects WS settings because its spec has no subscription
 directives. WSS validates certificates. WS supports fragmented text, ping/pong,
 masked client frames, size limits and a read deadline.
+
+The EVM adapter obtains method names from SUBSCRIBE/UNSUBSCRIBE directives and
+supplies `newHeads`. It validates both directives at startup for WS nodes.
+UNSUBSCRIBE must contain a single `params: ["%s"]` slot; the returned subscription
+ID is inserted into the parsed JSON structure, never interpolated as JSON text.
+Unsupported SUBSCRIBE templates fail startup rather than being ignored.
 
 HTTP uses environment proxy settings; WS connects directly. Configure NO_PROXY
 where appropriate. Access from a VPN/whitelisted source is not proof of universal
@@ -164,6 +212,8 @@ default; WEBSOCKET_URL and comma-separated ADDONS apply to it. Multi-node exampl
 | POLL_INTERVAL_SECONDS | 5 seconds between core cycles |
 | DEEP_CHECK_INTERVAL_SECONDS | 60 seconds between deep cycles |
 | STATE_TTL_SECONDS | 30 seconds for core |
+| MAX_BEHIND_BLOCKS | 0; nonnegative integer, inclusive lag allowance |
+| TRUSTED_STATE_TTL_SECONDS | 5 seconds; must not exceed STATE_TTL_SECONDS |
 | DEEP_STATE_TTL_SECONDS | 180 seconds, must exceed deep interval |
 | RPC_TIMEOUT_SECONDS | 3 seconds |
 | RPC_RETRY_COUNT | 2 extra attempts for transport/invalid-envelope errors; range 0–5 |
@@ -180,6 +230,17 @@ request counts. EVM eth_syncing is not a rule in these supplied specs.
 Metrics prefix: node_rpc_checker_, with chain/node and mode or check labels.
 Metrics include readiness, check success/freshness, latency, timestamps and HTTP
 height/delta. RPC URLs are not exposed in metrics or errors.
+The configured lag limit is exposed in status/readiness responses and in
+`node_rpc_checker_max_behind_blocks`; `delta_blocks` retains its signed value
+(trusted minus target), including a positive delta accepted within the limit.
+
+Expected RPC failures have `error_kind=rpc_error`. Unexpected exceptions have
+`error_kind=internal_error` and increment `node_rpc_checker_internal_errors_total`
+per node/check. Logs include sanitized stack locations and exception type, but
+omit exception values, source lines, chained exceptions and frame locals.
+Both failure classes fail readiness; internal error counters survive recovery
+until the service restarts. Invalid shared-reference state also invalidates
+otherwise successful cached height checks (`error_kind=reference_error`).
 
 ## Security and operational limits
 
@@ -229,4 +290,25 @@ by this repository migration.
 
 ```bash
 python3 -m unittest discover -s tests -v
+python3 -m unittest discover -s tests -t . -v
 ```
+
+Development tools (not runtime dependencies):
+
+```bash
+python3 -m pip install -e '.[dev]'
+ruff check node_rpc_checker tests tools
+ruff format --check node_rpc_checker tests tools
+mypy
+python3 -m build
+```
+
+GitHub Actions runs these checks and unit/local-transport tests on Python 3.11
+and 3.12. Mypy checks annotated code and untyped function bodies; this is not
+strict end-to-end typing of all dynamic JSON. Legacy implementations are excluded
+from formatting and the checker quality workflow.
+CI builds sdist/wheel and smoke-tests the wheel in a clean virtual environment
+outside the source tree. Tests also exercise real SIGTERM/SIGINT shutdown,
+multinode configuration, WS fragmentation/close/size limits and monitoring 500s.
+Internal monitoring response failures return a generic 500 with sanitized logs;
+client disconnects during writes do not trigger a second response.

@@ -17,6 +17,7 @@ from .diagnostics import log_internal_error
 from .engine import Engine
 from .reference import TrustedReference
 from .rpc import RpcError
+from .scheduler import run_checks
 from .spec import Spec
 
 
@@ -119,9 +120,6 @@ class Checker:
         else:
             execute(pool)
 
-    def run(self, name: str, stop: threading.Event) -> None:
-        self.run_mode(name, "readyz", self.config.poll, stop)
-
     def run_reference(self, stop: threading.Event) -> None:
         # A single proactive updater for all nodes and transports. Never extend
         # the hard TTL of the previous snapshot while a refresh is in flight.
@@ -134,19 +132,31 @@ class Checker:
                 self.internal_error("service", "trusted_refresh", exc)
             stop.wait(self.config.trusted_refresh_interval)
 
-    def run_mode(self, name: str, mode: str, interval: float, stop: threading.Event) -> None:
-        workers = self.config.workers if mode == "readyz" else 1
-        with ThreadPoolExecutor(max_workers=workers) as pool:
-            while not stop.is_set():
-                try:
-                    self.cycle(name, pool=pool, mode=mode, stop=stop)
-                except Exception as exc:
-                    self.internal_error(name, mode, exc)
+    def run_mode(self, mode: str, stop: threading.Event) -> None:
+        if mode not in ("readyz", "pruning", "archive"):
+            raise ValueError("unknown check mode")
+        workers = self.config.workers if mode == "readyz" else self.config.deep_workers
+        interval = self.config.poll if mode == "readyz" else self.config.deep_interval
+        # Interleave nodes before siblings, so one node cannot fill the queue.
+        by_node = [
+            [(name, key, fn) for key, (level, fn) in plan.items() if level == mode]
+            for name, plan in self.plans.items()
+        ]
+        jobs = [
+            row[i]
+            for i in range(max(map(len, by_node), default=0))
+            for row in by_node
+            if i < len(row)
+        ]
+        while not stop.is_set():
+            try:
+                run_checks(
+                    jobs, self.record, self.internal_error, workers, interval, stop, self.clock
+                )
+                return
+            except Exception as exc:
+                self.internal_error("service", mode, exc)
                 stop.wait(interval)
-
-    def run_deep(self, name: str, archive: bool, stop: threading.Event) -> None:
-        # Archive I/O must never delay the regular height/shard polling loop.
-        self.run_mode(name, "archive" if archive else "pruning", self.config.deep_interval, stop)
 
     def snapshot(self, name: str | None = None) -> dict[str, dict[str, dict[str, Any]]]:
         with self.lock:
@@ -216,6 +226,8 @@ class Checker:
         lines = [
             f'node_rpc_checker_max_behind_blocks{{chain="{self.config.chain_id}"}} {self.config.max_behind_blocks}'
         ]
+        for key, value in self.reference.metrics().items():
+            lines.append(f'node_rpc_checker_{key}{{chain="{self.config.chain_id}"}} {value}')
 
         def label(v):
             return v.replace("\\", "\\\\").replace('"', '\\"').replace("\n", "\\n")
@@ -248,6 +260,19 @@ class Checker:
                 f'node_rpc_checker_internal_errors_total{{chain="{self.config.chain_id}",node="{label(name)}",check="{label(key)}"}} {count}'
             )
         descriptions = {
+            "max_behind_blocks": "Inclusive permitted target lag behind the trusted height, in blocks.",
+            "ready": "Whether all required checks for this node and mode are successful and fresh (1 or 0).",
+            "check_ok": "Whether the last check succeeded; height checks also require a valid reference (1 or 0).",
+            "check_fresh": "Whether the last check attempt is within its configured state TTL (1 or 0).",
+            "last_attempt_timestamp": "Unix timestamp in seconds when the last check attempt completed.",
+            "node_height": "Target HTTP block height from the last successful height comparison.",
+            "trusted_height": "Trusted block height used by the last successful HTTP height comparison.",
+            "delta_blocks": "Trusted minus target HTTP block height; negative means target ahead; last successful comparison.",
+            "reference_valid": "Whether the shared trusted snapshot is successful and within its hard TTL (1 or 0).",
+            "reference_refresh_attempts_total": "Actual trusted fetch attempts, both proactive and on-demand; excludes cache/backoff hits.",
+            "reference_refresh_failures_total": "Trusted fetch attempts that failed or exceeded freshness TTL; excludes cache/backoff hits.",
+            "reference_age_seconds": "Age since the start of the last successful trusted fetch; absent before first success.",
+            "reference_refresh_duration_seconds": "Duration of the last completed trusted fetch, including retries; absent before first completion.",
             "latency_ms": "Whole check duration including reference work (legacy name).",
             "target_rpc_latency_ms": "Target height RPC duration excluding reference work; successful checks only.",
             "trusted_wait_ms": "Reference acquisition duration including refresh or lock wait; successful height checks only.",
@@ -261,10 +286,10 @@ class Checker:
         output = []
         for metric, samples in families.items():
             suffix = metric.removeprefix("node_rpc_checker_")
-            kind = "counter" if suffix == "internal_errors_total" else "gauge"
+            kind = "counter" if suffix.endswith("_total") else "gauge"
             output.extend(
                 [
-                    f"# HELP {metric} {descriptions.get(suffix, suffix.replace('_', ' ') + '.')}",
+                    f"# HELP {metric} {descriptions[suffix]}",
                     f"# TYPE {metric} {kind}",
                     *samples,
                 ]
@@ -277,8 +302,9 @@ class BoundedHTTPServer(ThreadingHTTPServer):
 
     max_handlers = 32
 
-    def __init__(self, *args, **kwargs):
+    def __init__(self, *args, report_error=log_internal_error, **kwargs):
         self.slots = threading.BoundedSemaphore(self.max_handlers)
+        self.report_error = report_error
         super().__init__(*args, **kwargs)
 
     def get_request(self):
@@ -308,7 +334,7 @@ class BoundedHTTPServer(ThreadingHTTPServer):
             self.internal_error("monitoring", "http_handler", error)
 
     def internal_error(self, name: str, key: str, error: Exception) -> None:
-        log_internal_error(name, key, error)
+        self.report_error(name, key, error)
 
 
 def make_server(checker, address):
@@ -344,8 +370,4 @@ def make_server(checker, address):
         def log_message(self, *_args):
             pass
 
-    class CheckerHTTPServer(BoundedHTTPServer):
-        def internal_error(self, name: str, key: str, error: Exception) -> None:
-            checker.internal_error(name, key, error)
-
-    return CheckerHTTPServer(address, Handler)
+    return BoundedHTTPServer(address, Handler, report_error=checker.internal_error)

@@ -81,7 +81,7 @@ class RefreshTests(unittest.TestCase):
         checker.cycle("n", mode="readyz")
         with patch.object(checker.reference, "fetch", side_effect=RpcError("offline")) as fetch:
             checker.run_reference(StopAfterWait(3))
-        self.assertEqual(fetch.call_count, 1)
+        self.assertEqual(fetch.call_count, 3)
         self.assertEqual(checker.response("/readyz/n")[0], 503)
 
     def test_new_reference_cannot_extend_old_comparison_freshness(self):
@@ -130,11 +130,11 @@ class RefreshTests(unittest.TestCase):
         self.assertNotIn("secret", "\n".join(logs.output))
         self.assertEqual(checker.internal_errors["service", "trusted_refresh"], 1)
         with (
-            patch.object(checker, "cycle", side_effect=TypeError("secret")),
+            patch("node_rpc_checker.service.run_checks", side_effect=TypeError("secret")),
             self.assertLogs(level="ERROR"),
         ):
-            checker.run("n", StopAfterWait(2))
-        self.assertEqual(checker.internal_errors["n", "readyz"], 2)
+            checker.run_mode("readyz", StopAfterWait())
+        self.assertEqual(checker.internal_errors["service", "readyz"], 1)
 
     def test_separate_target_timing_and_legacy_duration(self):
         checker = self.checker()

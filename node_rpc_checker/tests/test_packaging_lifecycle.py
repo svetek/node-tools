@@ -262,10 +262,9 @@ class LifecycleTests(unittest.TestCase):
             self.assertEqual(main([]), 0)
         server.serve_forever.assert_called_once()
         server.server_close.assert_called_once()
-        self.assertEqual(checker.return_value.run.call_count, 1)
-        self.assertEqual(checker.return_value.run_deep.call_count, 2)
+        self.assertEqual(checker.return_value.run_mode.call_count, 3)
         self.assertEqual(checker.return_value.run_reference.call_count, 1)
-        self.assertTrue(checker.return_value.run.call_args.args[1].is_set())
+        self.assertTrue(checker.return_value.run_mode.call_args.args[1].is_set())
         self.assertEqual(old, {s: signal.getsignal(s) for s in old})
 
     def test_server_failure_cleans_up(self):

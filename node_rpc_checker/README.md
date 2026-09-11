@@ -129,12 +129,13 @@ readiness; nodes.<name>.readiness contains all three levels.
   It is one setting per service instance and is not inferred from Lava QoS fields.
   Network, shards, freshness, pruning and archive conditions remain required.
 
-Core, pruning and archive have independent workers per node. Slow archive
+Core, pruning and archive have separate globally bounded worker pools. Slow archive
 requests do not block core polling. HTTP health requests only inspect cached
 state. Explicit failures replace old success immediately, including transport
 failures after retries. TTL uses monotonic age from the start of an attempt.
-Independent core rules run concurrently within a bounded per-node pool, so a
-slow shard probe does not serially delay every other rule.
+Checks are interleaved across nodes and run concurrently up to each pool's limit.
+A slow check does not impose a barrier on the whole group; saturated pools can
+still delay other nodes. Expired results fail closed instead of pretending to be fresh.
 
 All nodes and transports in one service instance share a single-flight trusted
 snapshot. `TRUSTED_STATE_TTL_SECONDS` (default 30, maximum STATE_TTL_SECONDS) bounds
@@ -143,8 +144,10 @@ its age from refresh start. A dedicated updater waits `TRUSTED_REFRESH_INTERVAL_
 of node polling. During refresh, readers use the previous snapshot only while
 it is still fresh, without waiting for the refresh lock. At most one refresh runs at a time; successful EVM
 refreshes require two RPC calls regardless of node count. A failed refresh
-invalidates the reference, with retry backoff equal to its TTL from failure
-completion. No stale reference is used to report readiness. Status reads never
+invalidates the reference. On-demand callers retain TTL-length backoff from failure
+completion to prevent retry storms. The single proactive updater bypasses that
+backoff and retries after its configured refresh interval, not after the TTL.
+No stale reference is used to report readiness. Status reads never
 perform RPC I/O or wait for a refresh. Replicas do not share this cache.
 Each cached height comparison retains the expiry of the particular snapshot it
 used; publishing a newer reference cannot extend an old comparison's lifetime.
@@ -167,10 +170,22 @@ guarantee availability. Startup warns if TTL does not exceed one nominal fetch
 budget plus the refresh interval; this warning is not a hard timing guarantee.
 
 `cycle()` is a one-shot executor, not a scheduler. Production core, pruning and
-archive loops all use `run_mode()` with their respective intervals, measured
-after group completion. Deep groups use one worker each, core uses CHECK_WORKERS.
+archive loops all use `run_mode()`, one scheduler per mode for all nodes.
+Each check is rescheduled after its own completion plus its mode's interval;
+overlapping attempts of the same check and unbounded executor queues are forbidden.
+Core uses CHECK_WORKERS globally; pruning and archive each use DEEP_CHECK_WORKERS.
+Migration: CHECK_WORKERS no longer multiplies by node count. Large fleets may
+need higher worker limits to complete checks within their state TTLs.
 Shutdown skips queued checks; in-flight transport calls remain timeout-bounded
 subject to the DNS/header limitations below.
+
+Trusted refresh frequency remains explicitly independent of polling. For rare
+polling, increase TRUSTED_REFRESH_INTERVAL_SECONDS together with trusted/state
+TTLs and POLL_INTERVAL_SECONDS, allowing request/queue time as well. Changing
+only poll to 300 seconds with a 30-second TTL cannot preserve continuous readiness.
+Refreshes are not silently skipped based on demand, because cached readiness also
+depends on reference freshness. Each instance performs about two RPC calls per
+successful refresh; replicas multiply this traffic.
 
 ## Optional addons and WS
 
@@ -226,8 +241,8 @@ default; WEBSOCKET_URL and comma-separated ADDONS apply to it. Multi-node exampl
 | --- | --- |
 | CHAIN_ID | required, see table |
 | TRUSTED_RPC_URL | chain-specific above, overridable |
-| POLL_INTERVAL_SECONDS | 5 seconds between core cycles |
-| DEEP_CHECK_INTERVAL_SECONDS | 60 seconds between deep cycles |
+| POLL_INTERVAL_SECONDS | 5 seconds after each core check completes |
+| DEEP_CHECK_INTERVAL_SECONDS | 60 seconds after each deep check completes |
 | STATE_TTL_SECONDS | 30 seconds for core |
 | MAX_BEHIND_BLOCKS | 0; nonnegative integer, inclusive lag allowance |
 | TRUSTED_STATE_TTL_SECONDS | 30 seconds; must not exceed STATE_TTL_SECONDS |
@@ -235,7 +250,8 @@ default; WEBSOCKET_URL and comma-separated ADDONS apply to it. Multi-node exampl
 | DEEP_STATE_TTL_SECONDS | 180 seconds, must exceed deep interval |
 | RPC_TIMEOUT_SECONDS | 3 seconds |
 | RPC_RETRY_COUNT | 2 extra attempts for transport/invalid-envelope errors; range 0–5 |
-| CHECK_WORKERS | 4 concurrent core checks per node; range 1–32 |
+| CHECK_WORKERS | 4 concurrent core checks globally; range 1–32 |
+| DEEP_CHECK_WORKERS | 2 workers in each of the separate pruning/archive pools; range 1–32 |
 | RETRY_DELAY_SECONDS | 0.5 seconds |
 | HTTP_HOST / HTTP_PORT | 0.0.0.0 / 8080 |
 
@@ -248,6 +264,13 @@ request counts. EVM eth_syncing is not a rule in these supplied specs.
 Metrics prefix: node_rpc_checker_, with chain/node and mode or check labels.
 Metrics include readiness, check success/freshness, latency, timestamps and HTTP
 height/delta. RPC URLs are not exposed in metrics or errors.
+Reference metrics are instance-wide (chain label only): reference_valid,
+reference_refresh_attempts_total and reference_refresh_failures_total are present
+from startup. They count actual fetch attempts, not cached failures or cache hits,
+and include on-demand and proactive work. reference_age_seconds is absent before
+the first successful snapshot; reference_refresh_duration_seconds is absent before
+the first completed attempt. Both are in seconds, including retry time where applicable.
+Use reference_valid=0 to distinguish a trusted outage from target-node failures.
 All exported families include HELP and TYPE metadata. The legacy `latency_ms`
 continues to measure whole-check duration. Successful height checks additionally
 expose `target_rpc_latency_ms` (target request, including its retries) and
@@ -285,9 +308,13 @@ otherwise successful cached height checks (`error_kind=reference_error`).
   inactivity timeout; excess connections are closed. It has no authentication
   or TLS: keep Compose's loopback binding, or use a protected reverse proxy.
   Do not expose the stdlib monitoring server directly to the public internet.
-- Up to 64 configured nodes, names up to 64 characters. Core worker pools are
-  reused and bounded **per node**, not globally; deep workers are independent.
-  Size node counts and CHECK_WORKERS to the host and RPC rate limits.
+- Up to 64 configured nodes, names up to 64 characters. Four background loops
+  (three mode schedulers and one reference updater), plus at most CHECK_WORKERS
+  + 2 * DEEP_CHECK_WORKERS worker threads: 12 background threads at defaults,
+  independent of node count. Main/HTTP request threads are additional.
+  This bounds resources, not latency or throughput: size worker limits and TTLs
+  to real upstream latency and quotas. A pool whose workers are all blocked
+  cannot service another check until a worker returns.
 - These changes and regression tests are a code review, not a penetration test
   or a guarantee that a remote node is honest. Archive probes establish only
   the historical availability covered by the Lava specification.

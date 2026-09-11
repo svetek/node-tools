@@ -124,62 +124,53 @@ class DiagnosticsTests(unittest.TestCase):
 
 
 class SchedulerTests(unittest.TestCase):
-    def test_production_loops_modes_and_intervals(self):
+    def test_production_mode_routing(self):
+        checker = Checker(Config("BASE", {"n": Node("node")}, "trusted"), Fake())
         for mode in ("readyz", "pruning", "archive"):
-            fake = Fake()
-            checker = Checker(Config("BASE", {"n": Node("node")}, "trusted"), fake)
-            stop = StopAfterWait(2)
-            with patch.object(checker, "record", wraps=checker.record) as record:
-                if mode == "readyz":
-                    checker.run("n", stop)
-                else:
-                    checker.run_deep("n", mode == "archive", stop)
-            keys = [call.args[1] for call in record.call_args_list]
-            expected = [key for key, (level, fn) in checker.plans["n"].items() if level == mode]
-            self.assertEqual(sorted(keys), sorted(expected * 2))
-            self.assertEqual(stop.waits, [5, 5] if mode == "readyz" else [60, 60])
+            with patch("node_rpc_checker.service.run_checks") as run:
+                checker.run_mode(mode, threading.Event())
+            jobs, record, report, workers, interval, stop, clock = run.call_args.args
+            expected = [key for key, (level, _) in checker.plans["n"].items() if level == mode]
+            self.assertEqual([key for name, key, fn in jobs], expected)
+            self.assertEqual(workers, 4 if mode == "readyz" else 2)
+            self.assertEqual(interval, 5 if mode == "readyz" else 60)
 
     def test_slow_archive_does_not_block_core(self):
         checker = Checker(Config("BASE", {"n": Node("node")}, "trusted"), Fake())
-        entered = threading.Event()
-        release = threading.Event()
+        entered, release, ready, stop = (threading.Event() for _ in range(4))
 
         def slow():
             entered.set()
-            if not release.wait(3):
+            if not release.wait(5):
                 raise RuntimeError("test timed out")
             return {}
 
         checker.plans["n"]["http/pruning@archive"] = ("archive", slow)
-        thread = threading.Thread(target=checker.run_deep, args=("n", True, StopAfterWait()))
-        thread.start()
-        try:
-            self.assertTrue(entered.wait(2))
-            checker.run("n", StopAfterWait())
-            self.assertEqual(checker.response("/readyz/n")[0], 200)
-            self.assertEqual(checker.response("/archive/n")[0], 503)
-        finally:
-            release.set()
-            thread.join(3)
-        self.assertFalse(thread.is_alive())
+        original = checker.record
 
-    def test_stop_skips_queued_checks(self):
-        checker = Checker(Config("BASE", {"n": Node("node")}, "trusted"), Fake())
-        stop = threading.Event()
-        calls = []
+        def record(*args):
+            row = original(*args)
+            if checker.response("/readyz/n")[0] == 200:
+                ready.set()
+            return row
 
-        def first():
-            calls.append("first")
-            stop.set()
-            return {}
-
-        def second():
-            calls.append("second")
-            return {}
-
-        checker.plans["n"] = {"one": ("archive", first), "two": ("archive", second)}
-        checker.run_deep("n", True, stop)
-        self.assertEqual(calls, ["first"])
+        threads = [
+            threading.Thread(target=checker.run_mode, args=(mode, stop))
+            for mode in ("archive", "readyz")
+        ]
+        with patch.object(checker, "record", side_effect=record):
+            try:
+                for thread in threads:
+                    thread.start()
+                self.assertTrue(entered.wait(2))
+                self.assertTrue(ready.wait(2))
+                self.assertEqual(checker.response("/archive/n")[0], 503)
+            finally:
+                stop.set()
+                release.set()
+                for thread in threads:
+                    thread.join(3)
+        self.assertFalse(any(thread.is_alive() for thread in threads))
 
 
 class SubscriptionTests(unittest.TestCase):

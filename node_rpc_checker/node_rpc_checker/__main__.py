@@ -31,13 +31,8 @@ def main(argv=None):
         checker.internal_error("service", "listen", error)
         return 2
     threads = [
-        threading.Thread(target=checker.run, args=(name, stop), daemon=True)
-        for name in config.nodes
-    ]
-    threads += [
-        threading.Thread(target=checker.run_deep, args=(name, archive, stop), daemon=True)
-        for name in config.nodes
-        for archive in (False, True)
+        threading.Thread(target=checker.run_mode, args=(mode, stop), daemon=True)
+        for mode in ("readyz", "pruning", "archive")
     ]
     threads.append(threading.Thread(target=checker.run_reference, args=(stop,), daemon=True))
 

@@ -71,6 +71,7 @@ class Config:
     trusted_ttl: float = 30
     max_behind_blocks: int = 0
     trusted_refresh_interval: float = 5
+    deep_workers: int = 2
 
     def __post_init__(self) -> None:
         if type(self.max_behind_blocks) is not int or self.max_behind_blocks < 0:
@@ -143,6 +144,9 @@ class Config:
         retries = int(os.getenv("RPC_RETRY_COUNT", "2"))
         port = int(os.getenv("HTTP_PORT", "8080"))
         workers = int(os.getenv("CHECK_WORKERS", "4"))
+        deep_workers = int(os.getenv("DEEP_CHECK_WORKERS", "2"))
+        if not 1 <= deep_workers <= 32:
+            raise ValueError("DEEP_CHECK_WORKERS must be between 1 and 32")
         raw_max_behind = os.getenv("MAX_BEHIND_BLOCKS", "0").strip()
         if not re.fullmatch(r"[0-9]+", raw_max_behind):
             raise ValueError("MAX_BEHIND_BLOCKS must be a nonnegative integer")
@@ -174,5 +178,6 @@ class Config:
             host=os.getenv("HTTP_HOST", "0.0.0.0"),
             port=port,
             workers=workers,
+            deep_workers=deep_workers,
             max_behind_blocks=max_behind_blocks,
         )

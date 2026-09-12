@@ -72,7 +72,6 @@ class Config:
     max_behind_blocks: int = 0
     trusted_refresh_interval: float = 5
     deep_workers: int = 2
-    expose_endpoint_urls: bool = False
     progress_ttl: float = 30
     trusted_timeout: float = 5
 
@@ -130,12 +129,6 @@ class Config:
         for url in [trusted, *(n.rpc_url for n in nodes.values())]:
             validate_url(url, ("http", "https"))
         values: dict[str, Any] = {}
-        expose_urls = os.getenv("METRICS_EXPOSE_ENDPOINT_URLS", "false").lower()
-        if expose_urls not in ("true", "false"):
-            raise ValueError("METRICS_EXPOSE_ENDPOINT_URLS must be true or false")
-        values["expose_endpoint_urls"] = expose_urls == "true"
-        if values["expose_endpoint_urls"]:
-            logging.warning("Endpoint URL metrics enabled: path/query credentials will be exposed")
         if "REFERENCE_GRACE_SECONDS" in os.environ:
             legacy_grace = float(os.environ["REFERENCE_GRACE_SECONDS"])
             if not math.isfinite(legacy_grace) or legacy_grace < 0:

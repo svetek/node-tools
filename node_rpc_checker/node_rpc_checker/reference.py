@@ -23,6 +23,11 @@ class TrustedReference:
         self.attempts = 0
         self.failures = 0
         self.last_duration: float | None = None
+        self.last_error_at = 0.0
+
+    def last_error_timestamp(self) -> float:
+        with self.state_lock:
+            return self.last_error_at
 
     def metrics(self) -> dict[str, float]:
         """Read diagnostics under the state lock only, never the I/O lock."""
@@ -113,6 +118,7 @@ class TrustedReference:
                 # Cache failure too, preventing retry storms across all nodes.
                 with self.state_lock:
                     self.error = True
+                    self.last_error_at = time.time()
                     self.failures += 1
                     self.last_duration = max(0.0, self.clock() - started)
                     self.retry_after = self.clock() + self.ttl
@@ -121,6 +127,7 @@ class TrustedReference:
                 self.last_duration = max(0.0, self.clock() - started)
                 if self.clock() - started >= self.ttl:
                     self.error = True
+                    self.last_error_at = time.time()
                     self.failures += 1
                     self.retry_after = self.clock() + self.ttl
                     raise RpcError("trusted reference expired during refresh")

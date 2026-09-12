@@ -23,6 +23,12 @@ from .scheduler import run_checks
 from .spec import Spec
 
 METRIC_DESCRIPTIONS = {
+    "node_endpoints_info": "Configured backend origins without path, query or userinfo; one sample per node, including unavailable nodes.",
+    "node_type_info": "Detected backend storage type from fresh successful HTTP deep checks; type is prune or archive, and the sample is absent when neither check passes.",
+    "rpc_endpoint_info": "Configured RPC origin by node, role and transport, without path, query or userinfo.",
+    "check_consecutive_failures": "Consecutive failed completed attempts of this check; success including unverified target height resets to zero.",
+    "check_last_success_timestamp_seconds": "Unix time of last successful completed target check; zero before any success; retained across failures.",
+    "rpc_last_error_timestamp_seconds": "Unix time of last failed target check for this transport or failed trusted refresh; zero before any failure, retained across recovery.",
     "reference_cache_fresh": "Whether the last successful trusted observation is within its TTL, independent of the latest refresh outcome (1 or 0).",
     "height_comparison_verified": "Whether the latest target height comparison passed with a still-fresh trusted observation and fresh local result (1 or 0).",
     "check_duration_seconds": "Duration of the last completed check including reference acquisition, in seconds (millisecond resolution).",
@@ -71,6 +77,8 @@ class Checker:
         )
         self.internal_errors: dict[tuple[str, str], int] = {}
         self.check_results: dict[tuple[str, str, str, str], int] = {}
+        self.check_history: dict[tuple[str, str], tuple[int, float]] = {}
+        self.rpc_last_errors: dict[tuple[str, str], float] = {}
         self.states: dict[str, dict[str, dict[str, Any]]] = {name: {} for name in config.nodes}
         self.lock = threading.Lock()
         self.progress: dict[tuple[str, str], tuple[int, float]] = {}
@@ -205,6 +213,15 @@ class Checker:
                 )
                 self.progress[name, key] = (height, progressed)
             self.states[name][key] = row
+            failures, last_success = self.check_history.get((name, key), (0, 0.0))
+            self.check_history[name, key] = (
+                (0, row["checked_at"]) if row["ok"] else (failures + 1, last_success)
+            )
+            if not row["ok"]:
+                endpoint_key = (name, key.split("/", 1)[0])
+                self.rpc_last_errors[endpoint_key] = max(
+                    self.rpc_last_errors.get(endpoint_key, 0.0), row["checked_at"]
+                )
             if not row["ok"]:
                 outcome = "failure"
                 error_kind = row.get("error_kind", "internal_error")
@@ -368,6 +385,29 @@ class Checker:
         required = [k for k, (level, _) in self.plans[name].items() if level in levels]
         return all(checks.get(k, {}).get("fresh") and checks[k].get("ok") for k in required)
 
+    def node_type(self, name: str, checks: dict[str, dict[str, Any]]) -> str | None:
+        """Return the storage type proven by fresh successful HTTP deep checks."""
+        checks_by_mode = {
+            mode: [
+                key
+                for key, (level, _) in self.plans[name].items()
+                if level == mode and key.startswith("http/")
+            ]
+            for mode in ("archive", "pruning")
+        }
+
+        def passed(mode: str) -> bool:
+            required = checks_by_mode[mode]
+            return bool(required) and all(
+                checks.get(key, {}).get("ok") and checks[key].get("fresh") for key in required
+            )
+
+        if passed("archive"):
+            return "archive"
+        if passed("pruning"):
+            return "prune"
+        return None
+
     def response(self, path: str) -> tuple[int, dict[str, Any]]:
         parts = urlsplit(path).path.strip("/").split("/")
         endpoint = parts[0]
@@ -415,15 +455,53 @@ class Checker:
         def label(v):
             return v.replace("\\", "\\\\").replace('"', '\\"').replace("\n", "\\n")
 
+        def origin(url):
+            parsed = urlsplit(url)
+            if not parsed.hostname:
+                return ""
+            host = parsed.hostname
+            if ":" in host:
+                host = "[" + host + "]"
+            port = ":" + str(parsed.port) if parsed.port is not None else ""
+            return parsed.scheme + "://" + host + port
+
+        with self.lock:
+            history = dict(self.check_history)
+            rpc_errors = dict(self.rpc_last_errors)
+
         def rpc_sample(name, role, transport, url, up):
             tags = f'chain="{self.config.chain_id}",node="{label(name)}",role="{role}",transport="{transport}"'
-            if self.config.expose_endpoint_urls:
-                tags += f',endpoint="{label(url)}"'
+            lines.append(
+                f'node_rpc_checker_rpc_endpoint_info{{{tags},address="{label(origin(url))}"}} 1'
+            )
+            last_error = (
+                self.reference.last_error_timestamp()
+                if role == "trusted"
+                else rpc_errors.get((name, transport), 0.0)
+            )
+            lines.append(
+                f"node_rpc_checker_rpc_last_error_timestamp_seconds{{{tags}}} {last_error}"
+            )
             lines.append(f"node_rpc_checker_rpc_up{{{tags}}} {up}")
 
         rpc_sample("", "trusted", "http", self.config.trusted, int(self.reference.available()))
         for name, checks in self.snapshot().items():
             node = self.config.nodes[name]
+            lines.append(
+                f'node_rpc_checker_node_endpoints_info{{chain="{self.config.chain_id}",node="{label(name)}",http="{label(origin(node.rpc_url))}",websocket="{label(origin(node.websocket_url))}"}} 1'
+            )
+            detected_type = self.node_type(name, checks)
+            if detected_type is not None:
+                lines.append(
+                    f'node_rpc_checker_node_type_info{{chain="{self.config.chain_id}",node="{label(name)}",type="{detected_type}"}} 1'
+                )
+            for key, (mode, _) in self.plans[name].items():
+                failures, last_success = history.get((name, key), (0, 0.0))
+                tags = f'chain="{self.config.chain_id}",node="{label(name)}",check="{label(key)}",mode="{mode}"'
+                lines.append(f"node_rpc_checker_check_consecutive_failures{{{tags}}} {failures}")
+                lines.append(
+                    f"node_rpc_checker_check_last_success_timestamp_seconds{{{tags}}} {last_success}"
+                )
             for transport, url in (("http", node.rpc_url), ("ws", node.websocket_url)):
                 if url:
                     height = checks.get(transport + "/height", {})

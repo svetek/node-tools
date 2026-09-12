@@ -223,10 +223,8 @@ max by (app_kubernetes_io_instance, exported_node, role, transport) (
 ```
 
 A reachable but lagging target has rpc_up=1 and readiness=0.
-An `endpoint` label is added only with `METRICS_EXPOSE_ENDPOINT_URLS=true`.
-This opt-in exposes the entire URL, including path/query credentials. Keep it
-disabled when using authenticated RPC URLs. Existing `by (endpoint)` dashboards
-must migrate to the safe identity labels; enabling exposure is not required.
+Full endpoint URLs cannot be exported. Existing `by (endpoint)` dashboards
+must use safe identity labels; address tables use origins without paths or queries.
 Reference selection/failover is still an operator action, not automatic.
 
 `cycle()` is a one-shot executor, not a scheduler. Production core, pruning and
@@ -319,7 +317,6 @@ default; WEBSOCKET_URL and comma-separated ADDONS apply to it. Multi-node exampl
 | TRUSTED_STATE_TTL_SECONDS | 30 seconds; must not exceed STATE_TTL_SECONDS |
 | TRUSTED_REFRESH_INTERVAL_SECONDS | 5 seconds between refreshes; must be below trusted TTL |
 | REFERENCE_GRACE_SECONDS | Deprecated; accepted for compatibility, no effect on admission |
-| METRICS_EXPOSE_ENDPOINT_URLS | false; true explicitly exposes full RPC URLs in endpoint labels |
 | NODE_PROGRESS_TTL_SECONDS | 30 seconds since last observed forward height progress |
 | DEEP_STATE_TTL_SECONDS | 180 seconds, must exceed deep interval |
 | RPC_TIMEOUT_SECONDS | 3 seconds |
@@ -338,8 +335,9 @@ request counts. EVM eth_syncing is not a rule in these supplied specs.
 
 Metrics prefix: node_rpc_checker_, with chain/node and mode or check labels.
 Metrics include readiness, check success/freshness, latency, timestamps and HTTP
-height/delta. RPC URLs are excluded from errors and, by default, metrics.
-Enabling METRICS_EXPOSE_ENDPOINT_URLS exposes full URLs in rpc_up labels, including secrets.
+height/delta. Full RPC URLs are excluded from errors and, by default, metrics;
+endpoint info exposes only origins (scheme, host/IP and explicit port).
+There is no option to expose full URLs in metric labels.
 Reference metrics are instance-wide (chain label only): reference_cache_fresh, reference_up,
 reference_refresh_attempts_total and reference_refresh_failures_total are present
 from startup. They count actual fetch attempts, not cached failures or cache hits,
@@ -378,7 +376,7 @@ as unverified (`reference_fresh=false`) without turning target success into fail
 
 ### Metric contract and migration
 
-All names below have the prefix `node_rpc_checker_`. There are 22 canonical
+All names below have the prefix `node_rpc_checker_`. There are 28 canonical
 families, with no deprecated metric aliases. Some samples
 appear only after a matching observation or error; absent does not mean zero.
 
@@ -406,6 +404,39 @@ appear only after a matching observation or error; absent does not mean zero.
 | reference_refresh_failures_total | Failed reference fetch attempts |
 | check_results_total | Completed check attempts by outcome and error_kind |
 | internal_errors_total | Internal errors by configured node/check or fixed service operation |
+| node_endpoints_info | Backend HTTP/WS origins by node, including unavailable nodes |
+| node_type_info | Detected backend storage type (`prune` or `archive`) from fresh successful HTTP deep checks; absent when neither type is currently proven |
+| rpc_endpoint_info | RPC origin by node, role and transport, including trusted |
+| check_consecutive_failures | Consecutive failed completed attempts of each check |
+| check_last_success_timestamp_seconds | Last successful completion of each check, or zero before first success |
+| rpc_last_error_timestamp_seconds | Last failed target check per transport or failed trusted refresh, or zero before first failure |
+
+Endpoint info is configuration metadata, emitted before any successful probe.
+Only the origin (scheme, hostname/IP and optional explicit port) is exposed;
+userinfo, path, query and fragment are omitted. Origins reveal infrastructure
+addresses but not path/query tokens. Full URL exposure is not supported.
+Endpoints sharing an origin remain distinct through node/role/transport.
+
+Check history uses labels chain/node/check/mode. A successful completed check
+resets its consecutive failures; a sibling's success does not reset it. An
+unverified target height during trusted outage is still a target success. Last
+success persists through failures; last error persists through recovery. History
+is in memory and resets on restart. Status/metrics reads and TTL expiry do not
+create error events. All failed target checks, including historical verification
+or internal errors, update their transport's last-error timestamp; this is not
+solely a network-connection error indicator.
+
+The Grafana **Node Endpoints** table displays the maximum failure streak among
+core checks and replicas, not a count of failed polling rounds. Time Since Success
+uses the oldest last-success timestamp across core checks and replicas; any zero
+means a required check has never succeeded. Deep pruning/archive checks are
+excluded from these aggregates. Chain and node form the table join key to avoid
+collisions across chains.
+
+**RPC Last Error** shows the last observed error in the selected range, joined
+with safe origin metadata. Zero means "None in selected range", not proof of
+uninterrupted availability: errors between scrapes or before restarts can be
+missed. Trusted errors are independent of backend history.
 
 `height_comparison_verified{chain,node,transport}` starts at zero and remains zero
 on cold start, reference outage, stale results, or failed/lagging comparisons.
@@ -440,10 +471,8 @@ unchanged; reference diagnostics use reference_cache_fresh instead of reference_
 - HTTP redirects are rejected. URLs reject userinfo, whitespace/control
   characters, invalid ports and fragments. Percent-encode path/query tokens;
   protect the environment file and prefer HTTPS/WSS for credentials.
-- Keep METRICS_EXPOSE_ENDPOINT_URLS=false (default) for credential-bearing URLs.
-  Opting in exposes credentials through the unauthenticated metrics endpoint and
-  downstream metric storage. Escaping, percent-encoding and HTTPS do not redact
-  labels. Previously scraped secrets remain subject to storage retention; removing
+- Full URL labels are prohibited; endpoint info reveals only scheme, host and port.
+  Previously scraped secrets remain subject to storage retention; removing
   the label does not erase history. Rotate any exposed credentials as appropriate.
 - JSON-RPC IDs must match both type and value. HTTP responses are capped at
   4 MiB, WS messages at 1 MiB. Upstream error names are length/character bounded.

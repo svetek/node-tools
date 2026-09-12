@@ -98,7 +98,7 @@ class RpcClient:
                 if attempt < self.config.retries:
                     self.stop.wait(self.config.retry_delay)
         # Never include URLs or upstream exception messages in RPC errors.
-        # Full endpoint URL metrics require a separate explicit opt-in.
+        # Metrics expose origins only, never full endpoint URLs.
         raise RpcError(f"RPC transport/response failure: {type(last).__name__}")
 
     @staticmethod

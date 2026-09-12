@@ -10,7 +10,7 @@ from tests.helpers import Fake
 
 
 class MetricPrivacyTests(unittest.TestCase):
-    def checker(self, expose=False):
+    def checker(self):
         self.urls = [
             "https://example.test/v3/secret-path-key",
             "http://example.test/rpc?token=secret-http-key",
@@ -21,7 +21,6 @@ class MetricPrivacyTests(unittest.TestCase):
                 "BASE",
                 {"n": Node(self.urls[1], self.urls[2])},
                 self.urls[0],
-                expose_endpoint_urls=expose,
             ),
             Fake(),
         )
@@ -42,10 +41,23 @@ class MetricPrivacyTests(unittest.TestCase):
             self.assertIn('node="",role="trusted",transport="http"', metrics)
             self.assertIn('node="n",role="backend",transport="ws"', metrics)
 
-    def test_url_exposure_requires_explicit_opt_in(self):
-        metrics = self.checker(True).metrics()
-        for url in self.urls:
-            self.assertIn(f'endpoint="{url}"', metrics)
+    def test_removed_flag_cannot_enable_url_exposure(self):
+        with patch.dict(
+            os.environ,
+            {
+                "METRICS_EXPOSE_ENDPOINT_URLS": "true",
+                "CHAIN_ID": "BASE",
+                "NODE_RPC_URL": "https://example.test/path-secret?token=query-secret",
+            },
+            clear=True,
+        ):
+            config = Config.from_env()
+            self.assertFalse(hasattr(config, "expose_endpoint_urls"))
+            checker = Checker(config, Fake())
+            metrics = checker.metrics()
+            self.assertNotIn("endpoint=", metrics)
+            self.assertNotIn("path-secret", metrics)
+            self.assertNotIn("query-secret", metrics)
 
     def test_same_url_keeps_distinct_roles_and_nodes(self):
         checker = Checker(Config("BASE", {"a": Node("same"), "b": Node("same")}, "same"), Fake())
@@ -53,19 +65,10 @@ class MetricPrivacyTests(unittest.TestCase):
         checker.cycle("b")
         self.assertEqual(checker.metrics().count("\nnode_rpc_checker_rpc_up{"), 3)
 
-    def test_config_flag_and_deprecated_grace(self):
+    def test_deprecated_grace(self):
         with patch.dict(
             os.environ, {"CHAIN_ID": "BASE", "NODE_RPC_URL": "http://node"}, clear=True
         ):
-            self.assertFalse(Config.from_env().expose_endpoint_urls)
-            os.environ["METRICS_EXPOSE_ENDPOINT_URLS"] = "true"
-            with self.assertLogs(level="WARNING") as logs:
-                self.assertTrue(Config.from_env().expose_endpoint_urls)
-            self.assertIn("credentials will be exposed", " ".join(logs.output))
-            os.environ["METRICS_EXPOSE_ENDPOINT_URLS"] = "typo"
-            with self.assertRaises(ValueError):
-                Config.from_env()
-            os.environ["METRICS_EXPOSE_ENDPOINT_URLS"] = "false"
             for value in ("0", "120"):
                 os.environ["REFERENCE_GRACE_SECONDS"] = value
                 with self.assertLogs(level="WARNING") as logs:

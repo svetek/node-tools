@@ -11,10 +11,7 @@ class NodeTypeMetricTests(unittest.TestCase):
         self.checker = Checker(Config("NEAR", {"n": Node("node")}, "trusted"), self.fake)
 
     def sample(self, node_type: str) -> str:
-        return (
-            'node_rpc_checker_node_type_info{chain="NEAR",node="n",'
-            f'type="{node_type}"}} 1'
-        )
+        return f'node_rpc_checker_node_type_info{{chain="NEAR",node="n",type="{node_type}"}} 1'
 
     def test_type_is_absent_until_a_deep_check_passes(self):
         self.checker.cycle("n", mode="readyz")

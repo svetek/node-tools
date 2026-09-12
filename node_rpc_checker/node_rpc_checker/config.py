@@ -51,6 +51,11 @@ class Node:
     rpc_url: str
     websocket_url: str = ""
     addons: tuple[str, ...] = ()
+    node_type: str = "auto"
+
+    def __post_init__(self) -> None:
+        if self.node_type not in ("auto", "prune", "archive"):
+            raise ValueError("node type must be one of auto, prune, archive")
 
 
 @dataclass(frozen=True)
@@ -95,6 +100,7 @@ class Config:
                     "rpc_url": single,
                     "websocket_url": os.getenv("WEBSOCKET_URL", ""),
                     "addons": [s.strip() for s in os.getenv("ADDONS", "").split(",") if s.strip()],
+                    "type": os.getenv("NODE_TYPE", "auto"),
                 }
             }
         )
@@ -106,19 +112,24 @@ class Config:
                 raise ValueError("invalid node name")
             if not isinstance(value, dict) or not isinstance(value.get("rpc_url"), str):
                 raise ValueError("each node requires rpc_url")
-            if set(value) - {"rpc_url", "websocket_url", "addons"}:
+            if set(value) - {"rpc_url", "websocket_url", "addons", "type"}:
                 raise ValueError("unknown NODES_JSON option")
             addons = value.get("addons", [])
             ws = value.get("websocket_url", "")
+            node_type = value.get("type", "auto")
             if (
                 not isinstance(addons, list)
                 or any(not isinstance(a, str) for a in addons)
                 or not isinstance(ws, str)
+                or node_type not in ("auto", "prune", "archive")
             ):
-                raise ValueError("addons must be a list of strings, websocket_url a string")
+                raise ValueError(
+                    "addons must be a list of strings, websocket_url a string, "
+                    "and type one of auto, prune, archive"
+                )
             if ws:
                 validate_url(ws, ("ws", "wss"))
-            nodes[name] = Node(value["rpc_url"], ws, tuple(dict.fromkeys(addons)))
+            nodes[name] = Node(value["rpc_url"], ws, tuple(dict.fromkeys(addons)), node_type)
         defaults = {
             "NEAR": "https://rpc.mainnet.near.org",
             "NEART": "https://rpc.testnet.near.org",

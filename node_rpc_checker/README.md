@@ -293,15 +293,20 @@ internet access.
 ## Configuration
 
 Set exactly one of NODE_RPC_URL or NODES_JSON. Single-node mode uses name
-default; WEBSOCKET_URL and comma-separated ADDONS apply to it. Multi-node example:
+default; WEBSOCKET_URL, NODE_TYPE and comma-separated ADDONS apply to it.
+Node type is `prune`, `archive` or `auto` (default). A declared prune node skips
+archive probes and always fails `/archive`; an archive node runs both pruning and
+archive probes because archive is a superset of pruning. Auto probes both levels
+to discover the capability. Multi-node example:
 
 ```json
 {
-  "base-01": {"rpc_url": "http://192.0.2.10:8545"},
+  "base-01": {"rpc_url": "http://192.0.2.10:8545", "type": "prune"},
   "base-02": {
     "rpc_url": "http://192.0.2.11:8545",
     "websocket_url": "ws://192.0.2.11:8546",
-    "addons": ["debug"]
+    "addons": ["debug"],
+    "type": "archive"
   }
 }
 ```
@@ -309,6 +314,7 @@ default; WEBSOCKET_URL and comma-separated ADDONS apply to it. Multi-node exampl
 | Variable | Default |
 | --- | --- |
 | CHAIN_ID | required, see table |
+| NODE_TYPE | auto; single-node expected storage type: auto, prune or archive |
 | TRUSTED_RPC_URL | chain-specific above, overridable |
 | POLL_INTERVAL_SECONDS | 5 seconds after each core check completes |
 | DEEP_CHECK_INTERVAL_SECONDS | 60 seconds after each deep check completes |
@@ -409,7 +415,7 @@ appear only after a matching observation or error; absent does not mean zero.
 | rpc_endpoint_info | RPC origin by node, role and transport, including trusted |
 | check_consecutive_failures | Consecutive failed completed attempts of each check |
 | check_last_success_timestamp_seconds | Last successful completion of each check, or zero before first success |
-| rpc_last_error_timestamp_seconds | Last failed target check per transport or failed trusted refresh, or zero before first failure |
+| rpc_last_error_timestamp_seconds | Last exhausted target transport/response failure or failed trusted refresh, or zero before first failure |
 
 Endpoint info is configuration metadata, emitted before any successful probe.
 Only the origin (scheme, hostname/IP and optional explicit port) is exposed;
@@ -422,9 +428,10 @@ resets its consecutive failures; a sibling's success does not reset it. An
 unverified target height during trusted outage is still a target success. Last
 success persists through failures; last error persists through recovery. History
 is in memory and resets on restart. Status/metrics reads and TTL expiry do not
-create error events. All failed target checks, including historical verification
-or internal errors, update their transport's last-error timestamp; this is not
-solely a network-connection error indicator.
+create error events. Only exhausted target transport/response failures update the
+transport's last-error timestamp. Capability and verification failures such as an
+expected `UNKNOWN_BLOCK` archive response on a prune node remain visible in
+per-check metrics without moving the endpoint timestamp.
 
 The Grafana **Node Endpoints** table displays the maximum failure streak among
 core checks and replicas, not a count of failed polling rounds. Time Since Success
@@ -441,6 +448,8 @@ missed. Trusted errors are independent of backend history.
 `height_comparison_verified{chain,node,transport}` starts at zero and remains zero
 on cold start, reference outage, stale results, or failed/lagging comparisons.
 A negative delta against a stale cached height is not a verified comparison.
+Alerting on `height_comparison_verified == 0` is mandatory because an unavailable
+trusted RPC disables lag enforcement while `/readyz` can remain 200 indefinitely.
 
 `check_results_total{chain,node,check,outcome,error_kind}` increments once at check
 completion. Allowed pairs are success/none, failure/rpc_error,

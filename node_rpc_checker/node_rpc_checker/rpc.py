@@ -16,6 +16,10 @@ class RpcError(Exception):
     pass
 
 
+class RpcEndpointError(RpcError):
+    """The endpoint failed to provide a usable HTTP/WS response after retries."""
+
+
 class NodeBehind(RpcError):
     def __init__(self, local: int, reference: int, allowed: int) -> None:
         super().__init__(
@@ -99,7 +103,7 @@ class RpcClient:
                     self.stop.wait(self.config.retry_delay)
         # Never include URLs or upstream exception messages in RPC errors.
         # Metrics expose origins only, never full endpoint URLs.
-        raise RpcError(f"RPC transport/response failure: {type(last).__name__}")
+        raise RpcEndpointError(f"RPC transport/response failure: {type(last).__name__}")
 
     @staticmethod
     def envelope(result: Any, payload: dict[str, Any]) -> dict[str, Any]:
@@ -136,5 +140,5 @@ class RpcClient:
                     if r.get("result") is not True:
                         raise RpcError("unsubscribe rejected")
                     return {"subscription": True}
-        except (OSError, ValueError, RuntimeError) as exc:
-            raise RpcError(f"WebSocket subscription failed: {type(exc).__name__}") from None
+        except (OSError, ValueError, RuntimeError, RpcError) as exc:
+            raise RpcEndpointError(f"WebSocket subscription failed: {type(exc).__name__}") from None

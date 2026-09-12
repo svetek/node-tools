@@ -2,7 +2,7 @@ import unittest
 from unittest.mock import patch
 
 from node_rpc_checker.config import Config, Node
-from node_rpc_checker.rpc import RpcError
+from node_rpc_checker.rpc import RpcEndpointError, RpcError
 from node_rpc_checker.service import Checker
 from tests.helpers import Fake
 
@@ -25,7 +25,7 @@ class EndpointHistoryTests(unittest.TestCase):
     def record(self, at, fail=False):
         def probe():
             if fail:
-                raise RpcError("offline")
+                raise RpcEndpointError("offline")
             return {}
 
         with patch("node_rpc_checker.service.time.time", return_value=at):
@@ -55,6 +55,14 @@ class EndpointHistoryTests(unittest.TestCase):
         self.record(10, True)
         self.checker.record("n", "ws/chain-id", lambda: {})
         self.assertEqual(self.checker.check_history["n", "http/chain-id"], (1, 0.0))
+
+    def test_capability_failure_does_not_update_endpoint_error(self):
+        def unsupported():
+            raise RpcError("UNKNOWN_BLOCK")
+
+        with patch("node_rpc_checker.service.time.time", return_value=10):
+            self.checker.record("n", "http/pruning", unsupported)
+        self.assertNotIn(("n", "http"), self.checker.rpc_last_errors)
 
     def test_trusted_failure_does_not_contaminate_backend_history(self):
         self.checker.cycle("n")

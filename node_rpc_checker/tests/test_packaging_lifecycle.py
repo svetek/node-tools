@@ -132,12 +132,18 @@ class ConfigMultiTests(unittest.TestCase):
     def test_multinode_parsing(self):
         config = self.load(
             {
-                "one": {"rpc_url": "http://node", "addons": ["debug", "debug"]},
+                "one": {
+                    "rpc_url": "http://node",
+                    "addons": ["debug", "debug"],
+                    "type": "prune",
+                },
                 "two": {"rpc_url": "https://other", "websocket_url": "wss://other/ws"},
             }
         )
         self.assertEqual(config.nodes["one"].addons, ("debug",))
+        self.assertEqual(config.nodes["one"].node_type, "prune")
         self.assertEqual(config.nodes["two"].websocket_url, "wss://other/ws")
+        self.assertEqual(config.nodes["two"].node_type, "auto")
         self.assertEqual(len(config.nodes), 2)
 
     def test_invalid_multinode_branches(self):
@@ -154,6 +160,8 @@ class ConfigMultiTests(unittest.TestCase):
             {"n": {"rpc_url": "http://node", "addons": [None]}},
             {"n": {"rpc_url": "http://node", "websocket_url": 1}},
             {"n": {"rpc_url": "http://node", "websocket_url": "http://other"}},
+            {"n": {"rpc_url": "http://node", "type": "full"}},
+            {"n": {"rpc_url": "http://node", "type": None}},
             {"n": {"rpc_url": "file:///secret"}},
             {"x" * 65: {"rpc_url": "http://node"}},
             {str(i): {"rpc_url": "http://node"} for i in range(65)},

@@ -346,6 +346,33 @@ class ServiceTests(unittest.TestCase):
         self.c.cycle("n", mode="readyz")
         self.assertEqual(self.c.response("/readyz/n")[0], 503)
 
+    def test_declared_node_types_control_archive_probes(self):
+        prune_fake = Fake("NEAR")
+        prune = Checker(
+            Config("NEAR", {"n": Node("node", node_type="prune")}, "trusted"),
+            prune_fake,
+        )
+        self.assertFalse(any(level == "archive" for level, _ in prune.plans["n"].values()))
+        prune.cycle("n")
+        self.assertEqual(prune.response("/pruning/n")[0], 200)
+        self.assertEqual(prune.response("/archive/n")[0], 503)
+        self.assertFalse(
+            any(
+                payload["method"] == "block"
+                and isinstance(payload["params"], dict)
+                and payload["params"].get("block_id") == 10000000
+                for _, payload in prune_fake.calls
+            )
+        )
+
+        fake = Fake("NEAR")
+        fake.archive = True
+        archive = Checker(Config("NEAR", {"n": Node("node", node_type="archive")}, "trusted"), fake)
+        self.assertTrue(any(level == "archive" for level, _ in archive.plans["n"].values()))
+        archive.cycle("n")
+        self.assertEqual(archive.response("/pruning/n")[0], 200)
+        self.assertEqual(archive.response("/archive/n")[0], 200)
+
     def test_addon_and_ws_required_only_when_configured(self):
         cfg = Config("BASE", {"n": Node("node", "ws://node", ("debug",))}, "trusted")
         c = Checker(cfg, self.fake)

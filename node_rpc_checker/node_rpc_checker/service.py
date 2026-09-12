@@ -18,7 +18,7 @@ from .config import Config
 from .diagnostics import log_internal_error
 from .engine import Engine
 from .reference import TrustedReference
-from .rpc import NodeBehind, ReferenceUnavailable, RpcError
+from .rpc import NodeBehind, ReferenceUnavailable, RpcEndpointError, RpcError
 from .scheduler import run_checks
 from .spec import Spec
 
@@ -28,7 +28,7 @@ METRIC_DESCRIPTIONS = {
     "rpc_endpoint_info": "Configured RPC origin by node, role and transport, without path, query or userinfo.",
     "check_consecutive_failures": "Consecutive failed completed attempts of this check; success including unverified target height resets to zero.",
     "check_last_success_timestamp_seconds": "Unix time of last successful completed target check; zero before any success; retained across failures.",
-    "rpc_last_error_timestamp_seconds": "Unix time of last failed target check for this transport or failed trusted refresh; zero before any failure, retained across recovery.",
+    "rpc_last_error_timestamp_seconds": "Unix time of the last exhausted target transport/response failure or failed trusted refresh; zero before any failure, retained across recovery.",
     "reference_cache_fresh": "Whether the last successful trusted observation is within its TTL, independent of the latest refresh outcome (1 or 0).",
     "height_comparison_verified": "Whether the latest target height comparison passed with a still-fresh trusted observation and fresh local result (1 or 0).",
     "check_duration_seconds": "Duration of the last completed check including reference acquisition, in seconds (millisecond resolution).",
@@ -88,6 +88,8 @@ class Checker:
             if node.websocket_url and not self.adapter.websocket:
                 raise ValueError("WebSocket is not defined for NEAR in these specs")
             rules = self.spec.rules(node.addons)
+            if node.node_type == "prune":
+                rules = [rule for rule in rules if rule.mode != "archive"]
             plan: dict[str, tuple[str, Callable[[], dict[str, Any]]]] = {}
             for transport, url in [("http", node.rpc_url), ("ws", node.websocket_url)]:
                 if not url:
@@ -164,6 +166,7 @@ class Checker:
 
     def record(self, name: str, key: str, fn: Callable[[], dict[str, Any]]) -> dict[str, Any]:
         start = self.clock()
+        endpoint_failed = False
         try:
             details = fn() or {}
             if {"ok", "error", "error_kind"}.intersection(details):
@@ -191,6 +194,9 @@ class Checker:
                 "error_kind": "rpc_error",
                 "reference_fresh": True,
             }
+        except RpcEndpointError as exc:
+            endpoint_failed = True
+            row = {"ok": False, "error": str(exc), "error_kind": "rpc_error"}
         except RpcError as exc:
             row = {"ok": False, "error": str(exc), "error_kind": "rpc_error"}
         except Exception as exc:
@@ -217,7 +223,7 @@ class Checker:
             self.check_history[name, key] = (
                 (0, row["checked_at"]) if row["ok"] else (failures + 1, last_success)
             )
-            if not row["ok"]:
+            if endpoint_failed:
                 endpoint_key = (name, key.split("/", 1)[0])
                 self.rpc_last_errors[endpoint_key] = max(
                     self.rpc_last_errors.get(endpoint_key, 0.0), row["checked_at"]
@@ -377,6 +383,8 @@ class Checker:
         return states
 
     def readiness(self, name, checks, mode):
+        if mode == "archive" and self.config.nodes[name].node_type == "prune":
+            return False
         levels = {"readyz"}
         if mode in ("pruning", "archive"):
             levels.add("pruning")

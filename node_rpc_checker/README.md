@@ -14,7 +14,8 @@ multiple named nodes per instance. Use separate instances for separate chains.
 ## Layout and launch
 
 - `node_rpc_checker/`: Python package, engine, adapters, HTTP/WS transports.
-- `node_rpc_checker/specs/`: bundled near.json, ethereum.json, base.json, arbitrum.json.
+- `node_rpc_checker/specs/`: bundled near.json, ethereum.json, base.json,
+  arbitrum.json, polygon.json.
 - `tests/`: unit and local HTTP/WS integration tests.
 - `legacy/near`, `legacy/evm_checker`: preserved standalone implementations.
 
@@ -44,7 +45,7 @@ Docker builds a wheel in a separate builder stage and installs it without networ
 access in the runtime stage. Runtime starts the installed `node-rpc-checker`
 console script from `/app`, not a source checkout. `python -m node_rpc_checker`
 and `node-rpc-checker --version` are supported. The wheel includes VERSION, all
-four spec snapshots, metadata, README description and a copy of the repository
+five spec snapshots, metadata, README description and a copy of the repository
 LICENSE. Python 3.12 in Docker is one supported runtime, not the minimum version.
 
 ## Chain selection
@@ -60,10 +61,14 @@ LICENSE. Python 3.12 in Docker is one supported runtime, not the minimum version
 | ARBITRUM | 0xa4b1 | ETH1 → ARBITRUM | explicitly set TRUSTED_RPC_URL |
 | ARBITRUMN | 0xa4ba | ETH1 → ARBITRUM → ARBITRUMN | explicitly set TRUSTED_RPC_URL |
 | ARBITRUMS | 0x66eee | ETH1 → ARBITRUM → ARBITRUMS | explicitly set TRUSTED_RPC_URL |
+| POLYGON | 0x89 | ETH1 → POLYGON | explicitly set TRUSTED_RPC_URL |
+| POLYGONA | 0x13882 | ETH1 → POLYGON → POLYGONA | explicitly set TRUSTED_RPC_URL |
 
 ARBITRUMN selects chain ID 42170 (Nova); the snapshot's name contains
 "testnet", but network matching uses the ID, not that descriptive label.
 ARBITRUMS selects Sepolia (421614). Use a reference for the same network.
+POLYGONA selects Amoy (80002). Polygon has no bundled default trusted RPC;
+set a reference for the same network explicitly.
 
 HOL1 (0x4268) is also present in the source spec; loading it does not imply
 this historical network still has operational public RPCs.
@@ -73,6 +78,9 @@ Snapshots retrieved 2026-09-11:
 [Ethereum](https://github.com/lavanet/lava/blob/main/specs/mainnet-1/specs/ethereum.json),
 [Base](https://github.com/lavanet/lava/blob/main/specs/mainnet-1/specs/base.json),
 [Arbitrum](https://github.com/lavanet/lava/blob/main/specs/mainnet-1/specs/arbitrum.json).
+Polygon was retrieved 2026-09-16 from the
+[Lava repository](https://github.com/lavanet/lava/blob/main/specs/mainnet-1/specs/polygon.json).
+Polygon inherits pruning (latest distance 128) and archive checks from ETH1.
 SHA-256 hashes are exposed in /status. No runtime GitHub/Lava access is needed.
 The on-chain spec used by a provider may differ from these snapshots.
 

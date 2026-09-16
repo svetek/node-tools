@@ -144,6 +144,8 @@ class SpecTests(unittest.TestCase):
             ("ARBITRUM", "0xa4b1"),
             ("ARBITRUMN", "0xa4ba"),
             ("ARBITRUMS", "0x66eee"),
+            ("POLYGON", "0x89"),
+            ("POLYGONA", "0x13882"),
         ]:
             self.assertEqual(Spec(chain).chain_rule.value["expected_value"], expected)
 
@@ -152,6 +154,15 @@ class SpecTests(unittest.TestCase):
         self.assertEqual(rules["pruning"].mode, "pruning")
         self.assertEqual(rules["pruning@archive"].mode, "archive")
         self.assertEqual(rules["pruning"].value["latest_distance"], 128)
+
+    def test_polygon_inheritance_and_pruning_variants(self):
+        for chain in ("POLYGON", "POLYGONA"):
+            rules = {r.key: r for r in Spec(chain).rules(())}
+            self.assertEqual(len(rules), 4)
+            self.assertEqual(rules["pruning"].mode, "pruning")
+            self.assertEqual(rules["pruning"].value["latest_distance"], 128)
+            self.assertEqual(rules["pruning@archive"].mode, "archive")
+            self.assertEqual(rules["pruning@archive"].value["expected_value"], "0x0")
 
     def test_addons_inherited_and_optional(self):
         spec = Spec("BASES")
@@ -597,8 +608,8 @@ class TransportTests(unittest.TestCase):
 
 
 class ConfigTests(unittest.TestCase):
-    def test_arbitrum_requires_reference(self):
-        for chain in ("ARBITRUM", "ARBITRUMN", "ARBITRUMS"):
+    def test_chains_without_default_require_reference(self):
+        for chain in ("ARBITRUM", "ARBITRUMN", "ARBITRUMS", "POLYGON", "POLYGONA"):
             with patch.dict(
                 os.environ, {"CHAIN_ID": chain, "NODE_RPC_URL": "http://node"}, clear=True
             ):

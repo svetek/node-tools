@@ -18,6 +18,8 @@ CHAINS = (
     "ARBITRUM",
     "ARBITRUMN",
     "ARBITRUMS",
+    "POLYGON",
+    "POLYGONA",
 )
 
 

@@ -17,7 +17,6 @@ multiple named nodes per instance. Use separate instances for separate chains.
 - `node_rpc_checker/specs/`: bundled near.json, ethereum.json, base.json,
   arbitrum.json, polygon.json.
 - `tests/`: unit and local HTTP/WS integration tests.
-- `legacy/near`, `legacy/evm_checker`: preserved standalone implementations.
 
 Run from this directory:
 
@@ -519,15 +518,14 @@ package are both `node_rpc_checker`; launch with `python3 -m node_rpc_checker`.
 Update build contexts, imports, deployment image references and Compose service
 names. Prometheus queries using `rpc_checker_*` must use `node_rpc_checker_*`.
 No compatibility alias or duplicate metrics are provided. Endpoint paths and
-environment variables are unchanged. Legacy implementations keep their names.
+environment variables are unchanged.
 
-Old implementations/configs are retained in legacy/ and excluded from the new
-image/package. Image/module now: node-rpc-checker / python3 -m node_rpc_checker.
+The retired standalone NEAR and EVM implementations are available in Git history.
+Image/module now: node-rpc-checker / python3 -m node_rpc_checker.
 NEAR_NETWORK becomes CHAIN_ID=NEAR or NEART; EVM needs its explicit spec ID.
 Metrics change from near_rpc_checker_* or evm_height_checker_* to node_rpc_checker_*.
-Update dashboards/alerts separately; the old EVM Grafana dashboard remains
-unchanged for legacy deployments. HTTP paths remain; EVM readiness now requires
-spec checks, not just height/WS upgrade. Unlike legacy EVM, known failures
+Update dashboards/alerts separately. HTTP paths remain; EVM readiness now requires
+spec checks, not just height/WS upgrade. Unlike the retired EVM checker, known failures
 immediately invalidate readiness rather than preserving old success.
 
 No services, HAProxy configurations or Kubernetes resources are deployed/changed

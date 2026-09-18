@@ -1,1 +1,0 @@
-"""NEAR RPC readiness checker."""

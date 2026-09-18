@@ -7,7 +7,7 @@ RPC User-Agent, and exposed in `/healthz`, `/status` and readiness responses.
 The Docker build checks its VERSION label against both installed package metadata
 and the module version. The current source revision is not automatically published.
 
-Universal NEAR/EVM RPC readiness service driven by bundled Lava specifications.
+Universal NEAR/EVM/Cosmos Hub RPC readiness service driven by bundled Lava specifications.
 Python 3.11+, no third-party runtime dependencies. One chain per service instance,
 multiple named nodes per instance. Use separate instances for separate chains.
 
@@ -15,7 +15,8 @@ multiple named nodes per instance. Use separate instances for separate chains.
 
 - `node_rpc_checker/`: Python package, engine, adapters, HTTP/WS transports.
 - `node_rpc_checker/specs/`: bundled near.json, ethereum.json, base.json,
-  arbitrum.json, polygon.json.
+  arbitrum.json, polygon.json, cosmoshub.json and its Cosmos SDK, CosmWasm,
+  Tendermint and IBC dependencies.
 - `tests/`: unit and local HTTP/WS integration tests.
 
 Run from this directory:
@@ -44,7 +45,7 @@ Docker builds a wheel in a separate builder stage and installs it without networ
 access in the runtime stage. Runtime starts the installed `node-rpc-checker`
 console script from `/app`, not a source checkout. `python -m node_rpc_checker`
 and `node-rpc-checker --version` are supported. The wheel includes VERSION, all
-five spec snapshots, metadata, README description and a copy of the repository
+eleven spec snapshots, metadata, README description and a copy of the repository
 LICENSE. Python 3.12 in Docker is one supported runtime, not the minimum version.
 
 ## Chain selection
@@ -62,6 +63,8 @@ LICENSE. Python 3.12 in Docker is one supported runtime, not the minimum version
 | ARBITRUMS | 0x66eee | ETH1 → ARBITRUM → ARBITRUMS | explicitly set TRUSTED_RPC_URL |
 | POLYGON | 0x89 | ETH1 → POLYGON | explicitly set TRUSTED_RPC_URL |
 | POLYGONA | 0x13882 | ETH1 → POLYGON → POLYGONA | explicitly set TRUSTED_RPC_URL |
+| COSMOSHUB | cosmoshub-4 | COSMOSSDK50 + COSMOSWASM → COSMOSHUB | explicitly set TRUSTED_RPC_URL |
+| COSMOSHUBT | provider | COSMOSHUB → COSMOSHUBT | explicitly set TRUSTED_RPC_URL |
 
 ARBITRUMN selects chain ID 42170 (Nova); the snapshot's name contains
 "testnet", but network matching uses the ID, not that descriptive label.
@@ -80,6 +83,10 @@ Snapshots retrieved 2026-09-11:
 Polygon was retrieved 2026-09-16 from the
 [Lava repository](https://github.com/lavanet/lava/blob/main/specs/mainnet-1/specs/polygon.json).
 Polygon inherits pruning (latest distance 128) and archive checks from ETH1.
+Cosmos Hub and its five dependencies were retrieved 2026-09-18 from the same
+[Lava repository](https://github.com/lavanet/lava/blob/main/specs/mainnet-1/specs/cosmoshub.json).
+Both Cosmos Hub networks' Tendermint checks were compared with the expanded
+on-chain Lava specs via RPC (node height 5883775 at the start of the audit).
 SHA-256 hashes are exposed in /status. No runtime GitHub/Lava access is needed.
 The on-chain spec used by a provider may differ from these snapshots.
 
@@ -88,8 +95,25 @@ by name; directives by function tag. Child values replace parent values, while
 missing directives remain inherited. Every verification value becomes a separate
 rule, preserving ordinary and archive variants under the same name.
 
+Cosmos Hub uses only the `tendermintrpc` collection over HTTP JSON-RPC (usually
+port 26657). Set both `NODE_RPC_URL` and `TRUSTED_RPC_URL` to Tendermint/CometBFT
+RPC endpoints for the same network. REST (1317), gRPC (9090), and WebSocket checks
+are not supported for Cosmos Hub; REST/gRPC collections remain in the snapshots
+but are not scheduled. A configured `WEBSOCKET_URL` fails startup.
+
+Cosmos Hub core checks require the expected network, `catching_up=false`,
+`tx_index=on`, and height comparison. Pruning requires
+`latest_block_height - earliest_block_height >= 14400`; archive additionally
+requires `earliest_block_height == 5200791`, exactly as the Lava verification
+specifies. COSMOSHUBT inherits these conditions, including the archive height.
+These status-based retention checks do not prove historical application-state
+availability. The `minimum-gas-price` definition has no verification values,
+so it does not produce a readiness check. `NODE_TYPE` has the same semantics
+as for the other chains.
+
 Unsupported selected collections, parsers, extensions, templates, missing imports
-and cycles cause startup failure. This is not a full interpreter for every future
+and cycles cause startup failure. Disabled specs may be imported as templates,
+but a disabled chain cannot be selected. This is not a full interpreter for every future
 Lava construct. Supported result parsers: PARSE_BY_ARG, PARSE_CANONICAL, dotted
 RESULT alternatives, including nonnegative array indices such as `.result.[0].blockHash`.
 Missing `chain-id` verification is a configuration error (exit code 2).

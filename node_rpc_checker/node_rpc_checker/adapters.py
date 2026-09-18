@@ -50,5 +50,20 @@ class Evm:
         return {"jsonrpc": "2.0", "id": 1, "method": method, "params": ["newHeads"]}, request
 
 
-def adapter_for(chain_id: str) -> Near | Evm:
+class Tendermint:
+    websocket = False
+
+    def check_status(self, response: dict[str, Any]) -> None:
+        if response.get("result", {}).get("sync_info", {}).get("catching_up") is not False:
+            raise RpcError("node is syncing or sync status missing")
+
+    def subscription_requests(
+        self, directives: dict[str, Any]
+    ) -> tuple[dict[str, Any], dict[str, Any]]:
+        raise ValueError("WebSocket is not supported for Tendermint")
+
+
+def adapter_for(chain_id: str) -> Near | Evm | Tendermint:
+    if chain_id in ("COSMOSHUB", "COSMOSHUBT"):
+        return Tendermint()
     return Near() if chain_id in ("NEAR", "NEART") else Evm()

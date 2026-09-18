@@ -2,7 +2,7 @@ import json
 import re
 from typing import Any
 
-from .adapters import Evm, Near
+from .adapters import Evm, Near, Tendermint
 from .rpc import NodeBehind, RpcClient, RpcError
 from .spec import Rule, Spec
 
@@ -78,7 +78,11 @@ def parse(response: dict[str, Any], pd: dict[str, Any]) -> Any:
 
 class Engine:
     def __init__(
-        self, spec: Spec, client: RpcClient, adapter: Near | Evm, max_behind_blocks: int = 0
+        self,
+        spec: Spec,
+        client: RpcClient,
+        adapter: Near | Evm | Tendermint,
+        max_behind_blocks: int = 0,
     ):
         if type(max_behind_blocks) is not int or max_behind_blocks < 0:
             raise ValueError("MAX_BEHIND_BLOCKS must be a nonnegative integer")

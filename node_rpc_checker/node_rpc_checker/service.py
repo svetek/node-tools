@@ -86,7 +86,7 @@ class Checker:
         self.plans = {}
         for name, node in config.nodes.items():
             if node.websocket_url and not self.adapter.websocket:
-                raise ValueError("WebSocket is not defined for NEAR in these specs")
+                raise ValueError(f"WebSocket is not supported for {config.chain_id}")
             rules = self.spec.rules(node.addons)
             if node.node_type == "prune":
                 rules = [rule for rule in rules if rule.mode != "archive"]

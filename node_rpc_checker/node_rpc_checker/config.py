@@ -20,6 +20,8 @@ CHAINS = (
     "ARBITRUMS",
     "POLYGON",
     "POLYGONA",
+    "COSMOSHUB",
+    "COSMOSHUBT",
 )
 
 

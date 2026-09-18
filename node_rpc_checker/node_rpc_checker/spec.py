@@ -91,7 +91,9 @@ def resolve_spec(specs, index, visiting=()):
     if index not in specs:
         raise ValueError("missing imported spec: " + index)
     spec = specs[index]
-    if not spec.get("enabled"):
+    # Disabled specs can be inheritance-only templates (e.g. COSMOSSDK50).
+    # Only the selected chain must be enabled for serving requests.
+    if not visiting and not spec.get("enabled"):
         raise ValueError("disabled spec: " + index)
     collections: dict[tuple[str, ...], dict[str, Any]] = {}
     for parent in spec.get("imports", []) or []:
@@ -118,7 +120,12 @@ class Spec:
                     raise ValueError("duplicate chain ID")
                 specs[s["index"]] = s
         self.collections = resolve_spec(specs, chain_id)
-        self.base = self.collections[("jsonrpc", "POST", "", "")]
+        self.collection_type = (
+            ("tendermintrpc", "", "")
+            if chain_id in ("COSMOSHUB", "COSMOSHUBT")
+            else ("jsonrpc", "POST", "")
+        )
+        self.base = self.collections[(*self.collection_type, "")]
         self.directives = {d["function_tag"]: d for d in self.base.get("parse_directives", [])}
         for tag in ("GET_BLOCKNUM", "GET_BLOCK_BY_NUM"):
             validate_parser(self.directives[tag])
@@ -129,16 +136,24 @@ class Spec:
         self.chain_rule = chain_rule
 
     def rules(self, addons: tuple[str, ...] | list[str]) -> list[Rule]:
-        available = {k[3] for k, c in self.collections.items() if c.get("enabled")}
+        available = {
+            k[3]
+            for k, c in self.collections.items()
+            if c.get("enabled") and k[:3] == self.collection_type
+        }
         if set(addons) - available:
             raise ValueError("unknown or disabled addon")
         rules: list[Rule] = []
         for (interface, method, path, addon), c in self.collections.items():
+            # Cosmos snapshots also contain REST/gRPC definitions. This adapter
+            # checks only the Tendermint JSON-RPC endpoint selected at startup.
+            if self.collection_type[0] == "tendermintrpc" and interface in ("rest", "grpc"):
+                continue
             if addon and addon not in addons:
                 continue
             if not c.get("enabled"):
                 continue
-            if (interface, method, path) != ("jsonrpc", "POST", ""):
+            if (interface, method, path) != self.collection_type:
                 raise ValueError("unsupported selected API collection")
             for v in c.get("verifications", []) or []:
                 pd = v.get("parse_directive", {})

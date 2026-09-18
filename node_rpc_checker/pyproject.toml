@@ -1,7 +1,8 @@
 [project]
 name = "node-rpc-checker"
 dynamic = ["version"]
-description = "Lava-spec-driven NEAR and EVM RPC readiness checks"
+description = "Lava-spec-driven NEAR, EVM and Cosmos RPC readiness checks"
+dependencies = ["grpcio==1.84.0", "protobuf==7.36.2"]
 requires-python = ">=3.11"
 readme = "README.md"
 license = {file = "LICENSE"}

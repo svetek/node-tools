@@ -8,16 +8,17 @@ The Docker build checks its VERSION label against both installed package metadat
 and the module version. The current source revision is not automatically published.
 
 Universal NEAR/EVM/Cosmos Hub RPC readiness service driven by bundled Lava specifications.
-Python 3.11+, no third-party runtime dependencies. One chain per service instance,
+Python 3.11+; native gRPC uses the pinned grpcio and protobuf dependencies.
+One chain per service instance,
 multiple named nodes per instance. Use separate instances for separate chains.
 
 ## Layout and launch
 
-- `node_rpc_checker/`: Python package, engine, adapters, HTTP/WS transports.
+- `node_rpc_checker/`: Python package, engine, adapters, HTTP/WS/REST/gRPC transports.
 - `node_rpc_checker/specs/`: bundled near.json, ethereum.json, base.json,
   arbitrum.json, polygon.json, cosmoshub.json and its Cosmos SDK, CosmWasm,
   Tendermint and IBC dependencies.
-- `tests/`: unit and local HTTP/WS integration tests.
+- `tests/`: unit and local HTTP/WS/REST/gRPC integration tests.
 
 Run from this directory:
 
@@ -95,19 +96,44 @@ by name; directives by function tag. Child values replace parent values, while
 missing directives remain inherited. Every verification value becomes a separate
 rule, preserving ordinary and archive variants under the same name.
 
-Cosmos Hub uses only the `tendermintrpc` collection over HTTP JSON-RPC (usually
-port 26657). Set both `NODE_RPC_URL` and `TRUSTED_RPC_URL` to Tendermint/CometBFT
-RPC endpoints for the same network. REST (1317), gRPC (9090), and WebSocket checks
-are not supported for Cosmos Hub; REST/gRPC collections remain in the snapshots
-but are not scheduled. A configured `WEBSOCKET_URL` fails startup.
+Cosmos Hub supports Tendermint HTTP JSON-RPC, WebSocket, Cosmos REST and native
+gRPC. Set `NODE_RPC_URL` and `TRUSTED_RPC_URL` to Tendermint/CometBFT HTTP RPC
+endpoints for the same network (usually port 26657). Additional target endpoints
+are optional; every configured endpoint is required for readiness:
+
+```dotenv
+CHAIN_ID=COSMOSHUB
+NODE_RPC_URL=http://192.0.2.10:26657
+TRUSTED_RPC_URL=https://trusted-rpc.example.org
+WEBSOCKET_URL=ws://192.0.2.10:26657/websocket
+REST_URL=http://192.0.2.10:1317
+GRPC_URL=grpc://192.0.2.10:9090
+```
+
+For multiple nodes, use `rest_url`, `grpc_url` and `websocket_url` alongside
+`rpc_url` in each `NODES_JSON` entry. Use `grpcs://host:443` for gRPC with TLS
+and certificate verification using gRPC's default trusted roots; `grpc://` is plaintext. gRPC uses native HTTP/2 and
+protobuf, without server reflection. REST base paths are supported; query strings
+are not. gRPC URLs accept only a host and optional port, with no path or query.
+REST/gRPC endpoints on non-Cosmos chains are rejected at startup.
 
 Cosmos Hub core checks require the expected network, `catching_up=false`,
 `tx_index=on`, and height comparison. Pruning requires
 `latest_block_height - earliest_block_height >= 14400`; archive additionally
 requires `earliest_block_height == 5200791`, exactly as the Lava verification
 specifies. COSMOSHUBT inherits these conditions, including the archive height.
-These status-based retention checks do not prove historical application-state
-availability. The `minimum-gas-price` definition has no verification values,
+HTTP and WS use these status-based retention checks, which do not prove historical
+application-state availability. WS also verifies subscribe/unsubscribe for
+`tm.event='NewBlock'` (acknowledgements, not waiting for the next event).
+REST/gRPC verify their own chain ID, tx-indexing, syncing state and height against
+the same trusted HTTP snapshot. Their pruning probes fetch a block at their own
+latest height minus 14400, requiring a nonempty block hash and the requested height.
+REST additionally runs the spec's POST simulate probe with an empty JSON object
+and expects error code 3. Neither REST nor gRPC has an archive-tagged verification
+in this spec; archive readiness still requires their core/pruning checks and
+the configured Tendermint HTTP/WS archive checks. SDK `sdk_block`/`sdkBlock`
+responses are supported in addition to the older `block` field.
+The `minimum-gas-price` definition has no verification values,
 so it does not produce a readiness check. `NODE_TYPE` has the same semantics
 as for the other chains.
 
@@ -304,7 +330,7 @@ affect /archive. Empty trace/entry-point arrays satisfy the spec's wildcard,
 not a guarantee of useful bundler service. No transactions are submitted.
 
 If websocket_url is configured, all selected rules and height checks run over
-both HTTP and WS. An eth_subscribe(newHeads) acknowledgement followed by a
+both HTTP and WS. For EVM, an eth_subscribe(newHeads) acknowledgement followed by a
 successful eth_unsubscribe on the same connection is required too. It does not
 wait for an actual block event. Other WS calls open new connections; latency
 includes handshake. NEAR rejects WS settings because its spec has no subscription
@@ -317,14 +343,15 @@ UNSUBSCRIBE must contain a single `params: ["%s"]` slot; the returned subscripti
 ID is inserted into the parsed JSON structure, never interpolated as JSON text.
 Unsupported SUBSCRIBE templates fail startup rather than being ignored.
 
-HTTP uses environment proxy settings; WS connects directly. Configure NO_PROXY
+HTTP/REST use environment proxy settings; WS connects directly. gRPC uses its
+library's proxy environment settings and default trusted TLS roots. Configure NO_PROXY
 where appropriate. Access from a VPN/whitelisted source is not proof of universal
 internet access.
 
 ## Configuration
 
 Set exactly one of NODE_RPC_URL or NODES_JSON. Single-node mode uses name
-default; WEBSOCKET_URL, NODE_TYPE and comma-separated ADDONS apply to it.
+default; WEBSOCKET_URL, REST_URL, GRPC_URL, NODE_TYPE and comma-separated ADDONS apply to it.
 Node type is `prune`, `archive` or `auto` (default). A declared prune node skips
 archive probes and always fails `/archive`; an archive node runs both pruning and
 archive probes because archive is a superset of pruning. Auto probes both levels
@@ -346,6 +373,9 @@ to discover the capability. Multi-node example:
 | --- | --- |
 | CHAIN_ID | required, see table |
 | NODE_TYPE | auto; single-node expected storage type: auto, prune or archive |
+| WEBSOCKET_URL | optional; EVM or Cosmos Hub WS endpoint |
+| REST_URL | optional; Cosmos Hub REST base URL (http/https) |
+| GRPC_URL | optional; Cosmos Hub native gRPC URL (grpc/grpcs) |
 | TRUSTED_RPC_URL | chain-specific above, overridable |
 | POLL_INTERVAL_SECONDS | 5 seconds after each core check completes |
 | DEEP_CHECK_INTERVAL_SECONDS | 60 seconds after each deep check completes |
@@ -367,7 +397,12 @@ to discover the capability. Multi-node example:
 NEAR HTTP 4xx JSON errors are parsed to preserve UNKNOWN_ACCOUNT.
 HTTP 429/5xx and transport failures are retried. Semantic failures are retried
 next scheduled cycle. Subscription is attempted once per core cycle.
-Tune intervals/timeouts/TTLs for upstream latency and quotas; WS/addons multiply
+REST and gRPC have a 4 MiB receive limit. gRPC calls have a per-attempt deadline
+and application retries; endpoint errors are sanitized. Each transport exports
+its own `rpc_endpoint_info`, `rpc_up`, `rpc_last_error_timestamp_seconds` and
+`height_comparison_verified` with transport `http`, `ws`, `rest` or `grpc`.
+The existing `node_endpoints_info` metric retains its HTTP/WS labels for compatibility.
+Tune intervals/timeouts/TTLs for upstream latency and quotas; transports/addons multiply
 request counts. EVM eth_syncing is not a rule in these supplied specs.
 
 Metrics prefix: node_rpc_checker_, with chain/node and mode or check labels.

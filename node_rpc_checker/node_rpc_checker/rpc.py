@@ -54,6 +54,16 @@ class RpcClient:
         self.config, self.stop = config, stop
         self.opener = urllib.request.build_opener(NoRedirect())
 
+    def rest(self, url: str, path: str, method: str = "GET") -> dict[str, Any]:
+        from .cosmos import rest_call
+
+        return rest_call(self, url, path, method)
+
+    def grpc(self, url: str, method: str, payload: dict) -> dict[str, Any]:
+        from .cosmos import grpc_call
+
+        return grpc_call(self, url, method, payload)
+
     def call(self, url: str, payload: dict[str, Any]) -> dict[str, Any]:
         last = None
         for attempt in range(self.config.retries + 1):
@@ -127,6 +137,24 @@ class RpcClient:
                 ws.send_json(p)
                 r = self.envelope(ws.receive_json(), p)
                 sub = r.get("result")
+                if p.get("method") == "subscribe":
+                    if sub != {}:
+                        raise RpcError("Tendermint subscription rejected")
+                    ws.send_json(unsubscribe)
+                    while True:
+                        r = ws.receive_json()
+                        if (
+                            isinstance(r, dict)
+                            and r.get("id") == p["id"]
+                            and isinstance(r.get("result"), dict)
+                            and r["result"].get("query") == p["params"]["query"]
+                            and "data" in r["result"]
+                        ):
+                            continue
+                        r = self.envelope(r, unsubscribe)
+                        if r.get("result") != {}:
+                            raise RpcError("Tendermint unsubscribe rejected")
+                        return {"subscription": True}
                 if not isinstance(sub, str) or not sub:
                     raise RpcError("subscription rejected")
                 p = copy.deepcopy(unsubscribe)

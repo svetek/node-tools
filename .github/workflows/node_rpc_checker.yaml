@@ -30,7 +30,8 @@ jobs:
       - name: Test installed wheel outside source tree
         run: |
           python -m venv /tmp/checker-wheel
-          /tmp/checker-wheel/bin/pip install --no-deps dist/*.whl
+          /tmp/checker-wheel/bin/pip install dist/*.whl
           cd /tmp
           /tmp/checker-wheel/bin/python -c 'from importlib.metadata import version; from node_rpc_checker import __version__; from node_rpc_checker.spec import Spec; assert version("node-rpc-checker") == __version__; assert Spec("ARBITRUM").chain_rule'
           /tmp/checker-wheel/bin/node-rpc-checker --version
+          /tmp/checker-wheel/bin/python -c 'import grpc; from node_rpc_checker.cosmos_proto import codec, PREFIX; from node_rpc_checker.spec import Spec; assert Spec("COSMOSHUB", interface="rest").rules(()); assert Spec("COSMOSHUB", interface="grpc").rules(()); assert codec(PREFIX + "GetSyncing", {})[1](b"") == {"syncing": False}'

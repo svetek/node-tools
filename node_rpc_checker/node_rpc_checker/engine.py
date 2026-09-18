@@ -91,7 +91,10 @@ class Engine:
 
     def height(self, url: str) -> int:
         pd = self.spec.directives["GET_BLOCKNUM"]
-        return number(parse(self.client.call(url, json.loads(pd["function_template"])), pd))
+        return number(parse(self.request(url, pd, pd["function_template"]), pd))
+
+    def request(self, url: str, pd: dict, template: str) -> dict[str, Any]:
+        return self.client.call(url, json.loads(template))
 
     def verify(self, url: str, rule: Rule) -> dict[str, Any]:
         pd, value = rule.directive, rule.value
@@ -108,11 +111,15 @@ class Engine:
             if target < 0:
                 raise RpcError("height below requested pruning distance")
             template = template % target
-        response = self.client.call(url, json.loads(template))
+        response = self.request(url, pd, template)
         actual = parse(response, pd)
         if pd["function_tag"] == "GET_BLOCK_BY_NUM":
             result = response.get("result")
-            if pd.get("api_name") == "block":
+            if self.spec.collection_type[0] in ("rest", "grpc"):
+                block = result.get("block") if isinstance(result, dict) else None
+                header = block.get("header") if isinstance(block, dict) else None
+                returned = header.get("height") if isinstance(header, dict) else None
+            elif pd.get("api_name") == "block":
                 header = result.get("header") if isinstance(result, dict) else None
                 returned = header.get("height") if isinstance(header, dict) else None
             elif pd.get("api_name") == "eth_getBlockByNumber":
@@ -121,7 +128,7 @@ class Engine:
                 raise RpcError("unsupported block identity validation")
             if number(returned) != target:
                 raise RpcError("unexpected returned block height")
-        if rule.key == "chain-id":
+        if rule.key == "chain-id" and self.spec.collection_type[0] not in ("rest", "grpc"):
             self.adapter.check_status(response)
         if latest is not None and pd["function_tag"] != "GET_BLOCK_BY_NUM":
             earliest = number(actual)

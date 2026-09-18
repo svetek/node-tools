@@ -15,6 +15,7 @@ from urllib.parse import urlsplit
 from . import __version__
 from .adapters import adapter_for
 from .config import Config
+from .cosmos import CosmosApiEngine
 from .diagnostics import log_internal_error
 from .engine import Engine
 from .reference import TrustedReference
@@ -84,22 +85,38 @@ class Checker:
         self.progress: dict[tuple[str, str], tuple[int, float]] = {}
         self.missing_metric_help: set[str] = set()
         self.plans = {}
+        api_engines = {}
         for name, node in config.nodes.items():
+            if (node.rest_url or node.grpc_url) and config.chain_id not in (
+                "COSMOSHUB",
+                "COSMOSHUBT",
+            ):
+                raise ValueError("REST/gRPC endpoints are supported only for Cosmos Hub")
             if node.websocket_url and not self.adapter.websocket:
                 raise ValueError(f"WebSocket is not supported for {config.chain_id}")
-            rules = self.spec.rules(node.addons)
-            if node.node_type == "prune":
-                rules = [rule for rule in rules if rule.mode != "archive"]
             plan: dict[str, tuple[str, Callable[[], dict[str, Any]]]] = {}
-            for transport, url in [("http", node.rpc_url), ("ws", node.websocket_url)]:
+            for transport, url in node.endpoints():
                 if not url:
                     continue
+                engine = self.engine
+                if transport in ("rest", "grpc"):
+                    if transport not in api_engines:
+                        api_engines[transport] = CosmosApiEngine(
+                            Spec(config.chain_id, interface=transport),
+                            client,
+                            self.adapter,
+                            config.max_behind_blocks,
+                        )
+                    engine = api_engines[transport]
+                rules = engine.spec.rules(node.addons)
+                if node.node_type == "prune":
+                    rules = [rule for rule in rules if rule.mode != "archive"]
                 for rule in rules:
                     plan[transport + "/" + rule.key] = (
                         rule.mode,
-                        partial(self.engine.verify, url, rule),
+                        partial(engine.verify, url, rule),
                     )
-                plan[transport + "/height"] = ("readyz", partial(self.compare, url))
+                plan[transport + "/height"] = ("readyz", partial(self.compare, url, engine))
             if node.websocket_url:
                 subscribe, unsubscribe = self.adapter.subscription_requests(self.spec.directives)
                 plan["ws/subscription"] = (
@@ -241,7 +258,8 @@ class Checker:
             self.check_results[counter_key] = self.check_results.get(counter_key, 0) + 1
         return row
 
-    def compare(self, url: str) -> dict[str, Any]:
+    def compare(self, url: str, engine: Engine | None = None) -> dict[str, Any]:
+        engine = engine or self.engine
         start = self.clock()
         try:
             # After bootstrap, the independent updater owns retries. Target checks
@@ -252,7 +270,7 @@ class Checker:
         except RpcError:
             target_start = self.clock()
             # Always probe the target: a reference outage must not mask its failure.
-            height = self.engine.height(url)
+            height = engine.height(url)
             raise ReferenceUnavailable(
                 height,
                 round((self.clock() - target_start) * 1000),
@@ -260,7 +278,7 @@ class Checker:
             ) from None
         target_start = self.clock()
         try:
-            result: dict[str, Any] = self.engine.compare_height(url, reference)
+            result: dict[str, Any] = engine.compare_height(url, reference)
         except NodeBehind as exc:
             if (
                 self.reference.available()
@@ -510,7 +528,7 @@ class Checker:
                 lines.append(
                     f"node_rpc_checker_check_last_success_timestamp_seconds{{{tags}}} {last_success}"
                 )
-            for transport, url in (("http", node.rpc_url), ("ws", node.websocket_url)):
+            for transport, url in node.endpoints():
                 if url:
                     height = checks.get(transport + "/height", {})
                     up = int(bool(height.get("fresh") and "node_height" in height))

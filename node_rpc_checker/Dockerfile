@@ -2,7 +2,7 @@ FROM python:3.12-slim AS builder
 WORKDIR /build
 COPY pyproject.toml README.md LICENSE ./
 COPY node_rpc_checker ./node_rpc_checker
-RUN python -m pip wheel --no-deps --wheel-dir /wheels .
+RUN python -m pip wheel --wheel-dir /wheels .
 
 FROM python:3.12-slim
 ARG VERSION

@@ -51,7 +51,7 @@ class Evm:
 
 
 class Tendermint:
-    websocket = False
+    websocket = True
 
     def check_status(self, response: dict[str, Any]) -> None:
         if response.get("result", {}).get("sync_info", {}).get("catching_up") is not False:
@@ -60,7 +60,15 @@ class Tendermint:
     def subscription_requests(
         self, directives: dict[str, Any]
     ) -> tuple[dict[str, Any], dict[str, Any]]:
-        raise ValueError("WebSocket is not supported for Tendermint")
+        if directives.get("SUBSCRIBE", {}).get("api_name") != "subscribe":
+            raise ValueError("missing Tendermint SUBSCRIBE directive")
+        if directives.get("UNSUBSCRIBE", {}).get("api_name") != "unsubscribe":
+            raise ValueError("missing Tendermint UNSUBSCRIBE directive")
+        params = {"query": "tm.event='NewBlock'"}
+        return (
+            {"jsonrpc": "2.0", "id": 1, "method": "subscribe", "params": params},
+            {"jsonrpc": "2.0", "id": 2, "method": "unsubscribe", "params": params},
+        )
 
 
 def adapter_for(chain_id: str) -> Near | Evm | Tendermint:

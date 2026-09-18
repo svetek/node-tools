@@ -12,6 +12,9 @@ from node_rpc_checker.spec import Spec
 
 
 class CosmosRpc:
+    def subscription(self, url, subscribe, unsubscribe):
+        return {"subscription": True}
+
     def __init__(self, network="cosmoshub-4"):
         self.network = network
         self.height = 30000000
@@ -110,8 +113,10 @@ class CosmosHubTests(unittest.TestCase):
                     Config.from_env()
                 os.environ["TRUSTED_RPC_URL"] = "https://reference"
                 self.assertEqual(Config.from_env().chain_id, chain)
-        with self.assertRaisesRegex(ValueError, "WebSocket is not supported"):
-            Checker(Config("COSMOSHUB", {"n": Node("node", "ws://node")}, "trusted"), CosmosRpc())
+        checker = Checker(
+            Config("COSMOSHUB", {"n": Node("node", "ws://node")}, "trusted"), CosmosRpc()
+        )
+        self.assertIn("ws/subscription", checker.plans["n"])
         with self.assertRaisesRegex(ValueError, "unknown or disabled addon"):
             Spec("COSMOSHUB").rules(("rest",))
 

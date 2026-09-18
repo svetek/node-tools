@@ -56,10 +56,29 @@ class Node:
     websocket_url: str = ""
     addons: tuple[str, ...] = ()
     node_type: str = "auto"
+    rest_url: str = ""
+    grpc_url: str = ""
 
     def __post_init__(self) -> None:
         if self.node_type not in ("auto", "prune", "archive"):
             raise ValueError("node type must be one of auto, prune, archive")
+        if self.rest_url:
+            validate_url(self.rest_url, ("http", "https"))
+            if urlsplit(self.rest_url).query:
+                raise ValueError("REST_URL must not contain a query")
+        if self.grpc_url:
+            validate_url(self.grpc_url, ("grpc", "grpcs"))
+            parsed = urlsplit(self.grpc_url)
+            if parsed.path not in ("", "/") or parsed.query:
+                raise ValueError("GRPC_URL must contain only a host and port")
+
+    def endpoints(self) -> tuple[tuple[str, str], ...]:
+        return (
+            ("http", self.rpc_url),
+            ("ws", self.websocket_url),
+            ("rest", self.rest_url),
+            ("grpc", self.grpc_url),
+        )
 
 
 @dataclass(frozen=True)
@@ -103,6 +122,8 @@ class Config:
                 "default": {
                     "rpc_url": single,
                     "websocket_url": os.getenv("WEBSOCKET_URL", ""),
+                    "rest_url": os.getenv("REST_URL", ""),
+                    "grpc_url": os.getenv("GRPC_URL", ""),
                     "addons": [s.strip() for s in os.getenv("ADDONS", "").split(",") if s.strip()],
                     "type": os.getenv("NODE_TYPE", "auto"),
                 }
@@ -116,15 +137,19 @@ class Config:
                 raise ValueError("invalid node name")
             if not isinstance(value, dict) or not isinstance(value.get("rpc_url"), str):
                 raise ValueError("each node requires rpc_url")
-            if set(value) - {"rpc_url", "websocket_url", "addons", "type"}:
+            if set(value) - {"rpc_url", "websocket_url", "rest_url", "grpc_url", "addons", "type"}:
                 raise ValueError("unknown NODES_JSON option")
             addons = value.get("addons", [])
             ws = value.get("websocket_url", "")
+            rest = value.get("rest_url", "")
+            grpc = value.get("grpc_url", "")
             node_type = value.get("type", "auto")
             if (
                 not isinstance(addons, list)
                 or any(not isinstance(a, str) for a in addons)
                 or not isinstance(ws, str)
+                or not isinstance(rest, str)
+                or not isinstance(grpc, str)
                 or node_type not in ("auto", "prune", "archive")
             ):
                 raise ValueError(
@@ -133,7 +158,11 @@ class Config:
                 )
             if ws:
                 validate_url(ws, ("ws", "wss"))
-            nodes[name] = Node(value["rpc_url"], ws, tuple(dict.fromkeys(addons)), node_type)
+            if (rest or grpc) and chain_id not in ("COSMOSHUB", "COSMOSHUBT"):
+                raise ValueError("REST/gRPC endpoints are supported only for Cosmos Hub")
+            nodes[name] = Node(
+                value["rpc_url"], ws, tuple(dict.fromkeys(addons)), node_type, rest, grpc
+            )
         defaults = {
             "NEAR": "https://rpc.mainnet.near.org",
             "NEART": "https://rpc.testnet.near.org",

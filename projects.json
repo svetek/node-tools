@@ -3,7 +3,6 @@
         "axelar-node",
         "cosmoshub-node",
         "lava-node",
-        "xrpl-node",
         "massa-node",
         "near-node",
         "sonic-node",
@@ -34,12 +33,6 @@
             "project_name": "lava",
             "git_repository": "lavanet/lava",
             "binary": "lavad"
-        },
-        {
-            "node_name": "xrpl-node",
-            "project_name": "xrpl",
-            "git_repository": "XRPLF/rippled",
-            "binary": "xrpld"
         },
         {
             "node_name": "massa-node",

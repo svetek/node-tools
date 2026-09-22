@@ -34,7 +34,7 @@ def rest_call(client, url, path, method="GET"):
                     response = exc
                 elif exc.code in (400, 404) and "/blocks/" in path:
                     exc.close()
-                    raise RpcError("requested Cosmos block unavailable") from None
+                    raise RpcError("requested historical block unavailable") from None
                 else:
                     exc.close()
                     raise

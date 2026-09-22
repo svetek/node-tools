@@ -7,7 +7,7 @@ RPC User-Agent, and exposed in `/healthz`, `/status` and readiness responses.
 The Docker build checks its VERSION label against both installed package metadata
 and the module version. The current source revision is not automatically published.
 
-Universal NEAR/EVM/Cosmos Hub RPC readiness service driven by bundled Lava specifications.
+Universal NEAR/EVM/Cosmos Hub/Tezos RPC readiness service driven by bundled Lava specifications.
 Python 3.11+; native gRPC uses the pinned grpcio and protobuf dependencies.
 One chain per service instance,
 multiple named nodes per instance. Use separate instances for separate chains.
@@ -16,7 +16,7 @@ multiple named nodes per instance. Use separate instances for separate chains.
 
 - `node_rpc_checker/`: Python package, engine, adapters, HTTP/WS/REST/gRPC transports.
 - `node_rpc_checker/specs/`: bundled near.json, ethereum.json, base.json,
-  arbitrum.json, polygon.json, cosmoshub.json and its Cosmos SDK, CosmWasm,
+  arbitrum.json, polygon.json, tezos.json, cosmoshub.json and its Cosmos SDK, CosmWasm,
   Tendermint and IBC dependencies.
 - `tests/`: unit and local HTTP/WS/REST/gRPC integration tests.
 
@@ -46,7 +46,7 @@ Docker builds a wheel in a separate builder stage and installs it without networ
 access in the runtime stage. Runtime starts the installed `node-rpc-checker`
 console script from `/app`, not a source checkout. `python -m node_rpc_checker`
 and `node-rpc-checker --version` are supported. The wheel includes VERSION, all
-eleven spec snapshots, metadata, README description and a copy of the repository
+twelve spec snapshots, metadata, README description and a copy of the repository
 LICENSE. Python 3.12 in Docker is one supported runtime, not the minimum version.
 
 ## Chain selection
@@ -66,6 +66,8 @@ LICENSE. Python 3.12 in Docker is one supported runtime, not the minimum version
 | POLYGONA | 0x13882 | ETH1 → POLYGON → POLYGONA | explicitly set TRUSTED_RPC_URL |
 | COSMOSHUB | cosmoshub-4 | COSMOSSDK50 + COSMOSWASM → COSMOSHUB | explicitly set TRUSTED_RPC_URL |
 | COSMOSHUBT | provider | COSMOSHUB → COSMOSHUBT | explicitly set TRUSTED_RPC_URL |
+| TEZOS | NetXdQprcVkpaWU | TEZOS | explicitly set TRUSTED_RPC_URL |
+| TEZOST | NetXsqzbfFenSTS | TEZOS → TEZOST | explicitly set TRUSTED_RPC_URL |
 
 ARBITRUMN selects chain ID 42170 (Nova); the snapshot's name contains
 "testnet", but network matching uses the ID, not that descriptive label.
@@ -88,6 +90,10 @@ Cosmos Hub and its five dependencies were retrieved 2026-09-18 from the same
 [Lava repository](https://github.com/lavanet/lava/blob/main/specs/mainnet-1/specs/cosmoshub.json).
 Both Cosmos Hub networks' Tendermint checks were compared with the expanded
 on-chain Lava specs via RPC (node height 5883775 at the start of the audit).
+Tezos was retrieved 2026-09-22 from the
+[Lava repository](https://github.com/lavanet/lava/blob/main/specs/mainnet-1/specs/tezos.json).
+TEZOS and TEZOST were checked against the expanded on-chain specs via Lava RPC
+(node height 5909022 at the start of the audit).
 SHA-256 hashes are exposed in /status. No runtime GitHub/Lava access is needed.
 The on-chain spec used by a provider may differ from these snapshots.
 
@@ -95,6 +101,29 @@ Collections merge by interface, method, internal path and addon; verifications
 by name; directives by function tag. Child values replace parent values, while
 missing directives remain inherited. Every verification value becomes a separate
 rule, preserving ordinary and archive variants under the same name.
+
+Tezos uses its REST RPC directly as `NODE_RPC_URL` (usually port 8732), with a
+matching REST `TRUSTED_RPC_URL`. No default trusted endpoint is bundled. Base
+path prefixes are supported; query strings are rejected. Example:
+
+```dotenv
+CHAIN_ID=TEZOS
+NODE_RPC_URL=http://192.0.2.10:8732
+TRUSTED_RPC_URL=https://trusted-tezos.example.org
+NODE_TYPE=prune
+```
+
+Core checks read chain ID and level from `/chains/main/blocks/head/header` and
+compare height against the trusted node. Pruning requires
+`head.level - savepoint.level >= 28000`, using `/chains/main/levels/savepoint`.
+Archive additionally requires savepoint level `0`. TEZOST inherits both conditions;
+its expected network ID is the exact value in the Lava spec, not a configurable
+testnet alias. These are savepoint checks, not proof of all historical context
+being available. There is no separate syncing flag check in this spec; height,
+freshness and the shared trusted-outage progress policy still apply.
+Tezos has no WS/gRPC checks in this snapshot. Configure REST via `NODE_RPC_URL`,
+not the Cosmos-specific `REST_URL`; results are labelled `http/*` in status and
+metrics. `NODE_TYPE` and readiness aggregation work as for the other chains.
 
 Cosmos Hub supports Tendermint HTTP JSON-RPC, WebSocket, Cosmos REST and native
 gRPC. Set `NODE_RPC_URL` and `TRUSTED_RPC_URL` to Tendermint/CometBFT HTTP RPC

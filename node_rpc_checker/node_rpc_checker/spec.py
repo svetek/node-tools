@@ -122,11 +122,14 @@ class Spec:
                     raise ValueError("duplicate chain ID")
                 specs[s["index"]] = s
         self.collections = resolve_spec(specs, chain_id)
+        self.chain_id = chain_id
         self.collection_type = (
             ("tendermintrpc", "", "")
             if chain_id in ("COSMOSHUB", "COSMOSHUBT")
             else ("jsonrpc", "POST", "")
         )
+        if chain_id in ("TEZOS", "TEZOST"):
+            self.collection_type = ("rest", "GET", "")
         if interface is not None:
             if chain_id not in ("COSMOSHUB", "COSMOSHUBT") or interface not in ("rest", "grpc"):
                 raise ValueError("unsupported API interface")
@@ -153,7 +156,8 @@ class Spec:
         if template.count("%d") != int(block) or "%" in template.replace("%d", ""):
             raise ValueError("invalid API template placeholders")
         if interface == "rest":
-            if not template.startswith("/cosmos/") or any(c in template for c in ("?", "#", "..")):
+            prefix = "/chains/main/" if self.chain_id in ("TEZOS", "TEZOST") else "/cosmos/"
+            if not template.startswith(prefix) or any(c in template for c in ("?", "#", "..")):
                 raise ValueError("unsupported REST template")
         else:
             allowed = {"GetLatestBlock", "GetBlockByHeight", "GetNodeInfo"}

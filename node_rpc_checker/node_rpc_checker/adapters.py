@@ -71,7 +71,22 @@ class Tendermint:
         )
 
 
-def adapter_for(chain_id: str) -> Near | Evm | Tendermint:
+class Tezos:
+    websocket = False
+
+    def check_status(self, response: dict[str, Any]) -> None:
+        # Lava's Tezos spec has no separate syncing-status verification.
+        pass
+
+    def subscription_requests(
+        self, directives: dict[str, Any]
+    ) -> tuple[dict[str, Any], dict[str, Any]]:
+        raise ValueError("WebSocket is not supported for Tezos")
+
+
+def adapter_for(chain_id: str) -> Near | Evm | Tendermint | Tezos:
+    if chain_id in ("TEZOS", "TEZOST"):
+        return Tezos()
     if chain_id in ("COSMOSHUB", "COSMOSHUBT"):
         return Tendermint()
     return Near() if chain_id in ("NEAR", "NEART") else Evm()

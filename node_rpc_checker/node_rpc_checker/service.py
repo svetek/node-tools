@@ -22,6 +22,7 @@ from .reference import TrustedReference
 from .rpc import NodeBehind, ReferenceUnavailable, RpcEndpointError, RpcError
 from .scheduler import run_checks
 from .spec import Spec
+from .tezos import TezosEngine
 
 METRIC_DESCRIPTIONS = {
     "node_endpoints_info": "Configured backend origins without path, query or userinfo; one sample per node, including unavailable nodes.",
@@ -67,11 +68,12 @@ class Checker:
         self.config, self.client, self.clock = config, client, clock
         self.spec = Spec(config.chain_id)
         self.adapter = adapter_for(config.chain_id)
-        self.engine = Engine(self.spec, client, self.adapter, config.max_behind_blocks)
+        engine_class = TezosEngine if config.chain_id in ("TEZOS", "TEZOST") else Engine
+        self.engine = engine_class(self.spec, client, self.adapter, config.max_behind_blocks)
         reference_engine = (
             self.engine
             if trusted_client is None
-            else Engine(self.spec, trusted_client, self.adapter, config.max_behind_blocks)
+            else engine_class(self.spec, trusted_client, self.adapter, config.max_behind_blocks)
         )
         self.reference = TrustedReference(
             lambda: reference_engine.reference_height(config.trusted), config.trusted_ttl, clock

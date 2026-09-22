@@ -22,6 +22,8 @@ CHAINS = (
     "POLYGONA",
     "COSMOSHUB",
     "COSMOSHUBT",
+    "TEZOS",
+    "TEZOST",
 )
 
 
@@ -106,6 +108,10 @@ class Config:
     def __post_init__(self) -> None:
         if type(self.max_behind_blocks) is not int or self.max_behind_blocks < 0:
             raise ValueError("MAX_BEHIND_BLOCKS must be a nonnegative integer")
+        if self.chain_id in ("TEZOS", "TEZOST") and any(
+            urlsplit(url).query for url in (self.trusted, *(n.rpc_url for n in self.nodes.values()))
+        ):
+            raise ValueError("Tezos REST base URLs must not contain a query")
 
     @classmethod
     def from_env(cls) -> Self:

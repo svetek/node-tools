@@ -2,7 +2,7 @@ import json
 import re
 from typing import Any
 
-from .adapters import Evm, Near, Tendermint
+from .adapters import Evm, Near, Tendermint, Tezos
 from .rpc import NodeBehind, RpcClient, RpcError
 from .spec import Rule, Spec
 
@@ -81,7 +81,7 @@ class Engine:
         self,
         spec: Spec,
         client: RpcClient,
-        adapter: Near | Evm | Tendermint,
+        adapter: Near | Evm | Tendermint | Tezos,
         max_behind_blocks: int = 0,
     ):
         if type(max_behind_blocks) is not int or max_behind_blocks < 0:
@@ -115,7 +115,9 @@ class Engine:
         actual = parse(response, pd)
         if pd["function_tag"] == "GET_BLOCK_BY_NUM":
             result = response.get("result")
-            if self.spec.collection_type[0] in ("rest", "grpc"):
+            if isinstance(self.adapter, Tezos):
+                returned = result.get("level") if isinstance(result, dict) else None
+            elif self.spec.collection_type[0] in ("rest", "grpc"):
                 block = result.get("block") if isinstance(result, dict) else None
                 header = block.get("header") if isinstance(block, dict) else None
                 returned = header.get("height") if isinstance(header, dict) else None

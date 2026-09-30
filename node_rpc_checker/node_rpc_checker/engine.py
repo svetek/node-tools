@@ -2,7 +2,7 @@ import json
 import re
 from typing import Any
 
-from .adapters import Evm, Near, Tendermint, Tezos
+from .adapters import Evm, Iota, Near, Tendermint, Tezos
 from .rpc import NodeBehind, RpcClient, RpcError
 from .spec import Rule, Spec
 
@@ -63,13 +63,23 @@ def parse(response: dict[str, Any], pd: dict[str, Any]) -> Any:
     rp = pd["result_parsing"]
     try:
         for key in rp["parser_arg"][1:]:
-            value = value[key]
-    except (KeyError, TypeError):
+            if isinstance(value, list):
+                if not re.fullmatch(r"[0-9]{1,9}", key):
+                    raise TypeError
+                value = value[int(key)]
+            else:
+                value = value[key]
+    except (KeyError, TypeError, IndexError):
         raise RpcError("result parse failed") from None
     if value is None or value == "":
         raise RpcError("empty result")
     if rp.get("encoding") == "hex":
-        if not isinstance(value, str) or not re.fullmatch(r"0x[0-9a-fA-F]*", value):
+        pattern = (
+            r"[0-9a-fA-F]{8}"
+            if pd.get("api_name") == "iota_getChainIdentifier"
+            else r"0x[0-9a-fA-F]*"
+        )
+        if not isinstance(value, str) or not re.fullmatch(pattern, value):
             raise RpcError("invalid hex result")
     # Lava's NEAR hash parser declares base64; preserve the returned opaque hash.
     # Hash existence/comparison requires no re-encoding in this checker.
@@ -126,6 +136,8 @@ class Engine:
                 returned = header.get("height") if isinstance(header, dict) else None
             elif pd.get("api_name") == "eth_getBlockByNumber":
                 returned = result.get("number") if isinstance(result, dict) else None
+            elif pd.get("api_name") == "iota_getCheckpoint":
+                returned = result.get("sequenceNumber") if isinstance(result, dict) else None
             else:
                 raise RpcError("unsupported block identity validation")
             if number(returned) != target:
@@ -137,6 +149,8 @@ class Engine:
             if latest - earliest < value["latest_distance"]:
                 raise RpcError("insufficient retained block history")
         expected = value.get("expected_value", "*")
+        if isinstance(self.adapter, Iota) and rule.key == "chain-id":
+            actual, expected = "0x" + actual, "0x" + expected
         if pd["function_tag"] != "GET_BLOCK_BY_NUM" and not matches(
             actual, expected, pd.get("result_parsing", {}).get("encoding")
         ):

@@ -155,7 +155,11 @@ class RpcClient:
                         if r.get("result") != {}:
                             raise RpcError("Tendermint unsubscribe rejected")
                         return {"subscription": True}
-                if not isinstance(sub, str) or not sub:
+                iota = p.get("method") in ("iotax_subscribeTransaction", "iotax_subscribeEvent")
+                valid_sub = isinstance(sub, str) and bool(sub)
+                if iota and type(sub) is int and 0 <= sub < 2**64:
+                    valid_sub = True
+                if not valid_sub:
                     raise RpcError("subscription rejected")
                 p = copy.deepcopy(unsubscribe)
                 p["params"] = [sub]
@@ -163,6 +167,15 @@ class RpcClient:
                 while True:
                     r = ws.receive_json()
                     if isinstance(r, dict) and r.get("method") == "eth_subscription":
+                        continue
+                    if (
+                        iota
+                        and isinstance(r, dict)
+                        and r.get("method") == subscribe["method"]
+                        and isinstance(r.get("params"), dict)
+                        and type(r["params"].get("subscription")) is type(sub)
+                        and r["params"].get("subscription") == sub
+                    ):
                         continue
                     r = self.envelope(r, p)
                     if r.get("result") is not True:

@@ -7,7 +7,7 @@ RPC User-Agent, and exposed in `/healthz`, `/status` and readiness responses.
 The Docker build checks its VERSION label against both installed package metadata
 and the module version. The current source revision is not automatically published.
 
-Universal NEAR/EVM/Cosmos Hub/Tezos RPC readiness service driven by bundled Lava specifications.
+Universal NEAR/EVM/Cosmos Hub/Tezos/IOTA RPC readiness service driven by bundled Lava specifications.
 Python 3.11+; native gRPC uses the pinned grpcio and protobuf dependencies.
 One chain per service instance,
 multiple named nodes per instance. Use separate instances for separate chains.
@@ -16,7 +16,7 @@ multiple named nodes per instance. Use separate instances for separate chains.
 
 - `node_rpc_checker/`: Python package, engine, adapters, HTTP/WS/REST/gRPC transports.
 - `node_rpc_checker/specs/`: bundled near.json, ethereum.json, base.json,
-  arbitrum.json, polygon.json, tezos.json, cosmoshub.json and its Cosmos SDK, CosmWasm,
+  arbitrum.json, polygon.json, tezos.json, iota.json, cosmoshub.json and its Cosmos SDK, CosmWasm,
   Tendermint and IBC dependencies.
 - `tests/`: unit and local HTTP/WS/REST/gRPC integration tests.
 
@@ -46,7 +46,7 @@ Docker builds a wheel in a separate builder stage and installs it without networ
 access in the runtime stage. Runtime starts the installed `node-rpc-checker`
 console script from `/app`, not a source checkout. `python -m node_rpc_checker`
 and `node-rpc-checker --version` are supported. The wheel includes VERSION, all
-twelve spec snapshots, metadata, README description and a copy of the repository
+thirteen spec snapshots, metadata, README description and a copy of the repository
 LICENSE. Python 3.12 in Docker is one supported runtime, not the minimum version.
 
 ## Chain selection
@@ -68,6 +68,22 @@ LICENSE. Python 3.12 in Docker is one supported runtime, not the minimum version
 | COSMOSHUBT | provider | COSMOSHUB → COSMOSHUBT | explicitly set TRUSTED_RPC_URL |
 | TEZOS | NetXdQprcVkpaWU | TEZOS | explicitly set TRUSTED_RPC_URL |
 | TEZOST | NetXsqzbfFenSTS | TEZOS → TEZOST | explicitly set TRUSTED_RPC_URL |
+| IOTA | 6364aad5 | IOTA | explicitly set TRUSTED_RPC_URL |
+| IOTAT | 2304aa97 | IOTA → IOTAT | explicitly set TRUSTED_RPC_URL |
+
+IOTA was retrieved 2026-09-30 from the
+[Lava repository](https://github.com/lavanet/lava/blob/main/specs/mainnet-1/specs/iota.json).
+Its mainnet/testnet verification rules were checked against Lava mainnet RPC.
+Configure `CHAIN_ID=IOTA` (or `IOTAT`), `NODE_RPC_URL` and an explicit
+`TRUSTED_RPC_URL`. Heights and `MAX_BEHIND_BLOCKS` are measured in checkpoints.
+Pruning requires latest minus earliest checkpoint >= 864000; archive additionally
+requires earliest checkpoint `0`. `NODE_TYPE=prune` skips the archive rule;
+`auto` and `archive` execute both. `ADDONS=indexer` additionally checks
+`iotax_getTotalTransactions`. Chain identifiers are eight hexadecimal digits without `0x`.
+Optional `WEBSOCKET_URL` runs the same rules and a transaction subscribe/unsubscribe
+acknowledgement probe using a zero-address `FromAddress` filter (not event delivery).
+The loader selects the last SUBSCRIBE/UNSUBSCRIBE directives, i.e. transactions,
+from the snapshot. IOTA REST and gRPC transports are not configured by this spec.
 
 ARBITRUMN selects chain ID 42170 (Nova); the snapshot's name contains
 "testnet", but network matching uses the ID, not that descriptive label.

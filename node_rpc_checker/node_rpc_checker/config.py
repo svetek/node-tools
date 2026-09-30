@@ -24,6 +24,8 @@ CHAINS = (
     "COSMOSHUBT",
     "TEZOS",
     "TEZOST",
+    "IOTA",
+    "IOTAT",
 )
 
 

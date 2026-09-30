@@ -50,6 +50,21 @@ class Evm:
         return {"jsonrpc": "2.0", "id": 1, "method": method, "params": ["newHeads"]}, request
 
 
+class Iota(Evm):
+    def subscription_requests(
+        self, directives: dict[str, Any]
+    ) -> tuple[dict[str, Any], dict[str, Any]]:
+        subscribe, unsubscribe = super().subscription_requests(directives)
+        method = subscribe["method"]
+        if method not in ("iotax_subscribeTransaction", "iotax_subscribeEvent"):
+            raise ValueError("unsupported IOTA subscription")
+        if unsubscribe["method"] != method.replace("_subscribe", "_unsubscribe"):
+            raise ValueError("mismatched IOTA unsubscribe method")
+        key = "FromAddress" if method.endswith("Transaction") else "Sender"
+        subscribe["params"] = [{key: "0x" + "0" * 64}]
+        return subscribe, unsubscribe
+
+
 class Tendermint:
     websocket = True
 
@@ -85,6 +100,8 @@ class Tezos:
 
 
 def adapter_for(chain_id: str) -> Near | Evm | Tendermint | Tezos:
+    if chain_id in ("IOTA", "IOTAT"):
+        return Iota()
     if chain_id in ("TEZOS", "TEZOST"):
         return Tezos()
     if chain_id in ("COSMOSHUB", "COSMOSHUBT"):

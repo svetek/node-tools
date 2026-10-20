@@ -84,6 +84,12 @@ The reference must serve the same network. No trusted URL is selected automatica
   with `severity=Warning`. An empty array is a successful response. Failure is
   recorded in `/status` (with `severity: Warning`) and normal failure metrics,
   but does not block readiness. Alert separately if indexing is required.
+  `node_rpc_checker_check_advisory{chain,node,check}` exports `1` for warning-only
+  checks and `0` for required checks, including before the first result.
+  Existing `check_ok` and `check_fresh` remain unchanged. Node Checks can display
+  failed/stale advisory checks as yellow `Warning`, required failures as red,
+  successful fresh checks as green, and absent checks as `Not configured`.
+  Without advisory metadata (older checker images), failures remain red.
 - `height`: `getLatestBlockhash` with `commitment=finalized`, using `context.slot`.
   `MAX_BEHIND_BLOCKS` is measured in **slots**, not `blockHeight` or
   `lastValidBlockHeight`. Existing trusted-reference freshness policy applies.

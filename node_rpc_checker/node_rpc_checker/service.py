@@ -45,6 +45,7 @@ METRIC_DESCRIPTIONS = {
     "ready": "Whether all required checks for this node and mode are successful and fresh (1 or 0).",
     "check_ok": "Whether the target check succeeded; unavailable trusted alone does not fail a check (1 or 0).",
     "check_fresh": "Whether the last check attempt is within its configured state TTL (1 or 0).",
+    "check_advisory": "Whether a configured check is warning-only and does not block readiness (1 or 0).",
     "node_height": "Target HTTP block height from the last successful height comparison.",
     "trusted_height": "Trusted height used for the latest HTTP height diagnostic; may be the last known stale observation.",
     "delta_blocks": "Known trusted minus current target HTTP height; may use a stale reference; absent if trusted is unknown.",
@@ -539,6 +540,13 @@ class Checker:
                     f'node_rpc_checker_node_type_info{{chain="{self.config.chain_id}",node="{label(name)}",type="{detected_type}"}} 1'
                 )
             for key, (mode, _) in self.plans[name].items():
+                severity_tags = (
+                    f'chain="{self.config.chain_id}",node="{label(name)}",check="{label(key)}"'
+                )
+                lines.append(
+                    f"node_rpc_checker_check_advisory{{{severity_tags}}} "
+                    f"{int((name, key) in self.advisory_checks)}"
+                )
                 failures, last_success = history.get((name, key), (0, 0.0))
                 tags = f'chain="{self.config.chain_id}",node="{label(name)}",check="{label(key)}",mode="{mode}"'
                 lines.append(f"node_rpc_checker_check_consecutive_failures{{{tags}}} {failures}")

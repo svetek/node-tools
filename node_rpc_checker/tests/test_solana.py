@@ -93,6 +93,27 @@ class SolanaTests(unittest.TestCase):
         checker.cycle("n")
         self.assertEqual(checker.response("/readyz/n")[0], 503)
 
+    def test_advisory_metric_is_configuration_not_check_outcome(self):
+        rpc = SolanaRpc()
+        checker = self.checker(rpc)
+        warning = 'node_rpc_checker_check_advisory{chain="SOLANA",node="n",check="http/tokens-owner-indexed"} 1'
+        required = 'node_rpc_checker_check_advisory{chain="SOLANA",node="n",check="http/height"} 0'
+        # Export before the first result, through failure and recovery.
+        self.assertIn(warning, checker.metrics())
+        self.assertIn(required, checker.metrics())
+        for failed in (True, False):
+            rpc.index_error = failed
+            checker.cycle("n")
+            metrics = checker.metrics()
+            self.assertIn(warning, metrics)
+            self.assertIn(required, metrics)
+            self.assertIn(
+                'node_rpc_checker_check_ok{chain="SOLANA",node="n",check="http/tokens-owner-indexed"} '
+                + str(int(not failed)),
+                metrics,
+            )
+            self.assertEqual(checker.response("/readyz/n")[0], 200)
+
     def test_wrong_network_on_target_and_reference(self):
         rpc = SolanaRpc()
         rpc.genesis = SOLANA_GENESIS["SOLANAT"]

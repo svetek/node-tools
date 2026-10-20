@@ -39,7 +39,7 @@ METRIC_DESCRIPTIONS = {
     "check_last_completed_timestamp_seconds": "Unix time in seconds when the last check attempt completed, regardless of outcome.",
     "check_results_total": "Completed check attempts by outcome and bounded error kind; does not count status reads or subsequent TTL expiry.",
     "reference_up": "Whether the latest trusted refresh succeeded and its observation is fresh (1 or 0).",
-    "rpc_up": "Whether the latest endpoint height probe succeeded and is fresh (1 or 0); independent of lag validation.",
+    "rpc_up": "Whether the latest endpoint height probe (Solana WS: subscription) succeeded and is fresh (1 or 0); independent of lag validation.",
     "degraded": "Whether this mode is available without a fresh trusted height comparison (1 or 0); lag is unverified.",
     "max_behind_blocks": "Inclusive permitted target lag behind the trusted height, in blocks.",
     "ready": "Whether all required checks for this node and mode are successful and fresh (1 or 0).",
@@ -101,6 +101,10 @@ class Checker:
             plan: dict[str, tuple[str, Callable[[], dict[str, Any]]]] = {}
             for transport, url in node.endpoints():
                 if not url:
+                    continue
+                if transport == "ws" and not getattr(self.adapter, "websocket_rpc", True):
+                    # Solana pubsub ports do not serve ordinary HTTP RPC APIs.
+                    # Their subscription plan is added separately below.
                     continue
                 engine = self.engine
                 if transport in ("rest", "grpc"):
@@ -557,7 +561,12 @@ class Checker:
                 if url:
                     height = checks.get(transport + "/height", {})
                     up = int(bool(height.get("fresh") and "node_height" in height))
+                    if transport == "ws" and not getattr(self.adapter, "websocket_rpc", True):
+                        subscription = checks.get("ws/subscription", {})
+                        up = int(bool(subscription.get("fresh") and subscription.get("ok")))
                     rpc_sample(name, "backend", transport, url, up)
+                    if transport == "ws" and not getattr(self.adapter, "websocket_rpc", True):
+                        continue  # Solana pubsub does not measure finalized height.
                     verified = int(
                         bool(
                             height.get("ok")

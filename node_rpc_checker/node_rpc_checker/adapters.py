@@ -51,12 +51,40 @@ class Evm:
 
 
 class Solana(Evm):
-    websocket = False
+    websocket = True
+    websocket_rpc = False
 
     def subscription_requests(
         self, directives: dict[str, Any]
     ) -> tuple[dict[str, Any], dict[str, Any]]:
-        raise ValueError("WebSocket is disabled in the bundled Solana spec")
+        subscribe = directives.get("SUBSCRIBE", {})
+        unsubscribe = directives.get("UNSUBSCRIBE", {})
+        if subscribe.get("api_name") != "slotSubscribe" or subscribe.get("function_template"):
+            raise ValueError("unsupported Solana SUBSCRIBE directive")
+        if unsubscribe.get("api_name") != "slotUnsubscribe":
+            raise ValueError("unsupported Solana UNSUBSCRIBE directive")
+        try:
+            template = unsubscribe["function_template"]
+            if (
+                not isinstance(template, str)
+                or template.count("%d") != 1
+                or "%" in template.replace("%d", "")
+            ):
+                raise ValueError
+            request = json.loads(template % 0)
+        except (KeyError, TypeError, ValueError):
+            raise ValueError("invalid Solana UNSUBSCRIBE template") from None
+        if (
+            not isinstance(request, dict)
+            or request.get("jsonrpc") != "2.0"
+            or request.get("method") != "slotUnsubscribe"
+            or request.get("params") != [0]
+            or type(request.get("id")) not in (int, str)
+        ):
+            raise ValueError("unsupported Solana UNSUBSCRIBE template")
+        # Use different ids to distinguish the unsubscribe acknowledgement.
+        request["id"] = 2
+        return {"jsonrpc": "2.0", "id": 1, "method": "slotSubscribe", "params": []}, request
 
 
 class Iota(Evm):

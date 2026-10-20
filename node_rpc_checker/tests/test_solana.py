@@ -1,15 +1,18 @@
+import base64
 import copy
+import hashlib
 import json
 import os
+import struct
 import threading
 import unittest
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
-from unittest.mock import patch
+from unittest.mock import MagicMock, patch
 
 from node_rpc_checker.adapters import adapter_for
 from node_rpc_checker.config import Config, Node
-from node_rpc_checker.rpc import RpcClient, RpcError
+from node_rpc_checker.rpc import RpcClient, RpcEndpointError, RpcError
 from node_rpc_checker.service import Checker
 from node_rpc_checker.spec import SOLANA_GENESIS, Spec
 
@@ -22,8 +25,11 @@ class SolanaRpc:
         self.accounts = []
         self.index_error = False
         self.calls = []
+        self.ws_calls = []
+        self.ws_error = False
 
     def call(self, url, payload):
+        assert not url.startswith(("ws://", "wss://")), "HTTP method sent to pubsub port"
         self.calls.append(payload)
         method = payload["method"]
         if method == "getGenesisHash":
@@ -44,6 +50,12 @@ class SolanaRpc:
         else:
             raise AssertionError(method)
         return {"jsonrpc": "2.0", "id": payload["id"], "result": result}
+
+    def subscription(self, url, subscribe, unsubscribe):
+        self.ws_calls.append((url, subscribe, unsubscribe))
+        if self.ws_error:
+            raise RpcEndpointError("subscription rejected")
+        return {"subscription": True}
 
 
 class SolanaTests(unittest.TestCase):
@@ -146,7 +158,7 @@ class SolanaTests(unittest.TestCase):
         with self.assertRaises(RpcError):
             checker.engine.verify("node", rules["version"])
 
-    def test_config_requires_reference_and_rejects_disabled_transports(self):
+    def test_config_requires_reference_and_rejects_rest_grpc(self):
         for chain in SOLANA_GENESIS:
             with patch.dict(
                 os.environ, {"CHAIN_ID": chain, "NODE_RPC_URL": "http://node"}, clear=True
@@ -161,12 +173,224 @@ class SolanaTests(unittest.TestCase):
                 ):
                     with patch.dict(os.environ, {variable: url}), self.assertRaises(ValueError):
                         Config.from_env()
-            with self.assertRaisesRegex(ValueError, "WebSocket is not supported"):
-                Checker(
-                    Config(chain, {"n": Node("node", "ws://node")}, "trusted"), SolanaRpc(chain)
+
+    def test_ws_only_checks_subscription_and_gates_readiness(self):
+        for chain in SOLANA_GENESIS:
+            with self.subTest(chain=chain):
+                rpc = SolanaRpc(chain)
+                checker = Checker(
+                    Config(chain, {"n": Node("http://node", "ws://node")}, "http://trusted"), rpc
                 )
-            with self.assertRaises(ValueError):
-                adapter_for(chain).subscription_requests(Spec(chain).directives)
+                self.assertEqual(
+                    {key for key in checker.plans["n"] if key.startswith("ws/")},
+                    {"ws/subscription"},
+                )
+                checker.cycle("n")
+                self.assertEqual(checker.response("/readyz/n")[0], 200)
+                ws_metric = f'node_rpc_checker_rpc_up{{chain="{chain}",node="n",role="backend",transport="ws"}}'
+                self.assertIn(ws_metric + " 1\n", checker.metrics())
+                self.assertNotIn(
+                    f'node_rpc_checker_height_comparison_verified{{chain="{chain}",node="n",transport="ws"}}',
+                    checker.metrics(),
+                )
+                self.assertEqual(rpc.ws_calls[-1][1]["method"], "slotSubscribe")
+                self.assertEqual(rpc.ws_calls[-1][2]["method"], "slotUnsubscribe")
+                rpc.ws_error = True
+                checker.cycle("n")
+                self.assertEqual(checker.response("/readyz/n")[0], 503)
+                self.assertIn(ws_metric + " 0\n", checker.metrics())
+                self.assertTrue(checker.snapshot()["n"]["http/height"]["ok"])
+                rpc.ws_error = False
+                checker.cycle("n")
+                self.assertEqual(checker.response("/readyz/n")[0], 200)
+
+    def test_subscription_directives_come_from_enabled_main_collection(self):
+        for chain in SOLANA_GENESIS:
+            spec = Spec(chain)
+            subscribe, unsubscribe = adapter_for(chain).subscription_requests(spec.directives)
+            self.assertEqual(subscribe["params"], [])
+            self.assertEqual(subscribe["method"], "slotSubscribe")
+            self.assertEqual(unsubscribe["method"], "slotUnsubscribe")
+            self.assertNotEqual(subscribe["id"], unsubscribe["id"])
+            # Multiple SUBSCRIBE tags must survive inheritance, not just voteSubscribe.
+            methods = {d["api_name"] for d in spec.base["parse_directives"]}
+            self.assertTrue({"slotSubscribe", "slotUnsubscribe", "accountSubscribe"} <= methods)
+            for tag in ("SUBSCRIBE", "UNSUBSCRIBE"):
+                directives = copy.deepcopy(spec.directives)
+                directives.pop(tag)
+                with self.assertRaises(ValueError):
+                    adapter_for(chain).subscription_requests(directives)
+
+    def test_subscription_numeric_ids_notifications_and_bad_responses(self):
+        subscribe, unsubscribe = adapter_for("SOLANAT").subscription_requests(
+            Spec("SOLANAT").directives
+        )
+        client = RpcClient(Config("SOLANAT", {}, "trusted"), threading.Event())
+        for sub in (0, 42, 2**64 - 1, True, -1, 2**64, 1.5, "token", "", None):
+            ws = MagicMock()
+            ws.receive_json.side_effect = [
+                {"jsonrpc": "2.0", "id": subscribe["id"], "result": sub},
+                {
+                    "jsonrpc": "2.0",
+                    "method": "slotNotification",
+                    "params": {"subscription": sub, "result": {"slot": 7, "parent": 6, "root": 5}},
+                },
+                {"jsonrpc": "2.0", "id": unsubscribe["id"], "result": True},
+            ]
+            with self.subTest(sub=sub), patch("node_rpc_checker.rpc.WebSocketConnection") as conn:
+                conn.return_value.__enter__.return_value = ws
+                if type(sub) is int and 0 <= sub < 2**64:
+                    self.assertEqual(
+                        client.subscription("ws://node", subscribe, unsubscribe),
+                        {"subscription": True},
+                    )
+                    self.assertEqual(ws.send_json.call_args.args[0]["params"], [sub])
+                else:
+                    with self.assertRaises(RpcEndpointError):
+                        client.subscription("ws://node", subscribe, unsubscribe)
+        for bad in (
+            {"jsonrpc": "2.0", "id": 2, "result": False},
+            {"jsonrpc": "2.0", "id": 2, "error": {"code": -32601}},
+            {"jsonrpc": "2.0", "id": 1, "result": True},
+            {"jsonrpc": "2.0", "id": 2, "result": "true"},
+            {"jsonrpc": "2.0", "method": "slotNotification", "params": {"subscription": 99}},
+        ):
+            ws = MagicMock()
+            ws.receive_json.side_effect = [{"jsonrpc": "2.0", "id": 1, "result": 42}, bad]
+            with self.subTest(bad=bad), patch("node_rpc_checker.rpc.WebSocketConnection") as conn:
+                conn.return_value.__enter__.return_value = ws
+                with self.assertRaises(RpcEndpointError):
+                    client.subscription("ws://node", subscribe, unsubscribe)
+
+    def test_subscription_requires_valid_notification_and_unsubscribe(self):
+        requests = adapter_for("SOLANAT").subscription_requests(Spec("SOLANAT").directives)
+        client = RpcClient(Config("SOLANAT", {}, "trusted"), threading.Event())
+        ack = {"jsonrpc": "2.0", "id": 1, "result": 42}
+        notification = {
+            "jsonrpc": "2.0",
+            "method": "slotNotification",
+            "params": {"subscription": 42, "result": {"slot": 7, "parent": 6, "root": 5}},
+        }
+        done = {"jsonrpc": "2.0", "id": 2, "result": True}
+        for responses in (
+            [ack, TimeoutError()],
+            [ack, done],
+            [ack, notification, {"jsonrpc": "2.0", "id": 2, "result": False}],
+            [ack, notification, TimeoutError()],
+        ):
+            ws = MagicMock()
+            ws.receive_json.side_effect = responses
+            with patch("node_rpc_checker.rpc.WebSocketConnection") as conn:
+                conn.return_value.__enter__.return_value = ws
+                with self.assertRaises(RpcEndpointError):
+                    client.subscription("ws://node", *requests)
+        for key in ("slot", "root", "parent"):
+            bad = copy.deepcopy(notification)
+            bad["params"]["result"][key] = True
+            with self.assertRaises(RpcError):
+                RpcClient.validate_slot_notification(bad, 42)
+        ws = MagicMock()
+        ws.receive_json.side_effect = [ack, notification, notification, done]
+        with patch("node_rpc_checker.rpc.WebSocketConnection") as conn:
+            conn.return_value.__enter__.return_value = ws
+            self.assertEqual(client.subscription("ws://node", *requests), {"subscription": True})
+
+    def test_collection_inheritance_preserves_disabled_source(self):
+        path = Path(__file__).parents[1] / "node_rpc_checker/specs/solana.json"
+        original = json.loads(path.read_bytes())
+        for broken in ("missing", "cycle"):
+            document = copy.deepcopy(original)
+            collections = document["proposal"]["specs"][0]["api_collections"]
+            reference = copy.deepcopy(collections[0]["inheritance_apis"][0])
+            if broken == "missing":
+                reference["internal_path"] = "MISSING"
+            else:
+                reference["internal_path"] = ""
+            collections[0]["inheritance_apis"] = [reference]
+            with (
+                patch.object(Path, "glob", return_value=[path]),
+                patch.object(Path, "read_bytes", return_value=json.dumps(document).encode()),
+                self.assertRaisesRegex(ValueError, "inheritance_apis"),
+            ):
+                Spec("SOLANA")
+        spec = Spec("SOLANAT")
+        self.assertTrue(spec.base["enabled"])
+        self.assertFalse(spec.collections[("jsonrpc", "POST", "WS-ONLY", "")]["enabled"])
+
+    def test_pubsub_server_integration(self):
+        methods = []
+
+        class Handler(BaseHTTPRequestHandler):
+            protocol_version = "HTTP/1.1"
+
+            def log_message(self, *args):
+                pass
+
+            def do_GET(self):
+                key = self.headers["Sec-WebSocket-Key"]
+                accept = base64.b64encode(
+                    hashlib.sha1((key + "258EAFA5-E914-47DA-95CA-C5AB0DC85B11").encode()).digest()
+                ).decode()
+                self.send_response(101)
+                self.send_header("Upgrade", "websocket")
+                self.send_header("Connection", "Upgrade")
+                self.send_header("Sec-WebSocket-Accept", accept)
+                self.end_headers()
+
+                def send(data):
+                    raw = json.dumps(data).encode()
+                    header = (
+                        bytes([0x81, len(raw)])
+                        if len(raw) < 126
+                        else bytes([0x81, 126]) + struct.pack("!H", len(raw))
+                    )
+                    self.wfile.write(header + raw)
+                    self.wfile.flush()
+
+                for _ in range(2):
+                    head = self.rfile.read(2)
+                    length = head[1] & 127
+                    if length == 126:
+                        length = struct.unpack("!H", self.rfile.read(2))[0]
+                    mask = self.rfile.read(4)
+                    raw = self.rfile.read(length)
+                    p = json.loads(bytes(b ^ mask[i % 4] for i, b in enumerate(raw)))
+                    methods.append(p["method"])
+                    if p["method"] == "slotSubscribe" and p["params"] == []:
+                        send({"jsonrpc": "2.0", "id": p["id"], "result": 0})
+                        send(
+                            {
+                                "jsonrpc": "2.0",
+                                "method": "slotNotification",
+                                "params": {
+                                    "subscription": 0,
+                                    "result": {"slot": 1, "parent": 0, "root": 0},
+                                },
+                            }
+                        )
+                    elif p["method"] == "slotUnsubscribe" and p["params"] == [0]:
+                        send({"jsonrpc": "2.0", "id": p["id"], "result": True})
+                    else:
+                        send({"jsonrpc": "2.0", "id": p["id"], "error": {"code": -32601}})
+                        return
+                self.close_connection = True
+
+        server = ThreadingHTTPServer(("127.0.0.1", 0), Handler)
+        thread = threading.Thread(target=server.serve_forever, daemon=True)
+        thread.start()
+        try:
+            config = Config("SOLANAT", {}, "trusted", retries=0)
+            client = RpcClient(config, threading.Event())
+            requests = adapter_for("SOLANAT").subscription_requests(Spec("SOLANAT").directives)
+            self.assertEqual(
+                client.subscription(f"ws://127.0.0.1:{server.server_port}", *requests),
+                {"subscription": True},
+            )
+            self.assertEqual(methods, ["slotSubscribe", "slotUnsubscribe"])
+        finally:
+            server.shutdown()
+            server.server_close()
+            thread.join()
 
     def test_severity_validation_and_fail_is_required(self):
         path = Path(__file__).parents[1] / "node_rpc_checker/specs/solana.json"

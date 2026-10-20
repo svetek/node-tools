@@ -76,20 +76,85 @@ def merge_collection(collections, key, child):
     previous = collections.get(key, {})
     merged = copy.deepcopy(previous)
     for field, value in child.items():
-        if field in ("parse_directives", "verifications"):
+        if field in ("apis", "headers", "parse_directives", "extensions", "verifications"):
             identity = "function_tag" if field == "parse_directives" else "name"
+
+            def entry_key(entry):
+                # Solana has several subscribe/unsubscribe pairs in one
+                # collection. Preserve each API rather than only the last tag.
+                tag = entry[identity]
+                if field == "parse_directives" and tag in ("SUBSCRIBE", "UNSUBSCRIBE"):
+                    return (tag, entry.get("api_name", ""))
+                return tag
+
             entries = {
-                entry[identity]: copy.deepcopy(entry) for entry in previous.get(field, []) or []
+                entry_key(entry): copy.deepcopy(entry) for entry in previous.get(field, []) or []
             }
             for entry in value or []:
-                entries[entry[identity]] = {
-                    **entries.get(entry[identity], {}),
+                entry_id = entry_key(entry)
+                entries[entry_id] = {
+                    **entries.get(entry_id, {}),
                     **copy.deepcopy(entry),
                 }
             merged[field] = list(entries.values())
         elif value is not None:
             merged[field] = copy.deepcopy(value)
     collections[key] = merged
+
+
+def collection_key(data):
+    return tuple(
+        data.get(field, "") for field in ("api_interface", "type", "internal_path", "add_on")
+    )
+
+
+def expand_collection_apis(collections):
+    """Expand same-spec inheritance before importing collections into children.
+
+    Disabled collections can supply APIs, but their serving flags and paths
+    must never replace those of the receiving collection.
+    """
+    expanded: dict[tuple[str, ...], dict[str, Any]] = {}
+
+    def expand(key, visiting=()):
+        if key in visiting:
+            raise ValueError("cyclic inheritance_apis")
+        if key not in collections:
+            raise ValueError("missing inheritance_apis collection: " + repr(key))
+        if key in expanded:
+            return expanded[key]
+        collection = collections[key]
+        merged: dict[tuple[str, ...], dict[str, Any]] = {}
+        for reference in collection.get("inheritance_apis", []) or []:
+            parent_key = collection_key(reference)
+            if parent_key[0] and parent_key[:2] != key[:2]:
+                raise ValueError("incompatible inheritance_apis collection")
+            parent = expand(parent_key, visiting + (key,))
+            merge_collection(
+                merged,
+                key,
+                {
+                    field: parent[field]
+                    for field in (
+                        "apis",
+                        "headers",
+                        "parse_directives",
+                        "extensions",
+                        "verifications",
+                    )
+                    if field in parent
+                },
+            )
+        merge_collection(merged, key, collection)
+        result = merged[key]
+        if "inheritance_apis" in result:
+            result["inheritance_apis"] = []
+        expanded[key] = result
+        return result
+
+    for key in collections:
+        expand(key)
+    return expanded
 
 
 def resolve_spec(specs, index, visiting=()):
@@ -106,11 +171,11 @@ def resolve_spec(specs, index, visiting=()):
     for parent in spec.get("imports", []) or []:
         for key, collection in resolve_spec(specs, parent, visiting + (index,)).items():
             merge_collection(collections, key, collection)
+    local_collections: dict[tuple[str, ...], dict[str, Any]] = {}
     for collection in spec.get("api_collections", []) or []:
-        data = collection["collection_data"]
-        key = tuple(
-            data.get(field, "") for field in ("api_interface", "type", "internal_path", "add_on")
-        )
+        key = collection_key(collection["collection_data"])
+        merge_collection(local_collections, key, collection)
+    for key, collection in expand_collection_apis(local_collections).items():
         merge_collection(collections, key, collection)
     return collections
 
@@ -143,6 +208,22 @@ class Spec:
             self.collection_type = (interface, "GET" if interface == "rest" else "", "")
         self.base = self.collections[(*self.collection_type, "")]
         self.directives = {d["function_tag"]: d for d in self.base.get("parse_directives", [])}
+        if chain_id in SOLANA_GENESIS:
+            # Subscriptions live in the enabled JSON-RPC collection, regardless
+            # of the separate (disabled) WS-ONLY collection.
+            apis = {a["name"] for a in self.base.get("apis", []) if a.get("enabled")}
+            for tag, method in (("SUBSCRIBE", "slotSubscribe"), ("UNSUBSCRIBE", "slotUnsubscribe")):
+                directive = next(
+                    (
+                        d
+                        for d in self.base.get("parse_directives", [])
+                        if d.get("function_tag") == tag and d.get("api_name") == method
+                    ),
+                    None,
+                )
+                if not self.base.get("enabled") or method not in apis or directive is None:
+                    raise ValueError("missing enabled Solana subscription API: " + method)
+                self.directives[tag] = directive
         for tag in ("GET_BLOCKNUM", "GET_BLOCK_BY_NUM"):
             self.validate_directive(self.directives[tag])
         chain_rule = next((r for r in self.rules(()) if r.key == "chain-id"), None)
@@ -216,6 +297,15 @@ class Spec:
                 if interface == "rest":
                     directive["http_method"] = method
                 for value in v.get("values", []):
+                    # Protobuf JSON serializes uint64 defaults as strings.
+                    # Preserve the on-chain snapshot and normalize only here.
+                    value = dict(value)
+                    distance = value.get("latest_distance")
+                    if isinstance(distance, str) and re.fullmatch(r"[0-9]+", distance):
+                        if int(distance):
+                            value["latest_distance"] = int(distance)
+                        else:
+                            value.pop("latest_distance")
                     if set(value) - {"expected_value", "latest_distance", "extension", "severity"}:
                         raise ValueError("unsupported verification value")
                     if value.get("severity", "Fail") not in ("Fail", "Warning"):

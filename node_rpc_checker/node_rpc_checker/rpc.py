@@ -156,17 +156,35 @@ class RpcClient:
                             raise RpcError("Tendermint unsubscribe rejected")
                         return {"subscription": True}
                 iota = p.get("method") in ("iotax_subscribeTransaction", "iotax_subscribeEvent")
+                solana = p.get("method") == "slotSubscribe"
                 valid_sub = isinstance(sub, str) and bool(sub)
                 if iota and type(sub) is int and 0 <= sub < 2**64:
                     valid_sub = True
+                if solana:
+                    valid_sub = type(sub) is int and 0 <= sub < 2**64
                 if not valid_sub:
                     raise RpcError("subscription rejected")
+                if solana:
+                    assert type(sub) is int  # Validated above; bool is rejected.
+                    self.validate_slot_notification(ws.receive_json(), sub)
                 p = copy.deepcopy(unsubscribe)
                 p["params"] = [sub]
                 ws.send_json(p)
                 while True:
                     r = ws.receive_json()
-                    if isinstance(r, dict) and r.get("method") == "eth_subscription":
+                    if not solana and isinstance(r, dict) and r.get("method") == "eth_subscription":
+                        continue
+                    if (
+                        solana
+                        and isinstance(r, dict)
+                        and r.get("jsonrpc") == "2.0"
+                        and r.get("method") == "slotNotification"
+                        and "id" not in r
+                        and isinstance(r.get("params"), dict)
+                        and type(r["params"].get("subscription")) is int
+                        and r["params"].get("subscription") == sub
+                    ):
+                        self.validate_slot_notification(r, sub)
                         continue
                     if (
                         iota
@@ -183,3 +201,24 @@ class RpcClient:
                     return {"subscription": True}
         except (OSError, ValueError, RuntimeError, RpcError) as exc:
             raise RpcEndpointError(f"WebSocket subscription failed: {type(exc).__name__}") from None
+
+    @staticmethod
+    def validate_slot_notification(response: Any, subscription: int) -> None:
+        if not isinstance(response, dict):
+            raise RpcError("invalid slot notification")
+        params = response.get("params")
+        if (
+            response.get("jsonrpc") != "2.0"
+            or response.get("method") != "slotNotification"
+            or "id" in response
+            or not isinstance(params, dict)
+            or type(params.get("subscription")) is not int
+            or params["subscription"] != subscription
+        ):
+            raise RpcError("invalid slot notification")
+        result = params.get("result")
+        if not isinstance(result, dict) or any(
+            type(result.get(key)) is not int or not 0 <= result[key] < 2**64
+            for key in ("slot", "parent", "root")
+        ):
+            raise RpcError("invalid slot payload")

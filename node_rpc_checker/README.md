@@ -73,9 +73,13 @@ LICENSE. Python 3.12 in Docker is one supported runtime, not the minimum version
 | SOLANA | 5eykt4UsFv8P8NJdTREpY1vzqKqZKvdpKuc147dw2N9d | SOLANA | explicitly set TRUSTED_RPC_URL |
 | SOLANAT | 4uhcVJyU9pJkvQyS88uRDiswHXSCkY3zQawwpjk2NsNY | SOLANA → SOLANAT | explicitly set TRUSTED_RPC_URL |
 
-Solana snapshot retrieved 2026-10-20 from the
-[Lava repository](https://github.com/lavanet/lava/blob/main/specs/mainnet-1/specs/solana.json);
-it was not compared with the on-chain Lava spec. `SOLANAT` means testnet, not devnet.
+Solana uses the unchanged official
+[GitHub snapshot](https://raw.githubusercontent.com/lavanet/lava/refs/heads/main/specs/mainnet-1/specs/solana.json).
+The loader expands `inheritance_apis`: the enabled main JSON-RPC collection
+inherits subscription APIs and directives from the disabled `WS-ONLY` collection.
+Disabling that source collection does not disable its inherited methods.
+This explains the enabled subscriptions in the expanded on-chain spec.
+`SOLANAT` means testnet, not devnet.
 Configure `CHAIN_ID=SOLANA` or `SOLANAT`, `NODE_RPC_URL` and `TRUSTED_RPC_URL`.
 The reference must serve the same network. No trusted URL is selected automatically.
 
@@ -104,8 +108,22 @@ not invent a retention distance or equate block height with slot.
 For Solana, `/readyz` can return 200, while `/pruning` and `/archive` return 503
 (capability not proven); no detected node-type metric is emitted. Setting
 `NODE_TYPE=archive` cannot prove archive capability.
-The `WS-ONLY` collection is explicitly disabled, so `WEBSOCKET_URL` is rejected,
-not silently ignored or probed with HTTP methods. REST/gRPC are unsupported.
+`WEBSOCKET_URL` (or each node's `websocket_url`) enables a required
+`ws/subscription` check: `slotSubscribe` with empty parameters, then
+`slotUnsubscribe` with the returned numeric subscription id. Both acknowledgements
+and at least one valid `slotNotification` are required within the RPC timeout.
+Interleaved notifications for that subscription are accepted while awaiting
+unsubscribe. The WS availability metric reflects this probe; no WS finalized-height
+comparison metric is emitted. Ordinary HTTP RPC methods (`getVersion`, `getGenesisHash`,
+`getLatestBlockhash`, etc.) are never sent to the Solana pubsub port.
+The separate `WS-ONLY` collection is disabled, but that does not disable the
+subscription APIs in the main collection. REST/gRPC are unsupported.
+
+For a Lava endpoint serving both interfaces, configure both URLs in the checker
+and both HTTP and WS nodes in the provider. HAProxy should use
+`/readyz/<node>` for both backends: it returns 503 if either the configured HTTP
+checks or the WS subscription fails. Without `websocket_url`, readiness confirms
+only HTTP, not the complete Lava endpoint.
 
 IOTA was retrieved 2026-09-30 from the
 [Lava repository](https://github.com/lavanet/lava/blob/main/specs/mainnet-1/specs/iota.json).

@@ -7,7 +7,7 @@ RPC User-Agent, and exposed in `/healthz`, `/status` and readiness responses.
 The Docker build checks its VERSION label against both installed package metadata
 and the module version. The current source revision is not automatically published.
 
-Universal NEAR/EVM/Cosmos Hub/Tezos/IOTA RPC readiness service driven by bundled Lava specifications.
+Universal NEAR/EVM/Cosmos Hub/Tezos/IOTA/Solana RPC readiness service driven by bundled Lava specifications.
 Python 3.11+; native gRPC uses the pinned grpcio and protobuf dependencies.
 One chain per service instance,
 multiple named nodes per instance. Use separate instances for separate chains.
@@ -16,7 +16,7 @@ multiple named nodes per instance. Use separate instances for separate chains.
 
 - `node_rpc_checker/`: Python package, engine, adapters, HTTP/WS/REST/gRPC transports.
 - `node_rpc_checker/specs/`: bundled near.json, ethereum.json, base.json,
-  arbitrum.json, polygon.json, tezos.json, iota.json, cosmoshub.json and its Cosmos SDK, CosmWasm,
+  arbitrum.json, polygon.json, tezos.json, iota.json, solana.json, cosmoshub.json and its Cosmos SDK, CosmWasm,
   Tendermint and IBC dependencies.
 - `tests/`: unit and local HTTP/WS/REST/gRPC integration tests.
 
@@ -46,7 +46,7 @@ Docker builds a wheel in a separate builder stage and installs it without networ
 access in the runtime stage. Runtime starts the installed `node-rpc-checker`
 console script from `/app`, not a source checkout. `python -m node_rpc_checker`
 and `node-rpc-checker --version` are supported. The wheel includes VERSION, all
-thirteen spec snapshots, metadata, README description and a copy of the repository
+fourteen spec snapshots, metadata, README description and a copy of the repository
 LICENSE. Python 3.12 in Docker is one supported runtime, not the minimum version.
 
 ## Chain selection
@@ -70,6 +70,36 @@ LICENSE. Python 3.12 in Docker is one supported runtime, not the minimum version
 | TEZOST | NetXsqzbfFenSTS | TEZOS → TEZOST | explicitly set TRUSTED_RPC_URL |
 | IOTA | 6364aad5 | IOTA | explicitly set TRUSTED_RPC_URL |
 | IOTAT | 2304aa97 | IOTA → IOTAT | explicitly set TRUSTED_RPC_URL |
+| SOLANA | 5eykt4UsFv8P8NJdTREpY1vzqKqZKvdpKuc147dw2N9d | SOLANA | explicitly set TRUSTED_RPC_URL |
+| SOLANAT | 4uhcVJyU9pJkvQyS88uRDiswHXSCkY3zQawwpjk2NsNY | SOLANA → SOLANAT | explicitly set TRUSTED_RPC_URL |
+
+Solana snapshot retrieved 2026-10-20 from the
+[Lava repository](https://github.com/lavanet/lava/blob/main/specs/mainnet-1/specs/solana.json);
+it was not compared with the on-chain Lava spec. `SOLANAT` means testnet, not devnet.
+Configure `CHAIN_ID=SOLANA` or `SOLANAT`, `NODE_RPC_URL` and `TRUSTED_RPC_URL`.
+The reference must serve the same network. No trusted URL is selected automatically.
+
+- `version`: `getVersion`, nonempty `solana-core`, required.
+- `tokens-owner-indexed`: the exact `getTokenAccountsByOwner` probe from Lava,
+  with `severity=Warning`. An empty array is a successful response. Failure is
+  recorded in `/status` (with `severity: Warning`) and normal failure metrics,
+  but does not block readiness. Alert separately if indexing is required.
+- `height`: `getLatestBlockhash` with `commitment=finalized`, using `context.slot`.
+  `MAX_BEHIND_BLOCKS` is measured in **slots**, not `blockHeight` or
+  `lastValidBlockHeight`. Existing trusted-reference freshness policy applies.
+- `chain-id`: additional checker safety rule using `getGenesisHash`, not a Lava
+  verification. Expected hashes were verified through the official
+  `api.mainnet-beta.solana.com` and `api.testnet.solana.com` RPCs on 2026-10-20.
+  Both target and reference are validated; the bundled snapshot remains unchanged.
+
+The snapshot has **no pruning/archive verifications or archive extension**.
+`GET_BLOCK_BY_NUM` is only a directive, not a scheduled check; the checker does
+not invent a retention distance or equate block height with slot.
+For Solana, `/readyz` can return 200, while `/pruning` and `/archive` return 503
+(capability not proven); no detected node-type metric is emitted. Setting
+`NODE_TYPE=archive` cannot prove archive capability.
+The `WS-ONLY` collection is explicitly disabled, so `WEBSOCKET_URL` is rejected,
+not silently ignored or probed with HTTP methods. REST/gRPC are unsupported.
 
 IOTA was retrieved 2026-09-30 from the
 [Lava repository](https://github.com/lavanet/lava/blob/main/specs/mainnet-1/specs/iota.json).

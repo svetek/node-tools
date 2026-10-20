@@ -2,7 +2,7 @@ import json
 import re
 from typing import Any
 
-from .adapters import Evm, Iota, Near, Tendermint, Tezos
+from .adapters import Evm, Iota, Near, Solana, Tendermint, Tezos
 from .rpc import NodeBehind, RpcClient, RpcError
 from .spec import Rule, Spec
 
@@ -123,6 +123,11 @@ class Engine:
             template = template % target
         response = self.request(url, pd, template)
         actual = parse(response, pd)
+        if isinstance(self.adapter, Solana):
+            if pd.get("api_name") == "getVersion" and not isinstance(actual, str):
+                raise RpcError("invalid Solana version result")
+            if pd.get("api_name") == "getTokenAccountsByOwner" and not isinstance(actual, list):
+                raise RpcError("invalid Solana token accounts result")
         if pd["function_tag"] == "GET_BLOCK_BY_NUM":
             result = response.get("result")
             if isinstance(self.adapter, Tezos):

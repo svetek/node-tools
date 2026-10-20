@@ -8,6 +8,13 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
+# Checker safety overlay, not a verification supplied by Lava. Verified against
+# the official mainnet-beta/testnet RPC getGenesisHash responses on 2026-10-20.
+SOLANA_GENESIS = {
+    "SOLANA": "5eykt4UsFv8P8NJdTREpY1vzqKqZKvdpKuc147dw2N9d",
+    "SOLANAT": "4uhcVJyU9pJkvQyS88uRDiswHXSCkY3zQawwpjk2NsNY",
+}
+
 
 @dataclass(frozen=True)
 class Rule:
@@ -99,7 +106,7 @@ def resolve_spec(specs, index, visiting=()):
     for parent in spec.get("imports", []) or []:
         for key, collection in resolve_spec(specs, parent, visiting + (index,)).items():
             merge_collection(collections, key, collection)
-    for collection in spec["api_collections"]:
+    for collection in spec.get("api_collections", []) or []:
         data = collection["collection_data"]
         key = tuple(
             data.get(field, "") for field in ("api_interface", "type", "internal_path", "add_on")
@@ -209,8 +216,10 @@ class Spec:
                 if interface == "rest":
                     directive["http_method"] = method
                 for value in v.get("values", []):
-                    if set(value) - {"expected_value", "latest_distance", "extension"}:
+                    if set(value) - {"expected_value", "latest_distance", "extension", "severity"}:
                         raise ValueError("unsupported verification value")
+                    if value.get("severity", "Fail") not in ("Fail", "Warning"):
+                        raise ValueError("unsupported verification severity")
                     extension = value.get("extension", "")
                     if extension not in ("", "archive"):
                         raise ValueError("unsupported extension")
@@ -233,4 +242,24 @@ class Spec:
                     if any(r.key == key for r in rules):
                         raise ValueError("duplicate verification key")
                     rules.append(Rule(key, mode, directive, value))
+        if self.chain_id in SOLANA_GENESIS:
+            # Keep the downloaded snapshot intact while checking network identity
+            # for both the target and the trusted reference.
+            directive = {
+                "function_tag": "VERIFICATION",
+                "api_name": "getGenesisHash",
+                "function_template": json.dumps(
+                    {"jsonrpc": "2.0", "id": 1, "method": "getGenesisHash", "params": []}
+                ),
+                "result_parsing": {"parser_func": "PARSE_BY_ARG", "parser_arg": ["0"]},
+            }
+            self.validate_directive(directive)
+            rules.append(
+                Rule(
+                    "chain-id",
+                    "readyz",
+                    directive,
+                    {"expected_value": SOLANA_GENESIS[self.chain_id]},
+                )
+            )
         return rules

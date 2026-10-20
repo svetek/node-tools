@@ -26,6 +26,8 @@ CHAINS = (
     "TEZOST",
     "IOTA",
     "IOTAT",
+    "SOLANA",
+    "SOLANAT",
 )
 
 

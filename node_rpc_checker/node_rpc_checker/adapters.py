@@ -50,6 +50,15 @@ class Evm:
         return {"jsonrpc": "2.0", "id": 1, "method": method, "params": ["newHeads"]}, request
 
 
+class Solana(Evm):
+    websocket = False
+
+    def subscription_requests(
+        self, directives: dict[str, Any]
+    ) -> tuple[dict[str, Any], dict[str, Any]]:
+        raise ValueError("WebSocket is disabled in the bundled Solana spec")
+
+
 class Iota(Evm):
     def subscription_requests(
         self, directives: dict[str, Any]
@@ -100,6 +109,8 @@ class Tezos:
 
 
 def adapter_for(chain_id: str) -> Near | Evm | Tendermint | Tezos:
+    if chain_id in ("SOLANA", "SOLANAT"):
+        return Solana()
     if chain_id in ("IOTA", "IOTAT"):
         return Iota()
     if chain_id in ("TEZOS", "TEZOST"):

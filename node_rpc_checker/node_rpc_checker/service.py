@@ -87,6 +87,7 @@ class Checker:
         self.progress: dict[tuple[str, str], tuple[int, float]] = {}
         self.missing_metric_help: set[str] = set()
         self.plans = {}
+        self.advisory_checks: set[tuple[str, str]] = set()
         api_engines = {}
         for name, node in config.nodes.items():
             if (node.rest_url or node.grpc_url) and config.chain_id not in (
@@ -114,6 +115,8 @@ class Checker:
                 if node.node_type == "prune":
                     rules = [rule for rule in rules if rule.mode != "archive"]
                 for rule in rules:
+                    if rule.value.get("severity") == "Warning":
+                        self.advisory_checks.add((name, transport + "/" + rule.key))
                     plan[transport + "/" + rule.key] = (
                         rule.mode,
                         partial(engine.verify, url, rule),
@@ -227,6 +230,8 @@ class Checker:
             mode=self.plans[name][key][0],
             latency_ms=round((self.clock() - start) * 1000),
         )
+        if (name, key) in self.advisory_checks:
+            row["severity"] = "Warning"
         with self.lock:
             if key.endswith("/height") and "node_height" in row:
                 previous = self.progress.get((name, key))
@@ -405,12 +410,22 @@ class Checker:
     def readiness(self, name, checks, mode):
         if mode == "archive" and self.config.nodes[name].node_type == "prune":
             return False
+        if mode in ("pruning", "archive") and not any(
+            level == mode and (name, key) not in self.advisory_checks
+            for key, (level, _) in self.plans[name].items()
+        ):
+            # No deep verifications means capability is unknown, not proven.
+            return False
         levels = {"readyz"}
         if mode in ("pruning", "archive"):
             levels.add("pruning")
         if mode == "archive":
             levels.add("archive")
-        required = [k for k, (level, _) in self.plans[name].items() if level in levels]
+        required = [
+            k
+            for k, (level, _) in self.plans[name].items()
+            if level in levels and (name, k) not in self.advisory_checks
+        ]
         return all(checks.get(k, {}).get("fresh") and checks[k].get("ok") for k in required)
 
     def node_type(self, name: str, checks: dict[str, dict[str, Any]]) -> str | None:

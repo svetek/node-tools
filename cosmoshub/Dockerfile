@@ -1,7 +1,7 @@
 # syntax=docker/dockerfile:1.7
 
 ARG ALPINE_VERSION=3.24
-ARG GO_VERSION=1.26.9
+ARG GO_VERSION=1.27.3
 ARG IMAGE_TAG
 ARG GAIA_VERSION
 ARG GIT_REPOSITORY=https://github.com/cosmos/gaia.git

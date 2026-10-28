@@ -36,6 +36,8 @@ class Fake:
                 "ARBITRUMN": "0xa4ba",
                 "ARBITRUMS": "0x66eee",
                 "POLYGON": "0x89",
+                "BSC": "0x38",
+                "BSCT": "0x61",
                 "POLYGONA": "0x13882",
             }[self.chain]
             if self.chain_bad:

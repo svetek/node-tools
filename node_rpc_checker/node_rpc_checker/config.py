@@ -28,6 +28,8 @@ CHAINS = (
     "IOTAT",
     "SOLANA",
     "SOLANAT",
+    "BSC",
+    "BSCT",
 )
 
 

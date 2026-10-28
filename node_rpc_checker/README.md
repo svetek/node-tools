@@ -16,7 +16,7 @@ multiple named nodes per instance. Use separate instances for separate chains.
 
 - `node_rpc_checker/`: Python package, engine, adapters, HTTP/WS/REST/gRPC transports.
 - `node_rpc_checker/specs/`: bundled near.json, ethereum.json, base.json,
-  arbitrum.json, polygon.json, tezos.json, iota.json, solana.json, cosmoshub.json and its Cosmos SDK, CosmWasm,
+  arbitrum.json, polygon.json, bsc.json, tezos.json, iota.json, solana.json, cosmoshub.json and its Cosmos SDK, CosmWasm,
   Tendermint and IBC dependencies.
 - `tests/`: unit and local HTTP/WS/REST/gRPC integration tests.
 
@@ -46,7 +46,7 @@ Docker builds a wheel in a separate builder stage and installs it without networ
 access in the runtime stage. Runtime starts the installed `node-rpc-checker`
 console script from `/app`, not a source checkout. `python -m node_rpc_checker`
 and `node-rpc-checker --version` are supported. The wheel includes VERSION, all
-fourteen spec snapshots, metadata, README description and a copy of the repository
+fifteen spec snapshots, metadata, README description and a copy of the repository
 LICENSE. Python 3.12 in Docker is one supported runtime, not the minimum version.
 
 ## Chain selection
@@ -64,6 +64,8 @@ LICENSE. Python 3.12 in Docker is one supported runtime, not the minimum version
 | ARBITRUMS | 0x66eee | ETH1 → ARBITRUM → ARBITRUMS | explicitly set TRUSTED_RPC_URL |
 | POLYGON | 0x89 | ETH1 → POLYGON | explicitly set TRUSTED_RPC_URL |
 | POLYGONA | 0x13882 | ETH1 → POLYGON → POLYGONA | explicitly set TRUSTED_RPC_URL |
+| BSC | 0x38 (56) | ETH1 → BSC | explicitly set TRUSTED_RPC_URL |
+| BSCT | 0x61 (97) | ETH1 → BSC → BSCT | explicitly set TRUSTED_RPC_URL |
 | COSMOSHUB | cosmoshub-4 | COSMOSSDK50 + COSMOSWASM → COSMOSHUB | explicitly set TRUSTED_RPC_URL |
 | COSMOSHUBT | provider | COSMOSHUB → COSMOSHUBT | explicitly set TRUSTED_RPC_URL |
 | TEZOS | NetXdQprcVkpaWU | TEZOS | explicitly set TRUSTED_RPC_URL |
@@ -72,6 +74,16 @@ LICENSE. Python 3.12 in Docker is one supported runtime, not the minimum version
 | IOTAT | 2304aa97 | IOTA → IOTAT | explicitly set TRUSTED_RPC_URL |
 | SOLANA | 5eykt4UsFv8P8NJdTREpY1vzqKqZKvdpKuc147dw2N9d | SOLANA | explicitly set TRUSTED_RPC_URL |
 | SOLANAT | 4uhcVJyU9pJkvQyS88uRDiswHXSCkY3zQawwpjk2NsNY | SOLANA → SOLANAT | explicitly set TRUSTED_RPC_URL |
+
+Binance Smart Chain uses the official [Lava BSC snapshot](https://github.com/lavanet/lava/blob/main/specs/mainnet-1/specs/bsc.json),
+retrieved 2026-10-28. It inherits the bundled ETH1 rules: chain-id, height comparison,
+trustless-rpc, pruning (latest minus earliest >=128), and archive (earliest =0).
+Set `CHAIN_ID=BSC` or `BSCT`, `NODE_RPC_URL` and an explicit matching `TRUSTED_RPC_URL`.
+Optional `WEBSOCKET_URL` enables the same checks plus `eth_subscribe`/`eth_unsubscribe`.
+`ADDONS=debug,trace,bundler` enables inherited addon checks only when configured;
+their presence in the spec does not guarantee your node implements them.
+`NODE_TYPE=prune` skips archive probes; `auto` and `archive` run both.
+The downloaded BSC snapshot was not verified against the live on-chain Lava spec.
 
 Solana uses the unchanged official
 [GitHub snapshot](https://raw.githubusercontent.com/lavanet/lava/refs/heads/main/specs/mainnet-1/specs/solana.json).
